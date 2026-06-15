@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaTimes, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import api from "../api";
 import { toast } from "react-hot-toast";
 
@@ -126,6 +127,21 @@ const Login = ({ onClose, setUser, onOpenRegister }) => {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        <div className="flex items-center w-full my-4">
+          <hr className="flex-grow border-gray-300" />
+          <span className="mx-2 text-gray-500 text-sm">OR</span>
+          <hr className="flex-grow border-gray-300" />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => toast.error("Google Login coming soon!")}
+          className="w-full flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 rounded-lg cursor-pointer transition-colors"
+        >
+          <FcGoogle size={20} />
+          Continue with Google
+        </button>
 
         {/* Register Link */}
         <p className="text-center text-sm text-gray-600 mt-4">
