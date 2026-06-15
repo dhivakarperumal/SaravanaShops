@@ -65,7 +65,7 @@ const Login = ({ onClose, setUser, onOpenRegister }) => {
       onClick={handleClose}
     >
       <div
-        className="bg-white w-96 p-6 rounded-2xl shadow-xl relative flex flex-col items-center"
+        className="bg-white w-[450px] max-w-[90vw] p-8 rounded-2xl shadow-xl relative flex flex-col items-center"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}

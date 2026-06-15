@@ -134,7 +134,7 @@ const Register = ({ onClose, setUser, onOpenLogin }) => {
       onClick={handleClose}
     >
       <div
-        className="bg-white w-96 p-6 rounded-2xl shadow-xl relative flex flex-col items-center"
+        className="bg-white w-[500px] max-w-[80vw] p-8 rounded-2xl shadow-xl relative flex flex-col items-center"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
