@@ -61,7 +61,7 @@ const Login = ({ onClose, setUser, onOpenRegister }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
       onClick={handleClose}
     >
       <div
