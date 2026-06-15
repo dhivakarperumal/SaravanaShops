@@ -136,6 +136,7 @@ function Navbar() {
   };
 
   return (
+    <>
     <nav className="sticky top-0 z-40 border-b border-primary/10 bg-white/90 backdrop-blur-md shadow-md">
       <div className="max-w-8xl mx-auto py-2 sm:px-6 lg:px-20 px-5">
         <div className="flex justify-between items-center">
@@ -317,6 +318,7 @@ function Navbar() {
           </div>
         </div>
       </div>
+    </nav>
 
       {/* Modals */}
       {loginOpen && <Login onClose={() => setLoginOpen(false)} setUser={setUser} onOpenRegister={() => {
@@ -425,7 +427,7 @@ function Navbar() {
           </div>
         </div>
       )}
-    </nav>
+    </>
   );
 }
 
