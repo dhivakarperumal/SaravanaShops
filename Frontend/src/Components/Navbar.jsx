@@ -319,8 +319,14 @@ function Navbar() {
       </div>
 
       {/* Modals */}
-      {loginOpen && <Login onClose={() => setLoginOpen(false)} setUser={setUser} />}
-      {registerOpen && <Register onClose={() => setRegisterOpen(false)} setUser={setUser} />}
+      {loginOpen && <Login onClose={() => setLoginOpen(false)} setUser={setUser} onOpenRegister={() => {
+        setLoginOpen(false);
+        setRegisterOpen(true);
+      }} />}
+      {registerOpen && <Register onClose={() => setRegisterOpen(false)} setUser={setUser} onOpenLogin={() => {
+        setRegisterOpen(false);
+        setLoginOpen(true);
+      }} />}
       {cartOpen && <Addtocart isOpen={cartOpen} onClose={() => setCartOpen(false)} />}
       {wishlistOpen && <Wishlist isOpen={wishlistOpen} onClose={() => setWishlistOpen(false)} />}
 

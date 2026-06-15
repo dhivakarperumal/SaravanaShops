@@ -4,7 +4,7 @@ import { FaEye, FaEyeSlash, FaTimes } from "react-icons/fa";
 import api from "../api";
 import { toast } from "react-hot-toast";
 
-const Register = ({ onClose, setUser }) => {
+const Register = ({ onClose, setUser, onOpenLogin }) => {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -104,11 +104,14 @@ const Register = ({ onClose, setUser }) => {
         if (typeof setUser === 'function') {
           setUser(response.data.user);
         }
-        toast.success("Registration successful!");
+        toast.success("Registration successful! Please log in.");
         if (typeof onClose === 'function') {
           onClose();
         }
-        navigate("/");
+        // Open login modal if callback provided
+        if (typeof onOpenLogin === 'function') {
+          setTimeout(() => onOpenLogin(), 300); // Small delay for modal animation
+        }
       }
     } catch (error) {
       const errorMessage =
@@ -235,7 +238,9 @@ const Register = ({ onClose, setUser }) => {
               if (typeof onClose === 'function') {
                 onClose();
               }
-              navigate("/login");
+              if (typeof onOpenLogin === 'function') {
+                setTimeout(() => onOpenLogin(), 300);
+              }
             }}
             className="text-purple-600 font-semibold cursor-pointer hover:underline bg-none border-none p-0"
           >

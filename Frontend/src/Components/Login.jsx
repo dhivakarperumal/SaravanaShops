@@ -4,7 +4,7 @@ import { FaTimes, FaEye, FaEyeSlash } from "react-icons/fa";
 import api from "../api";
 import { toast } from "react-hot-toast";
 
-const Login = ({ onClose, setUser }) => {
+const Login = ({ onClose, setUser, onOpenRegister }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -128,7 +128,9 @@ const Login = ({ onClose, setUser }) => {
               if (typeof onClose === 'function') {
                 onClose();
               }
-              navigate("/register");
+              if (typeof onOpenRegister === 'function') {
+                setTimeout(() => onOpenRegister(), 300);
+              }
             }}
             className="text-purple-600 font-semibold cursor-pointer hover:underline bg-none border-none p-0"
           >
