@@ -152,72 +152,94 @@ const Register = ({ onClose, setUser, onOpenLogin }) => {
 
         {/* Form */}
         <form className="w-full flex flex-col gap-4" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="username"
-            placeholder="Full Name"
-            value={formData.username}
-            onChange={handleChange}
-            disabled={loading}
-            className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email ID"
-            value={formData.email}
-            onChange={handleChange}
-            disabled={loading}
-            className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
-          />
-          <input
-            type="tel"
-            name="phone"
-            placeholder="Mobile Number"
-            value={formData.phone}
-            onChange={handleChange}
-            disabled={loading}
-            className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
-          />
-
-          {/* Password */}
-          <div className="relative w-full">
+          <div className="flex flex-col gap-1 w-full">
+            <label className="text-sm font-semibold text-gray-700" htmlFor="username">Full Name</label>
             <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Password"
-              value={formData.password}
+              id="username"
+              type="text"
+              name="username"
+              placeholder="Enter your full name"
+              value={formData.username}
               onChange={handleChange}
               disabled={loading}
               className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2 top-2 text-gray-500 cursor-pointer hover:text-gray-700 bg-none border-none p-0"
-            >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </button>
+          </div>
+
+          <div className="flex flex-col gap-1 w-full">
+            <label className="text-sm font-semibold text-gray-700" htmlFor="email">Email Address</label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              placeholder="Enter your email address"
+              value={formData.email}
+              onChange={handleChange}
+              disabled={loading}
+              className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1 w-full">
+            <label className="text-sm font-semibold text-gray-700" htmlFor="phone">Mobile Number</label>
+            <input
+              id="phone"
+              type="tel"
+              name="phone"
+              placeholder="Enter your mobile number"
+              value={formData.phone}
+              onChange={handleChange}
+              disabled={loading}
+              className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
+            />
+          </div>
+
+          {/* Password */}
+          <div className="flex flex-col gap-1 w-full">
+            <label className="text-sm font-semibold text-gray-700" htmlFor="password">Password</label>
+            <div className="relative w-full">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Create a password"
+                value={formData.password}
+                onChange={handleChange}
+                disabled={loading}
+                className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2 top-2 text-gray-500 cursor-pointer hover:text-gray-700 bg-none border-none p-0"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
 
           {/* Confirm Password */}
-          <div className="relative w-full">
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              disabled={loading}
-              className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-2 top-2 text-gray-500 cursor-pointer hover:text-gray-700 bg-none border-none p-0"
-            >
-              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-            </button>
+          <div className="flex flex-col gap-1 w-full">
+            <label className="text-sm font-semibold text-gray-700" htmlFor="confirmPassword">Confirm Password</label>
+            <div className="relative w-full">
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                disabled={loading}
+                className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-2 top-2 text-gray-500 cursor-pointer hover:text-gray-700 bg-none border-none p-0"
+              >
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
 
           <button

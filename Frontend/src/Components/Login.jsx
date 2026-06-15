@@ -83,31 +83,39 @@ const Login = ({ onClose, setUser, onOpenRegister }) => {
 
         {/* Login Form */}
         <form className="w-full flex flex-col gap-4" onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email ID"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-            className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
-          />
-
-          <div className="relative w-full">
+          <div className="flex flex-col gap-1 w-full">
+            <label className="text-sm font-semibold text-gray-700" htmlFor="email">Email Address</label>
             <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              id="email"
+              type="email"
+              placeholder="Enter your email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
               className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2 top-2 text-gray-500 cursor-pointer hover:text-gray-700 bg-none border-none p-0"
-            >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </button>
+          </div>
+
+          <div className="flex flex-col gap-1 w-full">
+            <label className="text-sm font-semibold text-gray-700" htmlFor="password">Password</label>
+            <div className="relative w-full">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2 top-2 text-gray-500 cursor-pointer hover:text-gray-700 bg-none border-none p-0"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
 
           <button
