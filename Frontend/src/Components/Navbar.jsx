@@ -115,13 +115,18 @@ function Navbar() {
   };
 
   // Logout handler
-  const handleLogout = async (e) => {
+  const handleLogout = (e) => {
     e.stopPropagation();
     try {
+      // Clear all auth data
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      
+      // Update auth context
       setUser(null);
       setUserDropdownOpen(false);
+      
+      // Show success message and navigate
       toast.success("Logged out successfully!");
       navigate("/");
     } catch (error) {
