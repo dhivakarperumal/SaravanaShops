@@ -307,10 +307,10 @@ function Navbar() {
             )}
 
             {/* Mobile menu */}
-            <div className="md:hidden">
+            <div className="md:hidden flex items-center">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="text-primary cursor-pointer hover:scale-110 transition"
+                className="text-primary cursor-pointer hover:scale-110 transition flex items-center justify-center h-8 w-8"
               >
                 <FiMenu size={24} />
               </button>

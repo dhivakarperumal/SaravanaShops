@@ -328,7 +328,7 @@ const AdminPanel = () => {
           <div className="flex items-center gap-4 w-full md:w-auto">
             {/* Mobile hamburger (opens mobile menu) */}
             <button
-              className="md:hidden text-2xl"
+              className="md:hidden text-2xl flex items-center justify-center h-10 w-10 rounded-full hover:bg-gray-100 transition-colors"
               onClick={() => setMobileMenu(true)}
             >
               <FaBars />
@@ -336,7 +336,7 @@ const AdminPanel = () => {
 
             {/* Desktop hamburger (collapse / expand sidebar) */}
             <button
-              className="hidden md:block text-2xl text-black"
+              className="hidden md:flex text-2xl text-black items-center justify-center h-10 w-10 rounded-full hover:bg-gray-100 transition-colors"
               onClick={() => setIsSidebarOpen((prev) => !prev)}
             >
               <FaBars />
