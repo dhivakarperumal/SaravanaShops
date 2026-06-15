@@ -16,8 +16,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import logo from "/Image/logo.png";
 import Sidebar from "./Header/Sidebar";
 import { AiOutlineStock } from "react-icons/ai";
-import { signOut } from "firebase/auth";
-import { auth, db } from "../firebase";
+import { db } from "../firebase";
+import { useContext } from "react";
+import { AuthContext } from "../PrivateRouter.jsx/AuthContext";
 
 import {
   collection,
@@ -30,6 +31,7 @@ import {
 } from "firebase/firestore";
 
 const AdminPanel = () => {
+  const { user, setUser } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
   const [orders, setOrders] = useState([]);
@@ -69,33 +71,16 @@ const AdminPanel = () => {
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
   const isExpanded = isSidebarOpen || isSidebarHovered;
-  const sidebarWidth = isExpanded ? "w-64" : "w-20";
-  const contentMargin = isExpanded ? "md:ml-64" : "md:ml-20";
+  const sidebarWidth = isExpanded ? "w-74" : "w-20";
+  const contentMargin = isExpanded ? "md:ml-72" : "md:ml-20";
 
   const [userName, setUserName] = useState("");
 
-  // const { user } = useSelector((state) => state.user);
-
   useEffect(() => {
-    const fetchUser = async () => {
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        // Option 1: Use displayName from Firebase Auth
-        if (currentUser.displayName) {
-          setUserName(currentUser.displayName);
-        } else {
-          // Option 2: Fetch from Firestore 'users' collection
-          const userDoc = doc(db, "users", currentUser.uid);
-          const userSnap = await getDoc(userDoc);
-          if (userSnap.exists()) {
-            setUserName(userSnap.data().name); // or firstName/lastName field
-          }
-        }
-      }
-    };
-
-    fetchUser();
-  }, []);
+    if (user && user.username) {
+      setUserName(user.username);
+    }
+  }, [user]);
 
 
   const profileRef = useRef();
@@ -253,9 +238,10 @@ const AdminPanel = () => {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
       navigate("/");
-      window.location.reload();
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
@@ -552,8 +538,8 @@ const AdminPanel = () => {
                       <p className="text-xs text-gray-500">
 
                         <p className="text-xs text-gray-500">
-                          {userName?.role
-                            ? userName.role.charAt(0).toUpperCase() + userName.role.slice(1)
+                          {user?.role
+                            ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
                             : "Admin"}
                         </p>
 
