@@ -33,7 +33,8 @@ const Login = ({ onClose, setUser, onOpenRegister }) => {
         }
       } catch (error) {
         console.error("Google Login Error:", error);
-        toast.error("Google login failed");
+        const errorMessage = error.response?.data?.message || "Google login failed";
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
