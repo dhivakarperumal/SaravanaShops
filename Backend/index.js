@@ -21,13 +21,25 @@ app.use(express.urlencoded({ extended: true }));
 
 // Database connection
 const pool = require('./src/config/db');
+const { initializeDatabase } = require('./src/config/database');
+const authRouter = require('./src/routers/authRouter');
+
+// Initialize database
+initializeDatabase();
 
 // Basic health check route
 app.get('/api/health', (req, res) => {
   res.json({ message: 'Backend is running', status: 'OK' });
 });
 
+// Auth routes
+app.use('/api/auth', authRouter);
 
+// Other routes (to be added)
+// const productsRouter = require('./src/routers/products');
+// const ordersRouter = require('./src/routers/orders');
+// app.use('/api/products', productsRouter);
+// app.use('/api/orders', ordersRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
