@@ -17,6 +17,7 @@
     "@reduxjs/toolkit": "^2.9.0",
     "@tailwindcss/vite": "^4.1.14",
     "aos": "^2.3.4",
+    "axios": "^1.18.0",
     "browser-image-compression": "^2.0.2",
     "chart.js": "^4.5.0",
     "color-namer": "^1.4.0",
