@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaTimes, FaEye, FaEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+import { useGoogleLogin } from '@react-oauth/google';
 import api from "../api";
 import { toast } from "react-hot-toast";
 
@@ -11,6 +12,37 @@ const Login = ({ onClose, setUser, onOpenRegister }) => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setLoading(true);
+        const res = await api.post("/auth/google", {
+          access_token: tokenResponse.access_token,
+        });
+
+        if (res.data.token) {
+          localStorage.setItem("token", res.data.token);
+          localStorage.setItem("user", JSON.stringify(res.data.user));
+          if (typeof setUser === 'function') {
+            setUser(res.data.user);
+          }
+          toast.success(`Welcome back, ${res.data.user.username}!`);
+          handleClose();
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Google Login Error:", error);
+        toast.error("Google login failed");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: error => {
+      console.error('Google Login Failed:', error);
+      toast.error("Google Login Failed");
+    }
+  });
 
   // Close modal safely
   const handleClose = () => {
@@ -136,7 +168,7 @@ const Login = ({ onClose, setUser, onOpenRegister }) => {
 
         <button
           type="button"
-          onClick={() => toast.error("Google Login coming soon!")}
+          onClick={() => handleGoogleLogin()}
           className="w-full flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 rounded-lg cursor-pointer transition-colors"
         >
           <FcGoogle size={20} />

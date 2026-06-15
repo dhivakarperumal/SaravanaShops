@@ -134,10 +134,14 @@ const router = createBrowserRouter([
   { path: "/*", element: <NotFound /> },
 ]);
 
-createRoot(document.getElementById("root")).render(
-  <AuthProvider>
-      <Toaster position="top-left" reverseOrder={false} />
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
-    <RouterProvider router={router} />
-  </AuthProvider>
+createRoot(document.getElementById("root")).render(
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "dummy_client_id"}>
+    <AuthProvider>
+        <Toaster position="top-left" reverseOrder={false} />
+
+      <RouterProvider router={router} />
+    </AuthProvider>
+  </GoogleOAuthProvider>
 );

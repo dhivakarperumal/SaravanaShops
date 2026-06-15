@@ -156,4 +156,76 @@ const getProfile = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getProfile };
+// Google Login
+const axios = require('axios');
+
+const googleLogin = async (req, res) => {
+  try {
+    const { access_token } = req.body;
+    if (!access_token) {
+      return res.status(400).json({ message: 'Access token is required' });
+    }
+
+    // Fetch user info from Google
+    const googleRes = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${access_token}` }
+    });
+    
+    const { email, name } = googleRes.data;
+
+    const connection = await pool.getConnection();
+
+    // Check if user exists
+    const [users] = await connection.query(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
+
+    let user;
+
+    if (users.length === 0) {
+      // Create new user with random password
+      const randomPassword = uuidv4() + Math.random().toString(36).slice(-8);
+      const hashedPassword = await bcryptjs.hash(randomPassword, 10);
+      const user_id = uuidv4();
+
+      await connection.query(
+        'INSERT INTO users (user_id, username, email, phone, password, status) VALUES (?, ?, ?, ?, ?, ?)',
+        [user_id, name, email, 'Not provided', hashedPassword, 'active']
+      );
+
+      user = { user_id, username: name, email, phone: 'Not provided' };
+    } else {
+      user = users[0];
+      if (user.status !== 'active') {
+        connection.release();
+        return res.status(403).json({ message: 'User account is inactive' });
+      }
+    }
+
+    connection.release();
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { user_id: user.user_id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '9d' }
+    );
+
+    res.json({
+      message: 'Google login successful',
+      user: {
+        user_id: user.user_id,
+        username: user.username || user.name,
+        email: user.email,
+        phone: user.phone
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Google Login error:', error);
+    res.status(500).json({ message: 'Google authentication failed', error: error.message });
+  }
+};
+
+module.exports = { register, login, getProfile, googleLogin };
