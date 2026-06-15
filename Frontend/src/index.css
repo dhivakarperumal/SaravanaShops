@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+
+@theme{
+    --color-primary:#8c52ff;
+    --color-secondary:#cbb8f2;
+}
+
+body{
+  font-family: "Iowan Old Style",  serif;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+
+/* In your global CSS file (e.g., App.css) */
+[data-aos="rotate"] {
+  transform-origin: center;
+  animation: aos-rotate 1s linear infinite;
+}
+
+@keyframes aos-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+.sidebar-scroll {
+  overflow-y: auto;
+}
+
+/* WebKit browsers (Chrome, Safari, Edge) */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px; /* very thin */
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: #f0f0f0; /* light track */
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: #b691ff; /* lighter shade of #8c52ff */
+  border-radius: 10px;
+}
+
+/* Firefox */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #b691ff #f0f0f0; /* thumb | track */
+}
