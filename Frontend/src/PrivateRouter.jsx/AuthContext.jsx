@@ -1,8 +1,5 @@
 // AuthContext.jsx
 import React, { createContext, useEffect, useState } from "react";
-import { auth, db } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 
 export const AuthContext = createContext();
 
@@ -11,29 +8,33 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [loginOpen, setLoginOpen] = useState(false);
 
+  // Check localStorage for user on mount
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        try {
-          const userRef = doc(db, "users", currentUser.uid);
-          const userSnap = await getDoc(userRef);
-          if (userSnap.exists()) {
-            setUser(userSnap.data());
-          } else {
-            setUser({ username: currentUser.displayName || "User", role: "user" });
-          }
-        } catch (err) {
-          console.error(err);
-          setUser(null);
-        }
+    try {
+      const token = localStorage.getItem("token");
+      const userData = localStorage.getItem("user");
+
+      if (token && userData) {
+        setUser(JSON.parse(userData));
       } else {
         setUser(null);
       }
+    } catch (error) {
+      console.error("Error loading user from localStorage:", error);
+      setUser(null);
+    } finally {
       setLoading(false);
-    });
-
-    return () => unsubscribe();
+    }
   }, []);
+
+  // Update localStorage when user changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("user");
+    }
+  }, [user]);
 
   return (
     <AuthContext.Provider value={{ user, setUser, loading, loginOpen, setLoginOpen }}>
