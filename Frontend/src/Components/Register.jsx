@@ -100,9 +100,13 @@ const Register = ({ onClose, setUser }) => {
       // Store token and user data
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
-        setUser(response.data.user);
+        if (typeof setUser === 'function') {
+          setUser(response.data.user);
+        }
         toast.success("Registration successful!");
-        onClose();
+        if (typeof onClose === 'function') {
+          onClose();
+        }
         navigate("/");
       }
     } catch (error) {
@@ -183,12 +187,13 @@ const Register = ({ onClose, setUser }) => {
               disabled={loading}
               className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
             />
-            <span
+            <button
+              type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2 top-2 text-gray-500 cursor-pointer"
+              className="absolute right-2 top-2 text-gray-500 cursor-pointer hover:text-gray-700 bg-none border-none p-0"
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
+            </button>
           </div>
 
           {/* Confirm Password */}
@@ -202,14 +207,13 @@ const Register = ({ onClose, setUser }) => {
               disabled={loading}
               className="w-full border-b-2 border-purple-200 focus:border-purple-400 shadow-sm p-2 outline-none rounded-sm disabled:opacity-50"
             />
-            <span
-              onClick={() =>
-                setShowConfirmPassword(!showConfirmPassword)
-              }
-              className="absolute right-2 top-2 text-gray-500 cursor-pointer"
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-2 top-2 text-gray-500 cursor-pointer hover:text-gray-700 bg-none border-none p-0"
             >
               {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
+            </button>
           </div>
 
           <button
@@ -224,12 +228,18 @@ const Register = ({ onClose, setUser }) => {
         {/* Login Link */}
         <p className="text-center text-sm text-gray-600 mt-4">
           Already have an account?{" "}
-          <span
-            onClick={() => navigate("/login")}
-            className="text-purple-600 font-semibold cursor-pointer hover:underline"
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof onClose === 'function') {
+                onClose();
+              }
+              navigate("/login");
+            }}
+            className="text-purple-600 font-semibold cursor-pointer hover:underline bg-none border-none p-0"
           >
             Sign In
-          </span>
+          </button>
         </p>
       </div>
     </div>
