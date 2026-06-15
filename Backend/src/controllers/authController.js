@@ -60,7 +60,7 @@ const register = async (req, res) => {
 
     res.status(201).json({
       message: 'User registered successfully',
-      user: { user_id, username, email, phone },
+      user: { user_id, username, email, phone, role: 'user' },
       token
     });
   } catch (error) {
@@ -122,7 +122,8 @@ const login = async (req, res) => {
         user_id: user.user_id,
         username: user.username,
         email: user.email,
-        phone: user.phone
+        phone: user.phone,
+        role: user.role || 'user'
       },
       token
     });
@@ -139,7 +140,7 @@ const getProfile = async (req, res) => {
 
     const connection = await pool.getConnection();
     const [users] = await connection.query(
-      'SELECT user_id, username, email, phone, status, created_at FROM users WHERE user_id = ?',
+      'SELECT user_id, username, email, phone, status, role, created_at FROM users WHERE user_id = ?',
       [user_id]
     );
 
@@ -194,7 +195,7 @@ const googleLogin = async (req, res) => {
         [user_id, name, email, 'Not provided', hashedPassword, 'active']
       );
 
-      user = { user_id, username: name, email, phone: 'Not provided' };
+      user = { user_id, username: name, email, phone: 'Not provided', role: 'user' };
     } else {
       user = users[0];
       if (user.status !== 'active') {
@@ -218,7 +219,8 @@ const googleLogin = async (req, res) => {
         user_id: user.user_id,
         username: user.username || user.name,
         email: user.email,
-        phone: user.phone
+        phone: user.phone,
+        role: user.role || 'user'
       },
       token
     });
