@@ -1,18 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { TiTickOutline, TiTick } from "react-icons/ti";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-} from "firebase/firestore";
-import { db } from "../../firebase";
 import { HiPencil, HiTrash } from "react-icons/hi";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 const AddReviews = () => {
   const [reviews, setReviews] = useState([]);
@@ -34,21 +25,21 @@ const AddReviews = () => {
   });
 
   useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, "reviews"));
-        const fetched = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setReviews(fetched);
-      } catch (err) {
-        console.error("Error fetching reviews:", err);
-      }
-    };
-
     fetchReviews();
   }, []);
+
+  const fetchReviews = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:5000/api/reviews"
+      );
+
+      setReviews(res.data);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch reviews");
+    }
+  };
 
   const resetForm = () => {
     setNewReview({
@@ -68,66 +59,38 @@ const AddReviews = () => {
   };
 
   const handleAddReview = async () => {
-    const currentDate = new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-
-    if (!newReview.title || !newReview.user || !newReview.category || !newReview.rating) {
-      toast.error("Please fill in all required fields.");
+    if (
+      !newReview.title ||
+      !newReview.user ||
+      !newReview.category ||
+      !newReview.rating
+    ) {
+      toast.error("Please fill all required fields");
       return;
     }
 
     try {
       if (editMode) {
-        await updateDoc(doc(db, "reviews", editingId), {
-          ...newReview,
-          date: currentDate,
-          rating: parseFloat(newReview.rating),
-          rate: parseFloat(newReview.rating),
-        });
-
-        setReviews((prev) =>
-          prev.map((rev) =>
-            rev.id === editingId
-              ? { ...newReview, id: editingId, date: currentDate }
-              : rev
-          )
+        await axios.put(
+          `http://localhost:5000/api/reviews/${editingId}`,
+          newReview
         );
 
-        toast.success("Review updated successfully!");
+        toast.success("Review updated successfully");
       } else {
-        const docRef = await addDoc(collection(db, "reviews"), {
-          ...newReview,
-          rating: parseFloat(newReview.rating),
-          rate: parseFloat(newReview.rating),
-          reviews: 1,
-          tick: newReview.tick,
-          date: currentDate,
-          createdAt: serverTimestamp(),
-        });
+        await axios.post(
+          "http://localhost:5000/api/reviews",
+          newReview
+        );
 
-        setReviews([
-          {
-            ...newReview,
-            id: docRef.id,
-            rating: parseFloat(newReview.rating),
-            rate: parseFloat(newReview.rating),
-            reviews: 1,
-            tick: newReview.tick,
-            date: currentDate,
-          },
-          ...reviews,
-        ]);
-
-        toast.success("Review added successfully!");
+        toast.success("Review added successfully");
       }
 
+      fetchReviews();
       resetForm();
     } catch (err) {
-      console.error("Error adding/updating review:", err);
-      toast.error("Failed to submit review.");
+      console.error(err);
+      toast.error("Failed to save review");
     }
   };
 
@@ -146,7 +109,9 @@ const AddReviews = () => {
     if (!confirm) return;
 
     try {
-      await deleteDoc(doc(db, "reviews", id));
+      await axios.delete(
+        `http://localhost:5000/api/reviews/${id}`
+      );
       setReviews((prev) => prev.filter((r) => r.id !== id));
       setCheckedIds((prev) => prev.filter((cid) => cid !== id));
       toast.success("Review deleted.");
@@ -157,17 +122,16 @@ const AddReviews = () => {
   };
 
   const toggleTick = async (review) => {
-     const action = review.tick ? "disable" : "enable"; // determine action
-  const confirmAction = window.confirm(`Are you sure you want to ${action} the tick?`);
-  if (!confirmAction) return;
-  const updatedTick = !review.tick;
+    const action = review.tick ? "disable" : "enable"; // determine action
+    const confirmAction = window.confirm(`Are you sure you want to ${action} the tick?`);
+    if (!confirmAction) return;
+    const updatedTick = !review.tick;
 
 
     try {
-      await updateDoc(doc(db, "reviews", review.id), {
-        tick: updatedTick,
-      });
-
+      await axios.patch(
+        `http://localhost:5000/api/reviews/toggle/${review.id}`
+      );
       setReviews((prev) =>
         prev.map((r) =>
           r.id === review.id ? { ...r, tick: updatedTick } : r
@@ -183,7 +147,7 @@ const AddReviews = () => {
     <div className="min-h-screen py-10 md:p-6 lg:p-0">
       <div className="max-w-7xl mx-auto black p-5">
         <div className="flex justify-end flex-wrap items-center mb-6">
-        
+
           <button
             onClick={() => setShowModal(true)}
             className="px-4 py-2 border rounded-lg text-sm cursor-pointer bg-primary text-white font-bold"
@@ -222,7 +186,7 @@ const AddReviews = () => {
                       />
                     ))}
                     <span className="text-black ml-1">{item.rating}/5</span>
-                   
+
                   </div>
                 </div>
                 <p className="mt-2 text-gray-600 text-sm">{item.desc}</p>
