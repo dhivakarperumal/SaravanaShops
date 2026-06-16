@@ -32,6 +32,68 @@ const AddReviews = () => {
     tick: false,
   });
 
+  const [filters, setFilters] = useState({
+    category: "",
+    product: "",
+    rating: "",
+  });
+
+  const categoryOptions = [
+    ...new Set(reviews.map((r) => r.category))
+  ].filter(Boolean);
+
+  const productOptions = filters.category
+    ? [
+      ...new Set(
+        reviews
+          .filter((r) => r.category === filters.category)
+          .map((r) => r.title)
+      ),
+    ]
+    : [...new Set(reviews.map((r) => r.title))];
+
+  const activeFilterCount = [
+    filters.category,
+    filters.product,
+    filters.rating,
+  ].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setFilters({
+      category: "",
+      product: "",
+      rating: "",
+    });
+  };
+
+  const displayedReviews = reviews.filter((item) => {
+    const searchMatch =
+      item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.user?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!searchMatch) return false;
+
+    if (
+      filters.category &&
+      item.category !== filters.category
+    )
+      return false;
+
+    if (
+      filters.product &&
+      item.title !== filters.product
+    )
+      return false;
+
+    if (
+      filters.rating &&
+      Number(item.rating) < Number(filters.rating)
+    )
+      return false;
+
+    return true;
+  });
+
   useEffect(() => {
     fetchReviews();
     fetchProducts();
@@ -192,6 +254,24 @@ const AddReviews = () => {
 
           <div className="flex items-center gap-2 ml-auto">
 
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${showFilters
+                ? "bg-primary text-white border-primary"
+                : "bg-gray-50 border-gray-200"
+                }`}
+            >
+              <FaFilter />
+
+              Filters
+
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
             {/* View Toggle */}
             <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
               <button
@@ -227,80 +307,167 @@ const AddReviews = () => {
           </div>
         </div>
 
+        {showFilters && (
+          <aside className="w-64">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+
+              <div className="flex justify-between mb-5">
+                <h3 className="font-bold">Filters</h3>
+
+                <button
+                  onClick={clearFilters}
+                  className="text-red-500 text-xs font-semibold"
+                >
+                  Clear
+                </button>
+              </div>
+
+              {/* Category */}
+              <div className="mb-5">
+                <h4 className="font-semibold mb-2">
+                  Category
+                </h4>
+
+                {categoryOptions.map((cat) => (
+                  <label
+                    key={cat}
+                    className="flex items-center gap-2 py-1"
+                  >
+                    <input
+                      type="radio"
+                      checked={filters.category === cat}
+                      onChange={() =>
+                        setFilters({
+                          ...filters,
+                          category: cat,
+                          product: "",
+                        })
+                      }
+                    />
+                    {cat}
+                  </label>
+                ))}
+              </div>
+
+              {/* Product */}
+              <div className="mb-5">
+                <h4 className="font-semibold mb-2">
+                  Product
+                </h4>
+
+                {productOptions.map((product) => (
+                  <label
+                    key={product}
+                    className="flex items-center gap-2 py-1"
+                  >
+                    <input
+                      type="radio"
+                      checked={filters.product === product}
+                      onChange={() =>
+                        setFilters({
+                          ...filters,
+                          product,
+                        })
+                      }
+                    />
+                    {product}
+                  </label>
+                ))}
+              </div>
+
+              {/* Rating */}
+              <div>
+                <h4 className="font-semibold mb-2">
+                  Minimum Rating
+                </h4>
+
+                {["3", "4", "5"].map((rating) => (
+                  <button
+                    key={rating}
+                    onClick={() =>
+                      setFilters({
+                        ...filters,
+                        rating,
+                      })
+                    }
+                    className="mr-2 mb-2 px-3 py-1 border rounded-lg"
+                  >
+                    ⭐ {rating}+
+                  </button>
+                ))}
+              </div>
+            </div>
+          </aside>
+        )}
+
         {viewMode === "card" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {reviews
-              .filter(
-                (item) =>
-                  item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  item.user?.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              .map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col md:flex-row gap-4 shadow p-4 rounded-lg bg-white"
-                >
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-24 h-24 object-cover rounded-md"
-                  />
-                  <div className="flex-1">
-                    <div className="flex justify-between flex-wrap">
-                      <div>
-                        <span className="font-semibold">{item.user}</span>
-                        <h3 className="text-lg font-semibold">{item.title}</h3>
-                        <p className="text-sm text-gray-500">{item.category}</p>
-                      </div>
-                      <div className="flex items-center gap-1 text-yellow-500 text-sm">
-                        {[...Array(5)].map((_, i) => (
-                          <FaStar
-                            key={i}
-                            className={
-                              i < Math.round(item.rating)
-                                ? "text-yellow-500"
-                                : "text-gray-300"
-                            }
-                          />
-                        ))}
-                        <span className="text-black ml-1">{item.rating}/5</span>
-
-                      </div>
+            {displayedReviews.map((item) => (
+              <div
+                key={item.id}
+                className="flex flex-col md:flex-row gap-4 shadow p-4 rounded-lg bg-white"
+              >
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-24 h-24 object-cover rounded-md"
+                />
+                <div className="flex-1">
+                  <div className="flex justify-between flex-wrap">
+                    <div>
+                      <span className="font-semibold">{item.user}</span>
+                      <h3 className="text-lg font-semibold">{item.title}</h3>
+                      <p className="text-sm text-gray-500">{item.category}</p>
                     </div>
-                    <p className="mt-2 text-gray-600 text-sm">{item.desc}</p>
-                    <div className="flex justify-between text-sm mt-2">
-                      <div className="text-gray-500">
-                        <span className="font-medium">{item.reviews}</span> Reviews ·{" "}
-                        <span>{item.rate}</span> Avg. Rating
-                      </div>
-                      <div className="flex gap-2 items-center">
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-gray text-xs font-semibold"
-                        >
-                          <HiPencil className="text-2xl" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-gray text-xs font-semibold"
-                        >
-                          <HiTrash className="text-2xl" />
-                        </button>
-                        <span
-                          onClick={() => toggleTick(item)}
-                          className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-xs font-semibold"
-                        >
-                          {item.tick ? (
-                            <TiTick size={25} className="text-green-600" />
-                          ) : (
-                            <TiTickOutline size={25} className="text-red-500" />
-                          )}
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-1 text-yellow-500 text-sm">
+                      {[...Array(5)].map((_, i) => (
+                        <FaStar
+                          key={i}
+                          className={
+                            i < Math.round(item.rating)
+                              ? "text-yellow-500"
+                              : "text-gray-300"
+                          }
+                        />
+                      ))}
+                      <span className="text-black ml-1">{item.rating}/5</span>
+
+                    </div>
+                  </div>
+                  <p className="mt-2 text-gray-600 text-sm">{item.desc}</p>
+                  <div className="flex justify-between text-sm mt-2">
+                    <div className="text-gray-500">
+                      <span className="font-medium">{item.reviews}</span> Reviews ·{" "}
+                      <span>{item.rate}</span> Avg. Rating
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-gray text-xs font-semibold"
+                      >
+                        <HiPencil className="text-2xl" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-gray text-xs font-semibold"
+                      >
+                        <HiTrash className="text-2xl" />
+                      </button>
+                      <span
+                        onClick={() => toggleTick(item)}
+                        className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-xs font-semibold"
+                      >
+                        {item.tick ? (
+                          <TiTick size={25} className="text-green-600" />
+                        ) : (
+                          <TiTickOutline size={25} className="text-red-500" />
+                        )}
+                      </span>
                     </div>
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -318,71 +485,65 @@ const AddReviews = () => {
                 </thead>
 
                 <tbody>
-                  {reviews
-                    .filter(
-                      (item) =>
-                        item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        item.user?.toLowerCase().includes(searchQuery.toLowerCase())
-                    )
-                    .map((item) => (
-                      <tr
-                        key={item.id}
-                        className=" hover:bg-gray-50"
-                      >
-                        <td className="px-4 py-3">
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="w-12 h-12 object-cover rounded-lg"
-                          />
-                        </td>
+                  {displayedReviews.map((item) => (
+                    <tr
+                      key={item.id}
+                      className=" hover:bg-gray-50"
+                    >
+                      <td className="px-4 py-3">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-12 h-12 object-cover rounded-lg"
+                        />
+                      </td>
 
-                        <td className="px-4 py-3 font-semibold">
-                          {item.title}
-                        </td>
+                      <td className="px-4 py-3 font-semibold">
+                        {item.title}
+                      </td>
 
-                        <td className="px-4 py-3">
-                          {item.user}
-                        </td>
+                      <td className="px-4 py-3">
+                        {item.user}
+                      </td>
 
-                        <td className="px-4 py-3">
-                          {item.category}
-                        </td>
+                      <td className="px-4 py-3">
+                        {item.category}
+                      </td>
 
-                        <td className="px-4 py-3">
-                          ⭐ {item.rating}
-                        </td>
+                      <td className="px-4 py-3">
+                        ⭐ {item.rating}
+                      </td>
 
-                        <td className="px-4 py-3">
-                          <div className="flex justify-center gap-2">
-                            <button
-                              onClick={() => handleEdit(item)}
-                              className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center"
-                            >
-                              <HiPencil />
-                            </button>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center"
+                          >
+                            <HiPencil />
+                          </button>
 
-                            <button
-                              onClick={() => handleDelete(item.id)}
-                              className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center"
-                            >
-                              <HiTrash />
-                            </button>
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center"
+                          >
+                            <HiTrash />
+                          </button>
 
-                            <button
-                              onClick={() => toggleTick(item)}
-                              className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center"
-                            >
-                              {item.tick ? (
-                                <TiTick className="text-green-600" />
-                              ) : (
-                                <TiTickOutline className="text-red-500" />
-                              )}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                          <button
+                            onClick={() => toggleTick(item)}
+                            className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center"
+                          >
+                            {item.tick ? (
+                              <TiTick className="text-green-600" />
+                            ) : (
+                              <TiTickOutline className="text-red-500" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
