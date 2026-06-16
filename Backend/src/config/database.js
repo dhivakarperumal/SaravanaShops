@@ -61,7 +61,18 @@ async function initializeDatabase() {
       )
     `);
 
-    console.log('✅ Database initialized: users, categories & products tables created/verified');
+    // ── Razorpay Keys table ──────────────────────────────
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS razorpay_keys (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        key_id VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    console.log('✅ Database initialized: users, categories, products & razorpay_keys tables created/verified');
   } catch (error) {
     console.error('Database initialization error:', error.message);
   } finally {

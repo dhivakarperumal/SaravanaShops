@@ -25,6 +25,7 @@ const { initializeDatabase } = require('./src/config/database');
 const authRouter = require('./src/routers/authRouter');
 const categoryRouter = require('./src/routers/categoryRouter');
 const productRouter = require('./src/routers/productRouter');
+const razorpayRouter = require('./src/routers/razorpayRouter');
 
 // Initialize database
 initializeDatabase();
@@ -42,6 +43,9 @@ app.use('/api/categories', categoryRouter);
 
 // Product routes
 app.use('/api/products', productRouter);
+
+// Razorpay routes
+app.use('/api/razorpay', razorpayRouter);
 
 // Other routes (to be added)
 // const productsRouter = require('./src/routers/products');
