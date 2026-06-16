@@ -260,23 +260,37 @@ const AdminPanel = () => {
       {/* Sidebar container (fixed so it slides in/out) */}
       <aside
         ref={sidebarRef}
-        className={`fixed top-0 left-0 z-50 h-screen shadow bg-white text-black transition-transform duration-300 ease-in-out ${sidebarWidth} ${mobileMenu ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        className={`fixed top-0 left-0 z-50 h-screen shadow bg-gray-900 text-gray-300 transition-transform duration-300 ease-in-out ${sidebarWidth} ${mobileMenu ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           }`}
         onMouseEnter={() => setIsSidebarHovered(true)}
         onMouseLeave={() => setIsSidebarHovered(false)}
       >
-        <div className="flex items-center bg-white justify-between px-4">
-          <div className="flex flex-col justify-center items-center">
-            {/* Normal logo always visible */}
-            <img
-              src={logo}
-              alt="Admin Logo"
-              className="w-45 h-20 object-contain mb-2"
-            />
+        <div className="flex items-center bg-gray-900 justify-between px-4 py-4 border-b border-gray-800 relative">
+          <div className="flex items-center w-full gap-3 overflow-hidden">
+            {/* Logo Image with a crisp background plate */}
+            <div className="bg-white p-1.5 rounded-xl shadow-md flex-shrink-0 flex items-center justify-center">
+              <img
+                src={logo}
+                alt="Admin Logo"
+                className="w-10 h-10 object-contain"
+              />
+            </div>
+            
+            {/* Stacked Shop Name */}
+            {isExpanded && (
+              <div className="flex flex-col flex-1 overflow-hidden transition-all duration-300">
+                <span className="text-white font-extrabold text-[15px] leading-tight tracking-wide truncate">
+                  Sri Saravana
+                </span>
+                <span className="text-primary/80 text-[11px] font-bold tracking-[0.15em] uppercase mt-0.5 truncate">
+                  Shoppings
+                </span>
+              </div>
+            )}
           </div>
 
           <button
-            className="md:hidden cursor-pointer text-textcolor text-xl"
+            className="md:hidden absolute right-4 top-4 cursor-pointer text-gray-400 hover:text-white text-xl bg-gray-800 rounded-full w-8 h-8 flex items-center justify-center"
             onClick={() => setMobileMenu(false)}
           >
             ✕
