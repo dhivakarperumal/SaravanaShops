@@ -6,18 +6,17 @@ import {
   FaSearch,
   FaSortAlphaDown,
   FaSortAlphaUp,
+  FaFilter,
+  FaThLarge,
+  FaList,
+  FaPlus,
 } from "react-icons/fa";
-import { AnimatePresence, motion } from "framer-motion";
-import { db } from "../../firebase";
 import {
-  collection,
-  getDocs,
-  deleteDoc,
-  doc,
-  updateDoc,
-  query,
-  where,
-} from "firebase/firestore";
+  MdOutlineArrowBackIosNew,
+  MdOutlineArrowForwardIos,
+} from "react-icons/md";
+import { AnimatePresence, motion } from "framer-motion";
+import api from "../../api";
 
 const NewUsers = () => {
   const [users, setUsers] = useState([]);
@@ -25,10 +24,15 @@ const NewUsers = () => {
   const [sortAsc, setSortAsc] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isEdit, setIsEdit] = useState(false);
+  const [viewMode, setViewMode] = useState("table");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
-  // 🔽 Fetch users from Firestore
+  // 🔽 Fetch users from API
   const fetchUsers = async () => {
     try {
+      const response = await api.get("/users");
+
       const now = new Date();
       const startOfToday = new Date(
         now.getFullYear(),
@@ -41,17 +45,12 @@ const NewUsers = () => {
         now.getDate() + 1
       );
 
-      const usersQuery = query(
-        collection(db, "users"),
-        where("createdAt", ">=", startOfToday),
-        where("createdAt", "<", startOfTomorrow)
-      );
+      const usersList = response.data.filter((user) => {
+        const createdAt = new Date(user.created_at || user.createdAt);
+        if (isNaN(createdAt.getTime())) return false;
+        return createdAt >= startOfToday && createdAt < startOfTomorrow;
+      });
 
-      const snapshot = await getDocs(usersQuery);
-      const usersList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
       setUsers(usersList);
     } catch (err) {
       console.error("Error fetching users:", err);
@@ -66,7 +65,7 @@ const NewUsers = () => {
 
   const filteredUsers = users
     .filter((user) => {
-      const name = user.name?.toLowerCase() || "";
+      const name = (user.username || user.name || "").toLowerCase();
       const email = user.email?.toLowerCase() || "";
       const phone = user.phone?.toString() || "";
 
@@ -78,14 +77,24 @@ const NewUsers = () => {
     })
     .sort((a, b) =>
       sortAsc
-        ? (a.name || "").toLowerCase().localeCompare((b.name || "").toLowerCase())
-        : (b.name || "").toLowerCase().localeCompare((a.name || "").toLowerCase())
+        ? (a.username || a.name || "").toLowerCase().localeCompare((b.username || b.name || "").toLowerCase())
+        : (b.username || b.name || "").toLowerCase().localeCompare((a.username || a.name || "").toLowerCase())
     );
+
+  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
 
   const handleDelete = async (id) => {
     if (confirm("Are you sure you want to delete this user?")) {
       try {
-        await deleteDoc(doc(db, "users", id));
+        await api.delete(`/users/${id}`);
         fetchUsers();
       } catch (err) {
         console.error("Delete error:", err);
@@ -105,13 +114,8 @@ const NewUsers = () => {
 
   const handleUpdateUser = async (updatedUser) => {
     try {
-      const userRef = doc(db, "users", updatedUser.id);
-      await updateDoc(userRef, {
-        name: updatedUser.username,
-        email: updatedUser.email,
-        phone: updatedUser.phone,
-        role: updatedUser.role,
-      });
+      const userId = updatedUser.user_id || updatedUser.id;
+      await api.put(`/users/${userId}`, updatedUser);
       fetchUsers();
       setSelectedUser(null);
     } catch (err) {
@@ -121,8 +125,7 @@ const NewUsers = () => {
 
   const handleRoleChange = async (id, newRole) => {
     try {
-      const userRef = doc(db, "users", id);
-      await updateDoc(userRef, { role: newRole });
+      await api.put(`/users/${id}`, { role: newRole });
       fetchUsers();
     } catch (err) {
       console.error("Role update error:", err);
@@ -131,142 +134,228 @@ const NewUsers = () => {
 
   return (
     <div className="p-4">
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
-        <div className="relative w-full md:max-w-xs">
-          <input
-            type="text"
-            placeholder="Search by name, email, or phone"
-            className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <FaSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-500" />
+      {/* Toolbar Section */}
+      <div className="flex flex-col md:flex-row items-center justify-between p-3 bg-white border border-gray-100 rounded-2xl shadow-sm mb-6 gap-4">
+        {/* Left Section */}
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="relative w-full md:w-72">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-[#F8F9FA] border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all text-sm"
+            />
+          </div>
+          <span className="text-sm text-gray-500 whitespace-nowrap hidden sm:block">
+            {filteredUsers.length} users
+          </span>
         </div>
-        <button
-          className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600"
-          onClick={() => setSortAsc(!sortAsc)}
-        >
-          {sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />}
-          {sortAsc ? "Sort A-Z" : "Sort Z-A"}
-        </button>
+
+        {/* Right Section */}
+        <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+          {/* Sort Button */}
+          <button
+            className="hidden sm:flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-gray-600 bg-white hover:bg-gray-50 transition-colors text-sm font-medium cursor-pointer"
+            onClick={() => setSortAsc(!sortAsc)}
+          >
+            {sortAsc ? <FaSortAlphaDown /> : <FaSortAlphaUp />}
+            {sortAsc ? "A-Z" : "Z-A"}
+          </button>
+
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-[#F8F9FA] p-1 rounded-xl border border-gray-200">
+            <button
+              onClick={() => setViewMode("card")}
+              className={`p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center ${
+                viewMode === "card"
+                  ? "bg-white shadow-sm text-[#9B66FF]"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
+              title="Grid View"
+            >
+              <FaThLarge size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center ${
+                viewMode === "table"
+                  ? "bg-white shadow-sm text-gray-600"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
+              title="List View"
+            >
+              <FaList size={16} />
+            </button>
+          </div>
+        </div>
       </div>
 
-   <div className="mt-6">
-  {/* Desktop Table */}
-  <div className="hidden md:block bg-white shadow rounded-lg overflow-x-auto">
-    <table className="min-w-full text-sm text-left">
-      <thead className="bg-primary text-white">
-        <tr>
-          <th className="py-3 px-4">ID</th>
-          <th className="py-3 px-4">Name</th>
-          <th className="py-3 px-4">Email</th>
-          <th className="py-3 px-4">Phone</th>
-          <th className="py-3 px-4">Role</th>
-      
-          <th className="py-3 px-4 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {filteredUsers.length > 0 ? (
-          filteredUsers.map((user, ind) => (
-            <tr key={user.id} className="hover:bg-gray-50 transition">
-              <td className="py-3 px-4">{ind + 1}</td>
-              <td className="py-3 px-4">{user.username}</td>
-              <td className="py-3 px-4">{user.email}</td>
-              <td className="py-3 px-4">{user.phone}</td>
-              <td className="py-3 px-4">{user.role}</td>
-              
-              <td className="py-3 px-4 text-center">
-                <div className="flex gap-2 justify-center">
+      {/* Table View */}
+      {viewMode === "table" && (
+        <div className="bg-white shadow rounded-lg overflow-x-auto">
+          <table className="min-w-full text-sm text-left">
+            <thead className="bg-gradient-to-r from-primary to-secondary text-white">
+              <tr>
+                <th className="py-3 px-4 font-semibold w-16 text-center">S.No</th>
+                <th className="py-3 px-4 font-semibold">Name</th>
+                <th className="py-3 px-4 font-semibold">Email</th>
+                <th className="py-3 px-4 font-semibold">Phone</th>
+                <th className="py-3 px-4 font-semibold">Role</th>
+                <th className="py-3 px-4 font-semibold text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              {paginatedUsers.length > 0 ? (
+                paginatedUsers.map((user, ind) => (
+                  <tr
+                    key={user.user_id || user.id}
+                    className="hover:bg-purple-50/30 transition-colors"
+                  >
+                    <td className="py-3 px-4 text-gray-500 font-medium text-center">
+                      {(currentPage - 1) * pageSize + ind + 1}
+                    </td>
+                    <td className="py-3 px-4 font-medium text-gray-800">{user.username}</td>
+                    <td className="py-3 px-4 text-gray-600">{user.email}</td>
+                    <td className="py-3 px-4 text-gray-600">{user.phone}</td>
+                    <td className="py-3 px-4 capitalize">{user.role}</td>
+                    <td className="py-3 px-4 text-center space-x-2">
+                      <button
+                        onClick={() => handleView(user)}
+                        className="p-2 cursor-pointer bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                        title="View"
+                      >
+                        <FaEye />
+                      </button>
+                      <button
+                        onClick={() => handleEditClick(user)}
+                        className="p-2 cursor-pointer bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors"
+                        title="Edit"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user.user_id || user.id)}
+                        className="p-2 cursor-pointer bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                        title="Delete"
+                      >
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="py-3 px-4 text-center text-gray-500">
+                    No users found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Card View */}
+      {viewMode === "card" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {paginatedUsers.length > 0 ? (
+            paginatedUsers.map((user, ind) => (
+              <div
+                key={user.user_id || user.id}
+                className="group relative bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col"
+              >
+                {/* Top color strip */}
+                <div className="h-1.5 w-full bg-gradient-to-r from-[#9B66FF] to-[#8C52FF]"></div>
+
+                <div className="p-5 flex flex-col flex-grow gap-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex flex-col pr-2">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                        Username
+                      </span>
+                      <span className="font-semibold text-gray-800 text-lg truncate">
+                        {user.username}
+                      </span>
+                    </div>
+                    <div className="bg-purple-50 text-purple-600 font-bold text-xs px-2.5 py-1 rounded-md shrink-0">
+                      #{(currentPage - 1) * pageSize + ind + 1}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 text-sm text-gray-600">
+                    <p><span className="font-medium text-gray-500">Email:</span> {user.email}</p>
+                    <p><span className="font-medium text-gray-500">Phone:</span> {user.phone}</p>
+                    <p><span className="font-medium text-gray-500">Role:</span> <span className="capitalize">{user.role}</span></p>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex mt-auto border-t border-gray-100 bg-gray-50/30">
                   <button
                     onClick={() => handleView(user)}
-                    className="text-gray-500 cursor-pointer border p-1 rounded-full hover:text-blue-800"
+                    className="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors flex justify-center items-center gap-2 border-r border-gray-100 cursor-pointer"
                   >
-                    <FaEye />
+                    <FaEye size={14} /> View
                   </button>
                   <button
                     onClick={() => handleEditClick(user)}
-                    className="text-gray-500 border p-1 cursor-pointer rounded-full hover:text-yellow-800"
+                    className="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-amber-600 hover:bg-amber-50 transition-colors flex justify-center items-center gap-2 border-r border-gray-100 cursor-pointer"
                   >
-                    <FaEdit />
+                    <FaEdit size={14} /> Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(user.id)}
-                    className="text-gray-500 border p-1 cursor-pointer rounded-full hover:text-red-800"
+                    onClick={() => handleDelete(user.user_id || user.id)}
+                    className="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors flex justify-center items-center gap-2 cursor-pointer"
                   >
-                    <FaTrash />
+                    <FaTrash size={14} /> Delete
                   </button>
                 </div>
-              </td>
-            </tr>
-          ))
-        ) : (
-          <tr>
-            <td colSpan="7" className="py-3 px-4 text-center text-gray-500">
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-gray-500 py-4 col-span-full">
               No users found
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
-  </div>
-
-  {/* Mobile Card View */}
-  <div className="block md:hidden space-y-4">
-    {filteredUsers.length > 0 ? (
-      filteredUsers.map((user, ind) => (
-        <div
-          key={user.id}
-          className="bg-white shadow-md rounded-lg p-4 border hover:shadow-lg transition"
-        >
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-semibold text-gray-800">{user.username}</h3>
-            <span className="text-sm text-gray-500">#{ind + 1}</span>
-          </div>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Email: </span>{user.email}
-          </p>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Phone: </span>{user.phone}
-          </p>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Role: </span>{user.role}
-          </p>
-
-         
-
-          {/* Actions */}
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={() => handleView(user)}
-              className="text-gray-600 cursor-pointer border p-3 rounded-full"
-            >
-              <FaEye />
-            </button>
-            <button
-              onClick={() => handleEditClick(user)}
-              className="text-gray-600 cursor-pointer border p-3 rounded-full"
-            >
-              <FaEdit />
-            </button>
-            <button
-              onClick={() => handleDelete(user.id)}
-              className="text-gray-600 cursor-pointer border p-3 rounded-full"
-            >
-              <FaTrash />
-            </button>
-          </div>
+            </p>
+          )}
         </div>
-      ))
-    ) : (
-      <p className="text-center text-gray-500">No users found</p>
-    )}
-  </div>
-</div>
+      )}
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-4">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="w-8 h-8 flex items-center justify-center disabled:opacity-50 cursor-pointer"
+          >
+            <MdOutlineArrowBackIosNew />
+          </button>
 
-     
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => handlePageChange(i + 1)}
+              className={`w-8 h-8 flex items-center justify-center border border-primary text-primary rounded-full cursor-pointer transition-all ${
+                currentPage === i + 1
+                  ? "bg-primary text-white"
+                  : "hover:bg-primary hover:text-white"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="w-8 h-8 flex items-center justify-center disabled:opacity-50 cursor-pointer"
+          >
+            <MdOutlineArrowForwardIos />
+          </button>
+        </div>
+      )}
 
       {/* Popup Modal */}
       <AnimatePresence>
@@ -294,18 +383,10 @@ const NewUsers = () => {
                 />
               ) : (
                 <>
-                  <p>
-                    <strong>Name:</strong> {selectedUser.username}
-                  </p>
-                  <p>
-                    <strong>Email:</strong> {selectedUser.email}
-                  </p>
-                  <p>
-                    <strong>Phone:</strong> {selectedUser.phone}
-                  </p>
-                  <p>
-                    <strong>Role:</strong> {selectedUser.role}
-                  </p>
+                  <p><strong>Name:</strong> {selectedUser.username}</p>
+                  <p><strong>Email:</strong> {selectedUser.email}</p>
+                  <p><strong>Phone:</strong> {selectedUser.phone}</p>
+                  <p><strong>Role:</strong> {selectedUser.role}</p>
                   <button
                     onClick={() => setSelectedUser(null)}
                     className="mt-4 bg-blue-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -357,7 +438,7 @@ const EditForm = ({ user, onClose, onSave }) => {
           value={editedUser.email}
           onChange={handleChange}
           disabled
-          className="w-full border px-3 cursor-not-allowed bg-gray-200  py-2 rounded focus:outline-none focus:ring focus:ring-blue-500"
+          className="w-full border px-3 cursor-not-allowed bg-gray-200 py-2 rounded focus:outline-none focus:ring focus:ring-blue-500"
         />
       </div>
       <div>
@@ -368,7 +449,7 @@ const EditForm = ({ user, onClose, onSave }) => {
           value={editedUser.phone}
           onChange={handleChange}
           disabled
-          className="w-full cursor-not-allowed bg-gray-200  border px-3 py-2 rounded focus:outline-none focus:ring focus:ring-blue-500"
+          className="w-full cursor-not-allowed bg-gray-200 border px-3 py-2 rounded focus:outline-none focus:ring focus:ring-blue-500"
         />
       </div>
       <div>

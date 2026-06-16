@@ -28,6 +28,7 @@ import {
 } from "react-icons/fa";
 import { AiFillDashboard, AiOutlineVideoCamera } from "react-icons/ai";
 import { NavLink } from "react-router-dom";
+import api from "../../api";
 import dayjs from "dayjs";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -145,12 +146,21 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
 
   // New users today
   useEffect(() => {
-    const todayStart = dayjs().startOf("day").toDate();
-    const todayEnd = dayjs().endOf("day").toDate();
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("createdAt", ">=", todayStart), where("createdAt", "<=", todayEnd));
-    const unsubscribe = onSnapshot(q, (snapshot) => setNewUsersCount(snapshot.size));
-    return () => unsubscribe();
+    const fetchNewUsersCount = async () => {
+      try {
+        const res = await api.get("/users");
+        const todayStart = dayjs().startOf("day").toDate();
+        const count = res.data.filter(u => {
+          const createdAt = new Date(u.created_at || u.createdAt);
+          if (isNaN(createdAt.getTime())) return false;
+          return createdAt >= todayStart;
+        }).length;
+        setNewUsersCount(count);
+      } catch (err) {
+        console.error("Error fetching new users:", err);
+      }
+    };
+    fetchNewUsersCount();
   }, []);
 
   const handleLinkClick = () => {

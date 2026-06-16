@@ -47,6 +47,10 @@ app.use('/api/products', productRouter);
 // Razorpay routes
 app.use('/api/razorpay', razorpayRouter);
 
+// User routes
+const userRouter = require('./src/routers/userRouter');
+app.use('/api/users', userRouter);
+
 // Other routes (to be added)
 // const productsRouter = require('./src/routers/products');
 // const ordersRouter = require('./src/routers/orders');
