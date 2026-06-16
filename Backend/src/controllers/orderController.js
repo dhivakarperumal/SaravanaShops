@@ -110,3 +110,99 @@ exports.createOrder = async (req, res) => {
     if (connection) connection.release();
   }
 };
+
+exports.getOrders = async (req, res) => {
+  try {
+    const [orders] = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+    
+    // Fetch items for each order
+    const orderIds = orders.map(o => o.id);
+    let itemsMap = {};
+    if (orderIds.length > 0) {
+      const [items] = await pool.query('SELECT * FROM order_items WHERE order_id IN (?)', [orderIds]);
+      items.forEach(item => {
+        if (!itemsMap[item.order_id]) {
+          itemsMap[item.order_id] = [];
+        }
+        itemsMap[item.order_id].push(item);
+      });
+    }
+
+    const mappedOrders = orders.map(o => {
+      // Structure the shipping object
+      const shipping = {
+        name: o.shipping_name,
+        email: o.shipping_email,
+        phone: o.shipping_phone,
+        address: o.shipping_address,
+        city: o.shipping_city,
+        state: o.shipping_state,
+        zip: o.shipping_zip,
+        country: o.shipping_country
+      };
+
+      return {
+        ...o,
+        docId: o.id.toString(), // For backward compatibility with frontend
+        items: itemsMap[o.id] || [],
+        shipping: shipping,
+        createdAt: o.created_at,
+        date: o.created_at
+      };
+    });
+
+    res.status(200).json({ success: true, data: mappedOrders });
+  } catch (error) {
+    console.error('getOrders error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch orders' });
+  }
+};
+
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, docketNumber, qname, cancelReasons, cancelledAt, statusUpdatedAt } = req.body;
+
+    let updateFields = [];
+    let queryParams = [];
+
+    if (status) {
+      updateFields.push('status = ?');
+      queryParams.push(status);
+    }
+    if (docketNumber !== undefined) {
+      updateFields.push('docketNumber = ?');
+      queryParams.push(docketNumber);
+    }
+    if (qname !== undefined) {
+      updateFields.push('qname = ?');
+      queryParams.push(qname);
+    }
+    if (cancelReasons !== undefined) {
+      updateFields.push('cancelReasons = ?');
+      queryParams.push(cancelReasons);
+    }
+    if (cancelledAt) {
+      updateFields.push('cancelledAt = ?');
+      queryParams.push(new Date(cancelledAt));
+    }
+    if (statusUpdatedAt) {
+      updateFields.push('statusUpdatedAt = ?');
+      queryParams.push(new Date(statusUpdatedAt));
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ success: false, message: 'No fields to update' });
+    }
+
+    queryParams.push(id);
+
+    const query = `UPDATE orders SET ${updateFields.join(', ')} WHERE id = ?`;
+    await pool.query(query, queryParams);
+
+    res.status(200).json({ success: true, message: 'Order updated successfully' });
+  } catch (error) {
+    console.error('updateOrderStatus error:', error);
+    res.status(500).json({ success: false, message: 'Failed to update order status' });
+  }
+};

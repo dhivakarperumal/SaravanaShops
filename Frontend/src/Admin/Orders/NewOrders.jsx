@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  collection,
-  doc,
-  updateDoc,
-  getDocs,
-} from "firebase/firestore";
-import { db } from "../../firebase";
+import api from "../../api";
 import { FaPrint } from "react-icons/fa";
 import logo from "/Image/logo.png";
 import { toast } from "react-hot-toast";
@@ -58,9 +52,8 @@ const NewOrders = () => {
     const parseOrderDate = (o) => {
       try {
         if (!o) return null;
-        if (o.createdAt && typeof o.createdAt.toDate === "function") return o.createdAt.toDate();
-        if (o.date) return new Date(o.date);
         if (o.createdAt) return new Date(o.createdAt);
+        if (o.date) return new Date(o.date);
         return null;
       } catch (err) {
         console.error("parseOrderDate error:", err, o);
@@ -116,18 +109,16 @@ const NewOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "orders"));
-        const fetched = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          docId: doc.id,
-        }));
+        const res = await api.get("/orders");
+        if (!res.data || !res.data.success) {
+          throw new Error("Failed to load orders from API");
+        }
+        const fetched = res.data.data;
 
         // Filter only today's orders not Delivered/Cancelled
         const today = new Date().toDateString();
         const todayOrders = fetched.filter((order) => {
-          const createdAt = order.createdAt?.toDate
-            ? order.createdAt.toDate()
-            : new Date(order.date);
+          const createdAt = new Date(order.createdAt || order.date);
           return (
             createdAt &&
             createdAt.toDateString() === today &&
@@ -146,12 +137,8 @@ const NewOrders = () => {
           }
 
           // fallback: sort by createdAt (oldest first)
-          const dateA = a.createdAt?.toDate
-            ? a.createdAt.toDate()
-            : new Date(a.date);
-          const dateB = b.createdAt?.toDate
-            ? b.createdAt.toDate()
-            : new Date(b.date);
+          const dateA = new Date(a.createdAt || a.date);
+          const dateB = new Date(b.createdAt || b.date);
           return dateA - dateB;
         });
 
@@ -188,9 +175,10 @@ const NewOrders = () => {
     }
 
     try {
-      await updateDoc(doc(db, "orders", order.docId), {
+      const now = new Date().toISOString();
+      await api.put(`/orders/${order.docId}/status`, {
         status: newStatus,
-        statusUpdatedAt: new Date().toISOString(),
+        statusUpdatedAt: now,
       });
 
       setOrders((prev) =>
@@ -199,7 +187,7 @@ const NewOrders = () => {
             ? {
               ...o,
               status: newStatus,
-              statusUpdatedAt: new Date().toISOString(),
+              statusUpdatedAt: now,
             }
             : o
         )
@@ -221,11 +209,12 @@ const NewOrders = () => {
     }
 
     try {
-      await updateDoc(doc(db, "orders", order.docId), {
+      const now = new Date().toISOString();
+      await api.put(`/orders/${order.docId}/status`, {
         status: "Cancelled",
-        cancelledAt: new Date().toISOString(),
+        cancelledAt: now,
         cancelReasons: cancelReason,
-        statusUpdatedAt: new Date().toISOString(),
+        statusUpdatedAt: now,
       });
 
       setOrders((prev) =>
@@ -234,7 +223,7 @@ const NewOrders = () => {
             ? {
               ...o,
               status: "Cancelled",
-              statusUpdatedAt: new Date().toISOString(),
+              statusUpdatedAt: now,
             }
             : o
         )
@@ -260,7 +249,7 @@ const NewOrders = () => {
     try {
       const now = new Date().toISOString();
 
-      await updateDoc(doc(db, "orders", order.docId), {
+      await api.put(`/orders/${order.docId}/status`, {
         status: "Shipped",
         docketNumber: docketNumber,
         qname: qname,
@@ -345,8 +334,8 @@ const NewOrders = () => {
                     Ph: 7010575375</p>
           <p><strong>Status:</strong> ${order.status}</p>
           <p><strong>Payment:</strong> ${order.ordertype || "Online"}</p>
-          <p><strong>Date:</strong> ${order.createdAt?.toDate
-        ? order.createdAt.toDate().toLocaleString()
+          <p><strong>Date:</strong> ${order.createdAt
+        ? new Date(order.createdAt).toLocaleString()
         : "N/A"
       }</p>
         </div>
