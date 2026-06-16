@@ -14,12 +14,12 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-// Middleware
+
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Database connection
+
 const pool = require('./src/config/db');
 const { initializeDatabase } = require('./src/config/database');
 const authRouter = require('./src/routers/authRouter');
@@ -27,8 +27,10 @@ const categoryRouter = require('./src/routers/categoryRouter');
 const productRouter = require('./src/routers/productRouter');
 const razorpayRouter = require('./src/routers/razorpayRouter');
 const reviewRouter = require('./src/routers/reviewRoutes');
+const userRouter = require('./src/routers/userRouter');
+const ordersRouter = require('./src/routers/orderRouter');
 
-// Initialize database
+
 initializeDatabase();
 
 // Basic health check route
@@ -36,29 +38,13 @@ app.get('/api/health', (req, res) => {
   res.json({ message: 'Backend is running', status: 'OK' });
 });
 
-// Auth routes
+
 app.use('/api/auth', authRouter);
-
-// Category routes
 app.use('/api/categories', categoryRouter);
-
-// Product routes
 app.use('/api/products', productRouter);
-
-// Razorpay routes
 app.use('/api/razorpay', razorpayRouter);
-
-// User routes
-const userRouter = require('./src/routers/userRouter');
 app.use('/api/users', userRouter);
-
-// Review routes
 app.use('/api/reviews', reviewRouter);
-
-// Other routes (to be added)
-// const productsRouter = require('./src/routers/products');
-const ordersRouter = require('./src/routers/orderRouter');
-// app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
 
 // Error handling middleware
