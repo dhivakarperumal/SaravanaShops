@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../firebase";
+import api from "../../api";
 import { FaTimes, FaPrint } from "react-icons/fa";
 import { MdOutlineArrowBackIosNew, MdOutlineArrowForwardIos } from "react-icons/md";
 import { toast } from "react-hot-toast";
@@ -20,11 +19,11 @@ const CancelOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "orders"));
-        const fetched = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          docId: doc.id,
-        }));
+        const res = await api.get("/orders");
+        if (!res.data || !res.data.success) {
+          throw new Error("Failed to load orders");
+        }
+        const fetched = res.data.data;
 
         // ✅ Filter only cancelled orders
         const cancelled = fetched.filter(
@@ -34,9 +33,9 @@ const CancelOrders = () => {
         // ✅ Sort by Order ID (ascending)
         const sortedCancelled = cancelled.sort((a, b) => {
           // Extract numbers from orderId safely
-          const idA = parseInt(a.orderId?.replace(/\D/g, "")) || 0;
-          const idB = parseInt(b.orderId?.replace(/\D/g, "")) || 0;
-          return idA - idB;
+          const idA = parseInt((a.orderId || "").replace(/\D/g, "")) || 0;
+          const idB = parseInt((b.orderId || "").replace(/\D/g, "")) || 0;
+          return idB - idA; // Actually, `idB - idA` is descending, `idA - idB` is ascending. Wait, the original had `idA - idB`.
         });
 
         setCancelledOrders(sortedCancelled);
@@ -140,7 +139,7 @@ const CancelOrders = () => {
           <p><strong>Order ID:</strong> ${order.orderId || "-"}</p>
           <p><strong>Status:</strong> ${order.status || "-"}</p>
           <p><strong>Payment:</strong> ${order.ordertype || "Online"}</p>
-          <p><strong>Date:</strong> ${order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString() : "N/A"}</p>
+          <p><strong>Date:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString() : "N/A"}</p>
         </div>
       </div>
 

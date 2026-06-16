@@ -124,7 +124,15 @@ exports.getOrders = async (req, res) => {
         if (!itemsMap[item.order_id]) {
           itemsMap[item.order_id] = [];
         }
-        itemsMap[item.order_id].push(item);
+        itemsMap[item.order_id].push({
+          ...item,
+          name: item.product_name,
+          image: item.image,
+          size: item.size,
+          color: item.color,
+          price: parseFloat(item.price) || 0,
+          quantity: parseInt(item.quantity) || 0,
+        });
       });
     }
 
@@ -204,5 +212,54 @@ exports.updateOrderStatus = async (req, res) => {
   } catch (error) {
     console.error('updateOrderStatus error:', error);
     res.status(500).json({ success: false, message: 'Failed to update order status' });
+  }
+};
+
+exports.getOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [orders] = await pool.query('SELECT * FROM orders WHERE id = ?', [id]);
+    
+    if (orders.length === 0) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+    
+    const o = orders[0];
+    const [rawItems] = await pool.query('SELECT * FROM order_items WHERE order_id = ?', [id]);
+    const items = rawItems.map(item => ({
+      ...item,
+      name: item.product_name,
+      image: item.image,
+      size: item.size,
+      color: item.color,
+      price: parseFloat(item.price) || 0,
+      quantity: parseInt(item.quantity) || 0,
+    }));
+
+    const shipping = {
+      name: o.shipping_name,
+      email: o.shipping_email,
+      phone: o.shipping_phone,
+      address: o.shipping_address,
+      city: o.shipping_city,
+      state: o.shipping_state,
+      zip: o.shipping_zip,
+      country: o.shipping_country
+    };
+
+    res.status(200).json({ 
+      success: true, 
+      data: { 
+        ...o, 
+        docId: o.id.toString(), 
+        items, 
+        shipping, 
+        createdAt: o.created_at, 
+        date: o.created_at 
+      } 
+    });
+  } catch (error) {
+    console.error('getOrderById error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
