@@ -1,11 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import api from "../../api";
 import toast from "react-hot-toast";
+import { FaSearch, FaTimes } from "react-icons/fa";
 
 export default function AddStock() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProductId, setSelectedProductId] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const calculateColorStock = (c) => {
     if (!c.stock) return 0;
@@ -103,21 +118,81 @@ export default function AddStock() {
     <div className="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-lg border border-gray-200">
       <h2 className="text-2xl font-semibold mb-4">Add / Update Stock</h2>
 
-      {/* Product Selector */}
-      <div className="mb-6">
-        <label className="font-semibold mr-2">Select Product:</label>
-        <select
-          value={selectedProductId}
-          onChange={e => setSelectedProductId(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
-        >
-          <option value="">-- Select --</option>
-          {products.map(prod => (
-            <option key={prod.id} value={prod.id}>
-              {prod.name} ({prod.productId}) - {prod.productType}
-            </option>
-          ))}
-        </select>
+      {/* Product Selector — Searchable Dropdown */}
+      <div className="mb-6" ref={dropdownRef}>
+        <label className="font-semibold block mb-2">Select Product:</label>
+        <div className="relative">
+          <div
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 flex items-center gap-2 cursor-pointer bg-white focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all"
+            onClick={() => setShowDropdown(true)}
+          >
+            <FaSearch className="text-gray-400 text-sm flex-shrink-0" />
+            <input
+              type="text"
+              placeholder={selectedProduct ? `${selectedProduct.name} (${selectedProduct.productId})` : "Search by Name, ID, or Type…"}
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setShowDropdown(true); }}
+              onFocus={() => setShowDropdown(true)}
+              className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400"
+            />
+            {(searchTerm || selectedProductId) && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setSearchTerm(""); setSelectedProductId(""); setShowDropdown(false); }}
+                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                <FaTimes className="text-xs" />
+              </button>
+            )}
+          </div>
+
+          {showDropdown && (
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-72 overflow-y-auto">
+              {products
+                .filter(p => {
+                  if (!searchTerm) return true;
+                  const q = searchTerm.toLowerCase();
+                  return (
+                    p.name?.toLowerCase().includes(q) ||
+                    p.productId?.toLowerCase().includes(q) ||
+                    p.productType?.toLowerCase().includes(q)
+                  );
+                })
+                .map(prod => (
+                  <div
+                    key={prod.id}
+                    onClick={() => {
+                      setSelectedProductId(prod.id);
+                      setSearchTerm("");
+                      setShowDropdown(false);
+                    }}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-primary/5 transition-colors border-b border-gray-50 last:border-0 ${
+                      selectedProductId === prod.id ? "bg-primary/10" : ""
+                    }`}
+                  >
+                    {getImg(prod) ? (
+                      <img src={getImg(prod)} alt={prod.name} className="w-10 h-10 object-cover rounded-lg border border-gray-200 flex-shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs flex-shrink-0">No img</div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm text-gray-800 truncate">{prod.name}</div>
+                      <div className="text-xs text-gray-500">{prod.productId} • {prod.productType}</div>
+                    </div>
+                    {selectedProductId === prod.id && (
+                      <span className="text-primary text-xs font-bold">✓</span>
+                    )}
+                  </div>
+                ))}
+              {products.filter(p => {
+                if (!searchTerm) return true;
+                const q = searchTerm.toLowerCase();
+                return p.name?.toLowerCase().includes(q) || p.productId?.toLowerCase().includes(q) || p.productType?.toLowerCase().includes(q);
+              }).length === 0 && (
+                <div className="px-4 py-6 text-center text-gray-400 text-sm">No products found</div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Stock Form for Selected Product */}

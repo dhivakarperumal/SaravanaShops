@@ -196,9 +196,9 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         icon={<FaBoxOpen />}
         items={[
           { name: "All Products", path: "/superadmin/allproducts", icon: <FaBoxes /> },
-          { name: "Add New Products", path: "/superadmin/addproducts", icon: <FaPlus /> },
-          { name: "Add Category", path: "/superadmin/category", icon: <FaTags /> },
-          { name: "Add Product Stock", path: "/superadmin/stocks", icon: <FaLayerGroup /> },
+          // { name: "Add New Products", path: "/superadmin/addproducts", icon: <FaPlus /> },
+          { name: "Category", path: "/superadmin/category", icon: <FaTags /> },
+          // { name: "Add Product Stock", path: "/superadmin/stocks", icon: <FaLayerGroup /> },
           { name: "Stock Details", path: "/superadmin/stockDetails", icon: <FaChartBar /> },
         ]}
         isExpanded={isExpanded}
