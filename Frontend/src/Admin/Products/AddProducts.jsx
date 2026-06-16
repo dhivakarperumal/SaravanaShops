@@ -543,156 +543,240 @@ export default function AddProducts() {
   };
 
   return (
-    <div className="p-6 bg-white shadow">
-      <h1 className="text-2xl font-bold mb-4">
-        {productId ? "Edit" : "Add"} Product
-      </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Product Type */}
-        <div className="mb-4">
-          <label>Product Type:</label>
-          <select
-            value={productType}
-            onChange={(e) => setProductType(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          >
-            <option value="Bangles">Bangles</option>
-            <option value="Sarees">Sarees</option>
-            <option value="Jewels">Jewels</option>
-          </select>
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+      {/* Header */}
+      <div className="max-w-6xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">
+            {productId ? "Edit Product" : "Add New Product"}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {productId ? "Update product details and pricing" : "Fill in the details to list a new product in the catalog"}
+          </p>
         </div>
-
-        {/* Category */}
-        <div className="mb-4">
-          <label>Category:</label>
-          <select
-            name="category"
-            value={form.category}
-            onChange={handleCategoryChange}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          >
-            <option value="">Select Category</option>
-            {categories
-              .filter(c => c.productType === productType || !c.productType) // Fallback for old unassigned categories if any
-              .map((c) => (
-                <option key={c.id} value={c.cname || c.name}>
-                  {c.cname || c.name}
-                </option>
-              ))}
-          </select>
-        </div>
-
-        {/* Subcategory */}
-        <div className="mb-4">
-          <label>Subcategory:</label>
-          <select
-            value={form.subcategory}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, subcategory: e.target.value }))
-            }
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          >
-            <option value="">Select Subcategory</option>
-            {filteredSubcategories.map((s, idx) => (
-              <option key={idx} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Name, Description, Notes, Rating, Price fields */}
-        <div className="mb-4">
-          <label>Name:</label>
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label>Description:</label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label>Notes:</label>
-          <textarea
-            name="notes"
-            value={form.notes}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label>Rating:</label>
-          <input
-            type="number"
-            name="rating"
-            value={form.rating}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label>MRP:</label>
-          <input
-            type="number"
-            name="mrp"
-            value={form.mrp}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label>Offer (%):</label>
-          <input
-            type="number"
-            name="offer"
-            value={form.offer}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label>Selling Price:</label>
-          <input
-            type="number"
-            value={form.sellingprice}
-            onChange={handleSellingPriceChange}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          />
-        </div>
+        <button
+          onClick={() => navigate("/superadmin/allproducts")}
+          className="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gray-50 hover:text-gray-800 transition shadow-sm cursor-pointer w-fit"
+        >
+          Cancel
+        </button>
       </div>
+
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Basic Details Card */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-gray-50/80 border-b border-gray-100 px-6 sm:px-8 py-4">
+            <h2 className="text-base font-bold text-gray-800">1. Basic Details</h2>
+          </div>
+          
+          <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Product Type */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Product Type <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={productType}
+                onChange={(e) => setProductType(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+              >
+                <option value="Bangles">Bangles</option>
+                <option value="Sarees">Sarees</option>
+                <option value="Jewels">Jewels</option>
+              </select>
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Category <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="category"
+                value={form.category}
+                onChange={handleCategoryChange}
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+              >
+                <option value="">Select Category</option>
+                {categories
+                  .filter(c => c.productType === productType || !c.productType)
+                  .map((c) => (
+                    <option key={c.id} value={c.cname || c.name}>
+                      {c.cname || c.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            {/* Subcategory */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Subcategory
+              </label>
+              <select
+                value={form.subcategory}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, subcategory: e.target.value }))
+                }
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+              >
+                <option value="">Select Subcategory</option>
+                {filteredSubcategories.map((s, idx) => (
+                  <option key={idx} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Name */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Product Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="e.g. Red Silk Saree"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+              />
+            </div>
+
+            {/* Description */}
+            <div className="sm:col-span-1">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                rows={3}
+                placeholder="Product description..."
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none"
+              />
+            </div>
+
+            {/* Notes */}
+            <div className="sm:col-span-1">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Notes
+              </label>
+              <textarea
+                name="notes"
+                value={form.notes}
+                onChange={handleChange}
+                rows={3}
+                placeholder="Additional notes..."
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Pricing Card */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-gray-50/80 border-b border-gray-100 px-6 sm:px-8 py-4">
+            <h2 className="text-base font-bold text-gray-800">2. Pricing & Rating</h2>
+          </div>
+          
+          <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                MRP (₹) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="mrp"
+                value={form.mrp}
+                onChange={handleChange}
+                placeholder="0.00"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Offer (%)
+              </label>
+              <input
+                type="number"
+                name="offer"
+                value={form.offer}
+                onChange={handleChange}
+                placeholder="e.g. 15"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Selling Price (₹)
+              </label>
+              <input
+                type="number"
+                value={form.sellingprice}
+                onChange={handleSellingPriceChange}
+                placeholder="0.00"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all bg-green-50/50 font-bold text-green-700"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Rating
+              </label>
+              <input
+                type="number"
+                name="rating"
+                step="0.1"
+                min="0"
+                max="5"
+                value={form.rating}
+                onChange={handleChange}
+                placeholder="4.5"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+              />
+            </div>
+          </div>
+        </div>
       {/* BANGLES */}
       {productType === "Bangles" && (
-        <div className="border border-gray-300 p-4 rounded mb-4">
-          <label>Count Type:</label>
-          <select
-            value={banglesCountType}
-            onChange={(e) => setBanglesCountType(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer mb-2"
-          >
-            <option value="SingleColor">Single Color</option>
-            <option value="MultiColor">Multi Color</option>
-          </select>
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-gray-50/80 border-b border-gray-100 px-6 sm:px-8 py-4">
+            <h2 className="text-base font-bold text-gray-800">3. Bangles Specifics</h2>
+          </div>
+          
+          <div className="p-6 sm:p-8">
+            <div className="mb-6 max-w-sm">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Count Type
+              </label>
+              <select
+                value={banglesCountType}
+                onChange={(e) => setBanglesCountType(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+              >
+                <option value="SingleColor">Single Color</option>
+                <option value="MultiColor">Multi Color</option>
+              </select>
+            </div>
 
-          {/* Single Color Table */}
-          {banglesCountType === "SingleColor" && (
-            <div>
-              <h2 className="font-semibold mb-2">Colors Table</h2>
+            {/* Single Color Table */}
+            {banglesCountType === "SingleColor" && (
+              <div>
+                <h3 className="font-bold text-gray-800 mb-4 flex items-center justify-between">
+                  <span>Colors & Stock Inventory</span>
+                  <button
+                    type="button"
+                    onClick={handleAddBangleRow}
+                    className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary hover:text-white transition-all cursor-pointer"
+                  >
+                    + Add New Color
+                  </button>
+                </h3>
 
               {/* Desktop Table */}
               <div className="hidden sm:block bg-white shadow rounded-2xl overflow-x-auto">
@@ -915,8 +999,6 @@ export default function AddProducts() {
                       )}
                     </div>
 
-                    
-
                     <button
                       type="button"
                       onClick={() =>
@@ -924,7 +1006,7 @@ export default function AddProducts() {
                           prev.filter((r) => r.id !== row.id)
                         )
                       }
-                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 mt-2"
+                      className="px-3 py-2 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-600 hover:text-white transition-all mt-2"
                     >
                       Remove
                     </button>
@@ -932,177 +1014,241 @@ export default function AddProducts() {
                 ))}
               </div>
 
-
-
-              <button
-                type="button"
-                onClick={handleAddBangleRow}
-                className="px-3 py-1 bg-primary text-white cursor-pointer rounded hover:bg-primary/80 mt-2"
-              >
-                Add Row
-              </button>
+              <div className="mt-4 flex justify-end md:hidden">
+                <button
+                  type="button"
+                  onClick={handleAddBangleRow}
+                  className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary hover:text-white transition-all cursor-pointer"
+                >
+                  + Add New Color
+                </button>
+              </div>
             </div>
-          )}
+            )}
 
-          {/* Multi Color */}
-          {banglesCountType === "MultiColor" && (
+            {/* Multi Color */}
+            {banglesCountType === "MultiColor" && (
+              <div className="space-y-6">
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                    Upload Images
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    ref={fileInputRefs.Bangles}
+                    onChange={(e) => handleFiles(e, "Bangles")}
+                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                  />
+                  <div className="flex gap-3 flex-wrap mt-4">
+                    {banglesMultiImages.map((img, idx) => (
+                      <div key={idx} className="relative group rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                        <img
+                          src={img}
+                          alt="bangle"
+                          className="w-24 h-24 object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx, "Bangles")}
+                          className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xl cursor-pointer"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="max-w-sm">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                    Total Stock
+                  </label>
+                  <input
+                    type="number"
+                    value={banglesStock}
+                    onChange={(e) => setBanglesStock(Number(e.target.value))}
+                    placeholder="0"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* SAREES */}
+      {productType === "Sarees" && (
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-gray-50/80 border-b border-gray-100 px-6 sm:px-8 py-4">
+            <h2 className="text-base font-bold text-gray-800">3. Saree Specifics</h2>
+          </div>
+          <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label>Upload Images:</label>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Fabric Type</label>
+              <input
+                type="text"
+                value={sareeFabricType}
+                onChange={(e) => setSareeFabricType(e.target.value)}
+                placeholder="e.g. Silk, Cotton"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Blouse Available</label>
+              <select
+                value={sareeBlouseAvailable}
+                onChange={(e) => setSareeBlouseAvailable(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+              >
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Upload Images</label>
               <input
                 type="file"
                 multiple
-                ref={fileInputRefs.Bangles}
-                onChange={(e) => handleFiles(e, "Bangles")}
-                className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer mb-2"
+                ref={fileInputRefs.Sarees}
+                onChange={(e) => handleFiles(e, "Sarees")}
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
               />
-              <div className="flex gap-2 flex-wrap mb-2">
-                {banglesMultiImages.map((img, idx) => (
-                  <div key={idx} className="relative">
-                    <img
-                      src={img}
-                      alt="bangle"
-                      className="w-24 h-24 object-cover"
-                    />
+              <div className="flex gap-3 flex-wrap mt-4">
+                {sareeImages.map((img, idx) => (
+                  <div key={idx} className="relative group rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                    <img src={img} alt="saree" className="w-24 h-24 object-cover" />
                     <button
                       type="button"
-                      onClick={() => removeImage(idx, "Bangles")}
-                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 text-center"
+                      onClick={() => removeImage(idx, "Sarees")}
+                      className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xl cursor-pointer"
                     >
                       &times;
                     </button>
                   </div>
                 ))}
               </div>
-              <label>Stock:</label>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Total Stock</label>
               <input
                 type="number"
-                value={banglesStock}
-                onChange={(e) => setBanglesStock(Number(e.target.value))}
-                className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
+                value={sareeStock}
+                onChange={(e) => setSareeStock(Number(e.target.value))}
+                placeholder="0"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
               />
             </div>
-          )}
-        </div>
-      )}
-
-      {/* SAREES */}
-      {productType === "Sarees" && (
-        <div className="border p-4 rounded mb-4">
-          <label>Fabric Type:</label>
-          <input
-            type="text"
-            value={sareeFabricType}
-            onChange={(e) => setSareeFabricType(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer mb-2"
-          />
-          <label>Blouse Available:</label>
-          <select
-            value={sareeBlouseAvailable}
-            onChange={(e) => setSareeBlouseAvailable(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer mb-2"
-          >
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-
-          <label>Images:</label>
-          <input
-            type="file"
-            multiple
-            ref={fileInputRefs.Sarees}
-            onChange={(e) => handleFiles(e, "Sarees")}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer mb-2"
-          />
-          <div className="flex gap-2 flex-wrap mb-2">
-            {sareeImages.map((img, idx) => (
-              <div key={idx} className="relative">
-                <img src={img} alt="saree" className="w-24 h-24 object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removeImage(idx, "Sarees")}
-                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 text-center"
-                >
-                  &times;
-                </button>
-              </div>
-            ))}
           </div>
-          <label>Stock:</label>
-          <input
-            type="number"
-            value={sareeStock}
-            onChange={(e) => setSareeStock(Number(e.target.value))}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          />
         </div>
       )}
 
       {/* JEWELS */}
       {productType === "Jewels" && (
-        <div className="border p-4 rounded mb-4">
-          <label>List Items:</label>
-          {jewelListItems.map((item, idx) => (
-            <input
-              key={idx}
-              type="text"
-              value={item}
-              onChange={(e) =>
-                setJewelListItems((prev) =>
-                  prev.map((v, i) => (i === idx ? e.target.value : v))
-                )
-              }
-              className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer mb-2"
-            />
-          ))}
-          <button
-            type="button"
-            onClick={() => setJewelListItems((prev) => [...prev, ""])}
-            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 mb-2"
-          >
-            Add Item
-          </button>
-
-          <label>Images:</label>
-          <input
-            type="file"
-            multiple
-            ref={fileInputRefs.Jewels}
-            onChange={(e) => handleFiles(e, "Jewels")}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer mb-2"
-          />
-          <div className="flex gap-2 flex-wrap mb-2">
-            {jewelImages.map((img, idx) => (
-              <div key={idx} className="relative">
-                <img src={img} alt="jewel" className="w-24 h-24 object-cover" />
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-gray-50/80 border-b border-gray-100 px-6 sm:px-8 py-4">
+            <h2 className="text-base font-bold text-gray-800">3. Jewelry Specifics</h2>
+          </div>
+          <div className="p-6 sm:p-8 space-y-6">
+            
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-3 flex items-center justify-between">
+                <span>Items Included</span>
                 <button
                   type="button"
-                  onClick={() => removeImage(idx, "Jewels")}
-                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 text-center"
+                  onClick={() => setJewelListItems((prev) => [...prev, ""])}
+                  className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer"
                 >
-                  &times;
+                  + Add Item
                 </button>
+              </label>
+              <div className="space-y-3 max-w-lg">
+                {jewelListItems.map((item, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={item}
+                      onChange={(e) =>
+                        setJewelListItems((prev) =>
+                          prev.map((v, i) => (i === idx ? e.target.value : v))
+                        )
+                      }
+                      placeholder={`Item ${idx + 1} (e.g. Necklace)`}
+                      className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                    />
+                    {jewelListItems.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setJewelListItems(prev => prev.filter((_, i) => i !== idx))}
+                        className="w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all cursor-pointer shrink-0"
+                      >
+                        <FaTimes />
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
 
-          <label>Stock:</label>
-          <input
-            type="number"
-            value={jewelStock}
-            onChange={(e) => setJewelStock(Number(e.target.value))}
-            className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
-          />
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Upload Images</label>
+              <input
+                type="file"
+                multiple
+                ref={fileInputRefs.Jewels}
+                onChange={(e) => handleFiles(e, "Jewels")}
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+              />
+              <div className="flex gap-3 flex-wrap mt-4">
+                {jewelImages.map((img, idx) => (
+                  <div key={idx} className="relative group rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                    <img src={img} alt="jewel" className="w-24 h-24 object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(idx, "Jewels")}
+                      className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xl cursor-pointer"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="max-w-sm">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Total Stock</label>
+              <input
+                type="number"
+                value={jewelStock}
+                onChange={(e) => setJewelStock(Number(e.target.value))}
+                placeholder="0"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+              />
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="flex items-center justify-end">
+      {/* Submit Section */}
+      <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4">
+        <button
+          onClick={() => navigate("/superadmin/allproducts")}
+          className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all cursor-pointer"
+        >
+          Cancel
+        </button>
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="px-4 py-2 bg-primary cursor-pointer text-white rounded hover:bg-primary"
+          className="w-full sm:w-auto px-10 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-bold shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loading ? "Saving..." : "Save Product"}
         </button>
+      </div>
+      
       </div>
     </div>
   );
