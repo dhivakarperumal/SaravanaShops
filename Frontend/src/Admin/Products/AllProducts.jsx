@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
-import { db } from "../../firebase";
+import api from "../../api";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import {
@@ -29,11 +28,20 @@ export default function ProductList() {
   });
 
   // ── Fetch ──────────────────────────────────────────
+  const fetchProducts = async () => {
+    try {
+      const res = await api.get("/products");
+      if (res.data.success) {
+        setProducts(res.data.data);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error fetching products.");
+    }
+  };
+
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "products"), (snap) => {
-      setProducts(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    }, (err) => { console.error(err); toast.error("Error fetching products."); });
-    return () => unsub();
+    fetchProducts();
   }, []);
 
   // Lock body scroll when mobile filter drawer is open
@@ -45,8 +53,13 @@ export default function ProductList() {
   // ── Handlers ──────────────────────────────────────
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
-    try { await deleteDoc(doc(db, "products", id)); toast.success("Deleted!"); }
-    catch (e) { toast.error("Error deleting."); }
+    try { 
+      await api.delete(`/products/${id}`);
+      toast.success("Deleted!"); 
+      fetchProducts();
+    } catch (e) { 
+      toast.error("Error deleting."); 
+    }
   };
   const handleEdit = (p) => navigate(`/superadmin/addproducts/${p.id}`, { state: { product: p } });
 
@@ -55,8 +68,19 @@ export default function ProductList() {
   const subcategories = filters.category
     ? [...new Set(products.filter((p) => p.category === filters.category).map((p) => p.subcategory))].filter(Boolean)
     : [];
-  const allColors = [...new Set(products.flatMap((p) => p.color || []))].filter(Boolean);
-  const allSizes  = [...new Set(products.flatMap((p) => p.size  || []))].filter(Boolean);
+
+  const extractColors = (p) => {
+    if (Array.isArray(p.colors)) return p.colors.map(c => c.color).filter(Boolean);
+    return Array.isArray(p.color) ? p.color : [];
+  };
+
+  const extractSizes = (p) => {
+    if (Array.isArray(p.colors)) return p.colors.flatMap(c => c.size || []).filter(Boolean);
+    return Array.isArray(p.size) ? p.size : [];
+  };
+
+  const allColors = [...new Set(products.flatMap(extractColors))].filter(Boolean);
+  const allSizes  = [...new Set(products.flatMap(extractSizes))].filter(Boolean);
 
   const setFilter    = (key, val) => { setFilters((prev) => ({ ...prev, [key]: val })); setCurrentPage(1); };
   const toggleMulti  = (key, val) => {
@@ -84,8 +108,8 @@ export default function ProductList() {
     if (searchQuery && !p.name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (filters.category   && p.category    !== filters.category)   return false;
     if (filters.subcategory && p.subcategory !== filters.subcategory) return false;
-    if (filters.color.length && !filters.color.some((c) => (p.color || []).includes(c))) return false;
-    if (filters.size.length  && !filters.size.some((s)  => (p.size  || []).includes(s))) return false;
+    if (filters.color.length && !filters.color.some((c) => extractColors(p).includes(c))) return false;
+    if (filters.size.length  && !filters.size.some((s)  => extractSizes(p).includes(s))) return false;
     if (filters.rating && (p.rating || 0) < Number(filters.rating)) return false;
     const price = p.sellingprice || p.price || 0;
     if (price < filters.price[0] || price > filters.price[1]) return false;
