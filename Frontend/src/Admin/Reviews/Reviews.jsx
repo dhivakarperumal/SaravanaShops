@@ -393,9 +393,18 @@ const AddReviews = () => {
         {showModal && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center px-4">
             <div className="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 space-y-6">
-              <h2 className="text-2xl font-bold text-gray-800  pb-2">
-                {editMode ? "Edit Review" : "Add New Clothing Review"}
-              </h2>
+              <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {editMode ? "Edit Review" : "Add New Review"}
+                </h2>
+
+                <button
+                  onClick={resetForm}
+                  className="w-9 h-9 flex items-center cursor-pointer justify-center rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-500 transition"
+                >
+                  ✕
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Inputs */}
@@ -426,7 +435,7 @@ const AddReviews = () => {
                   </select>
                 </div>
 
-                 <div>
+                <div>
                   <label className="block font-semibold text-gray-700 mb-1">
                     Product
                   </label>
@@ -452,8 +461,8 @@ const AddReviews = () => {
                       ))}
                   </select>
                 </div>
-                
-                <InputField label="Reviewer Name" value={newReview.user} onChange={(e) => setNewReview({ ...newReview, user: e.target.value })} />
+
+                <InputField placeholder="Enter Your Name" label="Reviewer Name" value={newReview.user} onChange={(e) => setNewReview({ ...newReview, user: e.target.value })} />
                 <InputField label="Rating (1 to 5)" type="number" min="1" max="5" value={newReview.rating} onChange={(e) => setNewReview({ ...newReview, rating: e.target.value })} />
 
                 {/* Image Upload */}
