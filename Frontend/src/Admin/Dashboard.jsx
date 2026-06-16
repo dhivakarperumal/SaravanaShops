@@ -36,31 +36,28 @@ ChartJS.register(
 );
 
 const DashboardStats = ({ stats }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
     {stats.map((stat, i) => (
       <div
         key={i}
-        className={`group relative overflow-hidden rounded-xl p-4 transform transition duration-300 ease-in-out hover:scale-105 hover:shadow-xl ${stat.bgColor}`}
+        className="group relative bg-white overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100"
       >
-        <div
-          className={`absolute bottom-0 right-0 w-32 h-32 ${stat.round1} opacity-30 rounded-full translate-x-1/3 translate-y-1/3 transition-all duration-300 group-hover:opacity-50 group-hover:scale-110`}
-        ></div>
-        <div
-          className={`absolute bottom-0 right-0 w-24 h-24 ${stat.round2} opacity-40 rounded-full translate-x-1/3 translate-y-1/3 transition-all duration-300 group-hover:opacity-60 group-hover:scale-105`}
-        ></div>
+        {/* Soft decorative background circles for modern glowing effect */}
+        <div className={`absolute -right-8 -top-8 w-32 h-32 rounded-full ${stat.bgColor} opacity-60 blur-2xl group-hover:scale-150 transition-transform duration-700 ease-in-out`}></div>
+        <div className={`absolute right-10 -bottom-10 w-24 h-24 rounded-full ${stat.bgColor} opacity-50 blur-xl group-hover:scale-125 transition-transform duration-700 ease-in-out`}></div>
 
-        <div className="flex items-start justify-between">
-          <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${stat.iconBg}`}
-          >
+        <div className="relative z-10 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-gray-500 tracking-wide uppercase drop-shadow-sm">{stat.title}</p>
+            <h3 className="text-3xl font-extrabold text-gray-800 mt-2 tracking-tight group-hover:text-primary transition-colors duration-300">{stat.value}</h3>
+          </div>
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-${stat.iconBg.split(' ')[0].replace('bg-', '')}/30 transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-300 ${stat.iconBg}`}>
             {stat.icon}
           </div>
         </div>
-
-        <div className="mt-6">
-          <p className="text-sm text-gray-600 font-medium">{stat.title}</p>
-          <h3 className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</h3>
-        </div>
+        
+        {/* Sleek bottom gradient line that expands on hover */}
+        <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-primary to-secondary group-hover:w-full transition-all duration-500 ease-out"></div>
       </div>
     ))}
   </div>
@@ -507,13 +504,13 @@ const Dashboard = () => {
       <DashboardStats stats={statsData} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-2xl shadow-md">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Revenue</h2>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">Monthly Revenue</h2>
           <Bar data={revenueChart} />
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-md">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">
             Product Category Distribution
           </h2>
           <div className="w-full h-64">
@@ -535,21 +532,21 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-md w-full overflow-x-auto hidden ">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300 w-full overflow-x-auto hidden">
+        <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">
           Current Product Stock Levels
         </h2>
         <Bar data={stockChart} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 mt-10 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-md">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Orders</h2>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">Monthly Orders</h2>
           <Line data={ordersChart} />
         </div>
 
-       <div className="bg-white p-6 rounded-2xl shadow-md">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300">
+      <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">
         Top Product Orders Over Months
       </h2>
       <div className="w-full h-64">
@@ -571,8 +568,8 @@ const Dashboard = () => {
       </div>
 
      
-      <div className="bg-white p-6 rounded-2xl shadow-md mt-10">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Today’s Orders</h2>
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300 mt-10">
+        <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">Today’s Orders</h2>
 
         {/* 🖥️ Desktop / Tablet Table */}
         <div className="overflow-x-auto hidden md:block">

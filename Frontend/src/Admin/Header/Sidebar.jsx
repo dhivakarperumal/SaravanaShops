@@ -39,12 +39,12 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       <button
         onClick={() => setOpen(!open)}
         className={`flex items-center w-full py-2.5 px-3 cursor-pointer font-medium rounded-xl transition-all duration-300 group ${
-          open ? "text-primary" : "text-gray-600"
-        } hover:bg-primary/10 hover:text-primary ${
+          open ? "text-white" : "text-gray-400"
+        } hover:bg-gray-800 hover:text-white ${
           isExpanded ? "justify-start" : "justify-center"
         }`}
       >
-        <span className={`w-5 h-5 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110 ${open ? "text-primary" : ""}`}>
+        <span className={`w-5 h-5 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110 ${open ? "text-white" : ""}`}>
           {icon}
         </span>
         {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">{title}</span>}
@@ -62,7 +62,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
             isExpanded ? "pl-11" : "pl-0"
           } ${
             !isExpanded
-              ? "absolute left-20 top-0 bg-white shadow-xl shadow-gray-200/50 rounded-xl w-52 z-50 border border-gray-100 py-2"
+              ? "absolute left-20 top-0 bg-gray-800 shadow-2xl rounded-xl w-52 z-50 border border-gray-700 py-2"
               : ""
           }`}
         >
@@ -75,7 +75,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                   `flex items-center gap-3 py-2 px-3 rounded-xl transition-all duration-300 ${
                     isActive
                       ? "bg-primary text-white font-semibold shadow-md shadow-primary/30 translate-x-1"
-                      : "text-gray-500 hover:text-primary hover:bg-primary/5 hover:translate-x-1"
+                      : "text-gray-400 hover:text-white hover:bg-gray-700 hover:translate-x-1"
                   }`
                 }
               >
@@ -156,11 +156,11 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
     `flex items-center font-medium rounded-xl transition-all duration-300 group mb-1 ${
       isActive
         ? "bg-primary text-white shadow-md shadow-primary/30"
-        : "text-gray-600 hover:bg-primary/10 hover:text-primary"
+        : "text-gray-400 hover:bg-gray-800 hover:text-white"
     } ${isExpanded ? "px-3 py-2.5" : "p-3 justify-center"}`;
 
   return (
-    <nav className="space-y-1 p-3 flex flex-col h-full bg-white/50 backdrop-blur-sm border-r border-gray-100">
+    <nav className="space-y-1 p-3 flex flex-col h-full bg-gray-900 shadow-xl border-r border-gray-800">
       {/* ✅ Dashboard (exact match only) */}
       <NavLink to="/superadmin" end onClick={handleLinkClick} className={navLinkClass}>
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
@@ -271,8 +271,8 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         className={({ isActive }) =>
           `flex items-center font-medium rounded-xl transition-all duration-300 group mt-auto ${
             isActive
-              ? "bg-gray-100 text-gray-800"
-              : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+              ? "bg-gray-800 text-white"
+              : "text-gray-400 hover:bg-gray-800 hover:text-white"
           } ${isExpanded ? "px-3 py-2.5 mb-10 md:mb-3" : "p-3 justify-center mb-10 md:mb-3"}`
         }
       >
