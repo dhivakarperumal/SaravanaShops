@@ -24,6 +24,7 @@ const pool = require('./src/config/db');
 const { initializeDatabase } = require('./src/config/database');
 const authRouter = require('./src/routers/authRouter');
 const categoryRouter = require('./src/routers/categoryRouter');
+const productRouter = require('./src/routers/productRouter');
 
 // Initialize database
 initializeDatabase();
@@ -38,6 +39,9 @@ app.use('/api/auth', authRouter);
 
 // Category routes
 app.use('/api/categories', categoryRouter);
+
+// Product routes
+app.use('/api/products', productRouter);
 
 // Other routes (to be added)
 // const productsRouter = require('./src/routers/products');

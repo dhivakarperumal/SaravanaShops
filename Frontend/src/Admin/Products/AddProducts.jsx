@@ -1,17 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import imageCompression from "browser-image-compression";
-import {
-  collection,
-  getDocs,
-  setDoc,
-  getDoc,
-  updateDoc,
-  doc,
-  query,
-  where,
-} from "firebase/firestore";
-import { db } from "../../firebase";
+import api from "../../api";
 import toast from "react-hot-toast";
 import { FaTrash } from "react-icons/fa";
 
@@ -143,26 +133,23 @@ export default function AddProducts() {
   // -------- Generate Product ID (SKU)
   const generateProductId = async () => {
     try {
-      const snapshot = await getDocs(collection(db, "products"));
-      const ids = snapshot.docs
-        .map((d) => d.data().productId)
-        .filter((id) => id && id.startsWith("SP"));
-      const nums = ids.map((id) => parseInt(id.replace("SP", ""), 10) || 0);
-      const next = (Math.max(0, ...nums) + 1).toString().padStart(3, "0");
-      return `SP${next}`;
+      const res = await api.get("/products/nextid");
+      if (res.data.success) return res.data.productId;
+      throw new Error("Failed to get next ID");
     } catch (err) {
       console.error("Error generating product ID:", err);
       return `SP${Date.now().toString().slice(-3)}`;
     }
   };
 
-  // -------- Fetch Categories from Firestore
+  // -------- Fetch Categories from API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "categories"));
-        const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-        setCategories(data);
+        const res = await api.get("/categories");
+        if (res.data.success) {
+          setCategories(res.data.data);
+        }
       } catch (err) {
         console.error("Error fetching categories", err);
       }
@@ -367,21 +354,17 @@ export default function AddProducts() {
     setProductType(initialData.productType || "Bangles");
     setForm((prev) => ({ ...prev, ...initialData }));
 
-    // if the passed initialData doesn't include the Firestore doc id (id),
+    // if the passed initialData doesn't include the id,
     // attempt to lookup the document by productId (SKU) to set productDocId
     (async () => {
       try {
         if (!initialData.id && initialData.productId) {
-          const q = query(
-            collection(db, "products"),
-            where("productId", "==", initialData.productId)
-          );
-          const snaps = await getDocs(q);
-          if (!snaps.empty) {
-            // use the first matching doc id as the document to update
-            const foundDoc = snaps.docs[0];
-            // set form.id so we update this doc on save
-            setForm((prev) => ({ ...prev, id: foundDoc.id }));
+          const res = await api.get("/products");
+          if (res.data.success) {
+            const foundDoc = res.data.data.find(p => p.productId === initialData.productId);
+            if (foundDoc) {
+              setForm((prev) => ({ ...prev, id: foundDoc.id }));
+            }
           }
         } else if (initialData.id) {
           // ensure form.id is set to the doc id if provided
@@ -498,33 +481,30 @@ export default function AddProducts() {
         data.stock = Number(jewelStock) || 0;
       }
 
-      // Determine document to update/create:
-      // priority: form.id (doc id) -> lookup by productId -> use finalProductId as doc id
+      // Determine document to update/create
       let targetDocId = form.id || null;
       if (!targetDocId) {
         // try lookup by productId
         try {
-          const q = query(collection(db, "products"), where("productId", "==", finalProductId));
-          const snaps = await getDocs(q);
-          if (!snaps.empty) {
-            targetDocId = snaps.docs[0].id;
+          const res = await api.get("/products");
+          if (res.data.success) {
+            const foundDoc = res.data.data.find(p => p.productId === finalProductId);
+            if (foundDoc) {
+              targetDocId = foundDoc.id;
+            }
           }
         } catch (err) {
           console.warn("Lookup by SKU failed:", err);
         }
       }
-      if (!targetDocId) targetDocId = finalProductId;
 
-      const targetRef = doc(db, "products", targetDocId);
-      const existing = await getDoc(targetRef);
-
-      if (existing.exists()) {
+      if (targetDocId) {
         // update
-        await updateDoc(targetRef, data);
+        await api.put(`/products/${targetDocId}`, data);
         toast.success("Product updated successfully");
       } else {
-        // create with deterministic id (targetDocId)
-        await setDoc(targetRef, data);
+        // create
+        await api.post("/products", data);
         toast.success("Product saved successfully");
       }
 
