@@ -18,6 +18,13 @@ import {
   FaChartBar,
   FaUserPlus,
   FaUsers,
+  FaTags,
+  FaLayerGroup,
+  FaKey,
+  FaHandshake,
+  FaFileInvoiceDollar,
+  FaReceipt,
+  FaStore,
 } from "react-icons/fa";
 import { AiFillDashboard, AiOutlineVideoCamera } from "react-icons/ai";
 import { NavLink } from "react-router-dom";
@@ -190,8 +197,8 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         items={[
           { name: "All Products", path: "/superadmin/allproducts", icon: <FaBoxes /> },
           { name: "Add New Products", path: "/superadmin/addproducts", icon: <FaPlus /> },
-          { name: "Add Category", path: "/superadmin/category", icon: <FaPlus /> },
-          { name: "Add Product Stock", path: "/superadmin/stocks", icon: <FaWallet /> },
+          { name: "Add Category", path: "/superadmin/category", icon: <FaTags /> },
+          { name: "Add Product Stock", path: "/superadmin/stocks", icon: <FaLayerGroup /> },
           { name: "Stock Details", path: "/superadmin/stockDetails", icon: <FaChartBar /> },
         ]}
         isExpanded={isExpanded}
@@ -200,7 +207,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
 
        <NavLink to="/superadmin/razerpay" onClick={handleLinkClick} className={navLinkClass}>
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
-          <FaBoxes />
+          <FaKey />
         </span>
         {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Razerpay Key</span>}
       </NavLink>
@@ -220,10 +227,10 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
       {/* Dealers */}
       <SidebarSection
         title="Dealers"
-        icon={<FaBoxOpen />}
+        icon={<FaStore />}
         items={[
-          { name: "All Dealers", path: "/superadmin/dealers", icon: <FaPlus /> },
-          { name: "Invoice", path: "/superadmin/invoice", icon: <FaPlus /> },
+          { name: "All Dealers", path: "/superadmin/dealers", icon: <FaHandshake /> },
+          { name: "Invoice", path: "/superadmin/invoice", icon: <FaFileInvoiceDollar /> },
         ]}
         isExpanded={isExpanded}
         onLinkClick={handleLinkClick}
@@ -232,7 +239,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
       {/* Billings */}
       <NavLink to="/superadmin/billing" onClick={handleLinkClick} className={navLinkClass}>
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
-          <FaBoxes />
+          <FaReceipt />
         </span>
         {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Billings</span>}
       </NavLink>
