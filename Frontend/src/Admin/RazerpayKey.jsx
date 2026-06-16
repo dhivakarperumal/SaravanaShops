@@ -26,10 +26,8 @@ export default function RazorpayKeyForm() {
   // Fetch existing keys
   const fetchKeys = async () => {
     try {
-      const response = await fetch(`${api}/razorpay`);
-      if (!response.ok) throw new Error('Failed to fetch keys');
-      const data = await response.json();
-      setKeys(data);
+      const response = await api.get('/razorpay');
+      setKeys(response.data);
     } catch (error) {
       console.error(error);
       toast.error("Error fetching keys");
@@ -52,20 +50,10 @@ export default function RazorpayKeyForm() {
       setLoading(true);
 
       if (editingId) {
-        const response = await fetch(`${api}/razorpay/${editingId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, key })
-        });
-        if (!response.ok) throw new Error('Failed to update key');
+        await api.put(`/razorpay/${editingId}`, { name, key });
         toast.success("Key updated successfully!");
       } else {
-        const response = await fetch(`${api}/razorpay`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, key })
-        });
-        if (!response.ok) throw new Error('Failed to add key');
+        await api.post('/razorpay', { name, key });
         toast.success("Key added successfully!");
       }
 
@@ -89,10 +77,7 @@ export default function RazorpayKeyForm() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this key?")) return;
     try {
-      const response = await fetch(`${api}/razorpay/${id}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) throw new Error('Failed to delete key');
+      await api.delete(`/razorpay/${id}`);
       toast.success("Key deleted successfully!");
       fetchKeys();
     } catch (error) {
