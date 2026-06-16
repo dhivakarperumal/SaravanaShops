@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, doc, updateDoc, getDocs } from "firebase/firestore";
-import { db } from "../../firebase";
+import api from "../../api";
 import { FaPrint } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -52,15 +51,15 @@ const AllOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const snap = await getDocs(collection(db, "orders"));
-        const fetched = snap.docs.map((d) => ({
-          ...d.data(),
-          docId: d.id,
-        }));
+        const res = await api.get("/orders");
+        if (!res.data || !res.data.success) {
+          throw new Error("Failed to load orders");
+        }
+        const fetched = res.data.data;
 
         const sorted = fetched.sort((a, b) => {
-          const idA = parseInt(a.orderId?.replace(/\D/g, "")) || 0;
-          const idB = parseInt(b.orderId?.replace(/\D/g, "")) || 0;
+          const idA = parseInt((a.orderId || "").replace(/\D/g, "")) || 0;
+          const idB = parseInt((b.orderId || "").replace(/\D/g, "")) || 0;
           return idB - idA;
         });
 
@@ -86,7 +85,7 @@ const AllOrders = () => {
     }
 
     const parseDate = (o) => {
-      if (o.createdAt?.toDate) return o.createdAt.toDate();
+      if (o.createdAt) return new Date(o.createdAt);
       if (o.date) return new Date(o.date);
       return null;
     };
@@ -97,10 +96,6 @@ const AllOrders = () => {
         return d && d.toDateString() === now.toDateString();
       });
     }
-
-    temp = temp.filter(
-      (o) => o.status !== "Delivered" && o.status !== "Cancelled"
-    );
 
     setFilteredOrders(temp);
   }, [orders, searchText, dateFilter]);
@@ -129,37 +124,82 @@ const AllOrders = () => {
       return;
     }
 
-    await updateDoc(doc(db, "orders", order.docId), {
-      status: newStatus,
-      statusUpdatedAt: new Date().toISOString(),
-    });
+    try {
+      const now = new Date().toISOString();
+      await api.put(`/orders/${order.docId}/status`, {
+        status: newStatus,
+        statusUpdatedAt: now,
+      });
 
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.docId === order.docId ? { ...o, status: newStatus } : o
-      )
-    );
-    toast.success("Status updated");
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.docId === order.docId ? { ...o, status: newStatus, statusUpdatedAt: now } : o
+        )
+      );
+      toast.success("Status updated");
+    } catch (e) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleCancelSubmit = async (order) => {
+    if (!order) return;
+    if (!cancelReason.trim()) {
+      toast.error("Please provide a cancellation reason");
+      return;
+    }
+
+    try {
+      const now = new Date().toISOString();
+      await api.put(`/orders/${order.docId}/status`, {
+        status: "Cancelled",
+        cancelledAt: now,
+        cancelReasons: cancelReason,
+        statusUpdatedAt: now,
+      });
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.docId === order.docId
+            ? { ...o, status: "Cancelled", statusUpdatedAt: now }
+            : o
+        )
+      );
+
+      setShowCancelInput(null);
+      setCancelReason("");
+      toast.success("Order cancelled successfully");
+    } catch (err) {
+      console.error("Error cancelling order:", err);
+      toast.error("Failed to cancel order");
+    }
   };
 
   const handleDocketSubmit = async (order) => {
-    await updateDoc(doc(db, "orders", order.docId), {
-      status: "Shipped",
-      docketNumber,
-      qname,
-    });
+    try {
+      const now = new Date().toISOString();
+      await api.put(`/orders/${order.docId}/status`, {
+        status: "Shipped",
+        docketNumber,
+        qname,
+        statusUpdatedAt: now,
+      });
 
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.docId === order.docId
-          ? { ...o, status: "Shipped", docketNumber, qname }
-          : o
-      )
-    );
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.docId === order.docId
+            ? { ...o, status: "Shipped", docketNumber, qname, statusUpdatedAt: now }
+            : o
+        )
+      );
 
-    setShowDocketInput(null);
-    setDocketNumber("");
-    setQname("");
+      setShowDocketInput(null);
+      setDocketNumber("");
+      setQname("");
+      toast.success("Order status updated to Shipped");
+    } catch (e) {
+      toast.error("Failed to update status");
+    }
   };
 
   // ✅ Print (unchanged)
@@ -227,8 +267,8 @@ const AllOrders = () => {
           <p><strong>Status:</strong> ${order.status || "-"}</p>
           <p><strong>Payment:</strong> ${order.ordertype || "Online"}</p>
           <p><strong>Date:</strong> ${
-            order.createdAt?.toDate
-              ? order.createdAt.toDate().toLocaleString()
+            order.createdAt
+              ? new Date(order.createdAt).toLocaleString()
               : "N/A"
           }</p>
         </div>

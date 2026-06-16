@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import api from "../../api";
 import { toast } from "react-hot-toast";
-import { db } from "../../firebase";
 import { FaPrint } from "react-icons/fa";
 import logo from "/Image/logo.png";
 import { useNavigate } from "react-router-dom";
@@ -18,9 +17,7 @@ const Delivery = () => {
 
   const filterOrders = (order) => {
     // Normalize order date
-    const orderDate = order.createdAt?.toDate
-      ? order.createdAt.toDate()
-      : new Date(order.deliveryDate || order.date);
+    const orderDate = new Date(order.createdAt || order.date || order.deliveryDate);
 
     const now = new Date();
 
@@ -72,19 +69,19 @@ const Delivery = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "orders"));
-        const fetched = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          docId: doc.id,
-        }));
+        const res = await api.get("/orders");
+        if (!res.data || !res.data.success) {
+          throw new Error("Failed to load orders");
+        }
+        const fetched = res.data.data;
 
         // ✅ Filter only delivered orders
         const delivered = fetched.filter((order) => order.status === "Delivered");
 
         // ✅ Sort by Order ID (descending) — show newest orders first
         const sortedDelivered = delivered.sort((a, b) => {
-          const idA = parseInt(a.orderId?.replace(/\D/g, "")) || 0;
-          const idB = parseInt(b.orderId?.replace(/\D/g, "")) || 0;
+          const idA = parseInt((a.orderId || "").replace(/\D/g, "")) || 0;
+          const idB = parseInt((b.orderId || "").replace(/\D/g, "")) || 0;
           return idB - idA;
         });
 
@@ -149,7 +146,7 @@ const Delivery = () => {
                     Ph: 7010575375</p>
           <p><strong>Status:</strong> ${order.status || "-"}</p>
           <p><strong>Payment:</strong> ${order.ordertype || "Online"}</p>
-          <p><strong>Date:</strong> ${order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString() : "N/A"}</p>
+          <p><strong>Date:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString() : "N/A"}</p>
         </div>
       </div>
 
