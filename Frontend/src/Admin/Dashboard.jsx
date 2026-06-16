@@ -20,6 +20,16 @@ import {
   FaTimesCircle,
   FaUndoAlt,
   FaDollarSign,
+  FaShoppingCart,
+  FaClipboardList,
+  FaPlusCircle,
+  FaTags,
+  FaUserPlus,
+  FaKey,
+  FaReceipt,
+  FaStar,
+  FaHandshake,
+  FaLayerGroup,
 } from "react-icons/fa";
 import CustomerReviews from "./Reviews/Customer";
 import { useNavigate } from "react-router-dom";
@@ -481,6 +491,42 @@ const Dashboard = () => {
   return (
     <div className="p-6">
       <DashboardStats stats={statsData} />
+
+      {/* ⚡ Quick Access */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-1 h-7 bg-gradient-to-b from-primary to-secondary rounded-full"></div>
+          <h2 className="text-xl font-extrabold text-gray-800 tracking-tight">⚡ Quick Access</h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {[
+            { label: "New Orders",       icon: <FaShoppingCart />,  path: "/superadmin/newOrders",   gradient: "from-blue-500 to-blue-700" },
+            { label: "All Orders",       icon: <FaClipboardList />, path: "/superadmin/allOrders",    gradient: "from-indigo-500 to-indigo-700" },
+            { label: "Add Product",      icon: <FaPlusCircle />,    path: "/superadmin/addproducts",  gradient: "from-emerald-400 to-emerald-600" },
+            { label: "Add Category",     icon: <FaTags />,          path: "/superadmin/category",     gradient: "from-teal-400 to-teal-600" },
+            { label: "All Products",     icon: <FaBoxOpen />,       path: "/superadmin/allproducts",  gradient: "from-cyan-500 to-cyan-700" },
+            { label: "New Users",        icon: <FaUserPlus />,      path: "/superadmin/newusers",     gradient: "from-purple-500 to-purple-700" },
+            { label: "All Users",        icon: <FaUsers />,         path: "/superadmin/allusers",     gradient: "from-violet-500 to-violet-700" },
+            { label: "Billings",         icon: <FaReceipt />,       path: "/superadmin/billing",      gradient: "from-pink-500 to-pink-700" },
+           
+            { label: "Stock Details",    icon: <FaLayerGroup />,    path: "/superadmin/stockDetails", gradient: "from-red-400 to-rose-600" },
+               
+            { label: "Razerpay Key",     icon: <FaKey />,           path: "/superadmin/razerpay",     gradient: "from-gray-600 to-gray-800" },
+          ].map((item, idx) => (
+            <button
+              key={idx}
+              onClick={() => navigate(item.path)}
+              className={`group relative bg-gradient-to-br ${item.gradient} flex flex-col items-center justify-center gap-3 p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 border border-white/20 overflow-hidden`}
+            >
+              <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-2xl"></div>
+              <div className="text-white text-3xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300">
+                {item.icon}
+              </div>
+              <span className="text-white font-semibold text-sm text-center leading-tight drop-shadow-md">{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="bg-gradient-to-br from-white to-gray-50/90 p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] transition-all duration-400 backdrop-blur-xl">
