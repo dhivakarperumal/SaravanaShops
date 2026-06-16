@@ -304,6 +304,8 @@ export default function Billing() {
         mrp: p.mrp || 0,
         price: p.sellingprice || 0,
         quantity: quantities[key] || 1,
+        list_of_items: p.list_of_items || [],
+        fabricdetails: p.fabricdetails || []
       };
     });
 
@@ -347,9 +349,21 @@ export default function Billing() {
       const formatCurrency = (v) => `₹${Number(v || 0).toFixed(2)}`;
       const itemsRows = items.map((it, idx) => {
         const subtotal = Number(it.price || 0) * Number(it.quantity || 1);
+        let extraInfo = "";
+        if (it.size && it.size !== "undefined") extraInfo += ` Size: ${it.size}`;
+        if (it.color && it.color !== "undefined") {
+          const colorName = getColorName(it.color);
+          if (colorName !== "Unknown") extraInfo += ` Color: ${colorName}`;
+        }
+        if (it.list_of_items && it.list_of_items.length > 0) extraInfo += `<br/><span class="muted">Items: ${it.list_of_items.join(", ")}</span>`;
+        if (it.fabricdetails && it.fabricdetails.length > 0) extraInfo += `<br/><span class="muted">Fabric: ${it.fabricdetails.join(", ")}</span>`;
+
         return `<tr>
             <td style="padding:6px;border:1px solid #ddd">${idx + 1}</td>
-            <td style="padding:6px;border:1px solid #ddd">${it.productName || "N/A"}</td>
+            <td style="padding:6px;border:1px solid #ddd">
+              <strong>${it.name || "N/A"}</strong>
+              <div style="font-size:12px;color:#555;margin-top:2px;">${extraInfo.trim()}</div>
+            </td>
             <td style="padding:6px;border:1px solid #ddd;text-align:center">${it.quantity}</td>
             <td style="padding:6px;border:1px solid #ddd;text-align:right">${formatCurrency(it.price)}</td>
             <td style="padding:6px;border:1px solid #ddd;text-align:right">${formatCurrency(subtotal)}</td>
@@ -869,17 +883,33 @@ export default function Billing() {
                           className="w-15 h-15 border p-1 border-gray-200"
                         />
                       </td>
-                      <td className="px-3 py-3">{p.name}</td>
-                      <td className="px-3 py-3">{p.category || "-"}</td>
-                      <td className="px-3 py-3">{size || "-"}</td>
                       <td className="px-3 py-3">
-                        <div className="flex items-center justify-center gap-2">
-                          <span
-                            className="inline-block w-4 h-4 rounded-full border border-gray-400"
-                            style={{ backgroundColor: color }}
-                          ></span>
-                          <span>{getColorName(color)}</span>
-                        </div>
+                        <div>{p.name}</div>
+                        {p.list_of_items && p.list_of_items.length > 0 && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Items: {p.list_of_items.join(", ")}
+                          </div>
+                        )}
+                        {p.fabricdetails && p.fabricdetails.length > 0 && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Fabric: {p.fabricdetails.join(", ")}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-3 py-3">{p.category || "-"}</td>
+                      <td className="px-3 py-3">{size && size !== "undefined" ? size : "-"}</td>
+                      <td className="px-3 py-3">
+                        {color && color !== "undefined" ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <span
+                              className="inline-block w-4 h-4 rounded-full border border-gray-400"
+                              style={{ backgroundColor: color }}
+                            ></span>
+                            <span>{getColorName(color)}</span>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
                       </td>
                       <td className="px-3 py-3">
                         <input
@@ -951,6 +981,12 @@ export default function Billing() {
           <div className="flex-1">
             <h4 className="font-semibold">{p.name}</h4>
             <p className="text-sm text-gray-500">{p.category} / {p.subcategory || "-"}</p>
+            {p.list_of_items && p.list_of_items.length > 0 && (
+              <p className="text-xs text-gray-500 mt-1">Items: {p.list_of_items.join(", ")}</p>
+            )}
+            {p.fabricdetails && p.fabricdetails.length > 0 && (
+              <p className="text-xs text-gray-500 mt-1">Fabric: {p.fabricdetails.join(", ")}</p>
+            )}
             <div className="flex gap-2 mt-1 flex-wrap">
               <div>
                 Size: {isSingleColorBangle ? (
@@ -967,7 +1003,7 @@ export default function Billing() {
                       <option key={s} value={s}>{s}</option>
                     )) || []}
                   </select>
-                ) : size || "-"}
+                ) : (size && size !== "undefined" ? size : "-")}
               </div>
               <div>
                 Color: {isSingleColorBangle ? (
@@ -984,7 +1020,7 @@ export default function Billing() {
                       <option key={c.color} value={c.color}>{getColorName(c.color)}</option>
                     )) || []}
                   </select>
-                ) : color || "-"}
+                ) : (color && color !== "undefined" ? color : "-")}
               </div>
             </div>
             <div className="flex gap-2 mt-2 items-center">
