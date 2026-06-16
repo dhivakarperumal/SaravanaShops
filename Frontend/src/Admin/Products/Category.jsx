@@ -273,7 +273,7 @@ const Category = () => {
           {/* Add Category */}
           <button
             onClick={openAddModal}
-            className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-primary to-secondary text-white px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+            className="flex items-center gap-1.5 sm:gap-2 bg-primary text-white px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-md hover:bg-blue-800 hover:shadow-lg transition-all duration-200 cursor-pointer"
           >
             <FaPlus className="text-xs" />
             <span className="hidden sm:inline">Add Category</span>
@@ -394,7 +394,7 @@ const Category = () => {
           <div className="overflow-x-auto w-full">
             <table className="w-full text-sm min-w-[680px]">
               <thead>
-                <tr className="bg-gradient-to-r from-primary to-secondary text-white">
+                <tr className="bg-primary text-white">
                   <th className="px-4 py-3 text-center font-semibold w-12">S.No</th>
                   <th className="px-4 py-3 text-left font-semibold">Cat ID</th>
                   <th className="px-4 py-3 text-left font-semibold">Image</th>
@@ -479,9 +479,9 @@ const Category = () => {
           <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
 
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-primary/8 to-secondary/8 flex-shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-primary/10 flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-md">
+                <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-md">
                   <MdOutlineCategory className="text-white text-lg" />
                 </div>
                 <div>
@@ -656,7 +656,7 @@ const Category = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-semibold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
+                  className="px-6 py-2.5 bg-primary text-white hover:bg-blue-800 rounded-xl font-semibold text-sm shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
                 >
                   {loading
                     ? (editId ? "Updating…" : "Adding…")
