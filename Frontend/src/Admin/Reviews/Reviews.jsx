@@ -16,6 +16,10 @@ const AddReviews = () => {
   const [viewMode, setViewMode] = useState("card");
   const [showFilters, setShowFilters] = useState(false);
 
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+
   const [newReview, setNewReview] = useState({
     title: "",
     category: "",
@@ -30,7 +34,31 @@ const AddReviews = () => {
 
   useEffect(() => {
     fetchReviews();
+    fetchProducts();
+    fetchCategories();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await api.get("/products");
+      if (res.data.success) {
+        setProducts(res.data.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get("/categories");
+      if (res.data.success) {
+        setCategories(res.data.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchReviews = async () => {
     const res = await api.get("/reviews");
@@ -371,8 +399,60 @@ const AddReviews = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Inputs */}
-                <InputField label="Product Name" value={newReview.title} onChange={(e) => setNewReview({ ...newReview, title: e.target.value })} />
-                <InputField label="Category" value={newReview.category} onChange={(e) => setNewReview({ ...newReview, category: e.target.value })} />
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    Category
+                  </label>
+
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => {
+                      setSelectedCategory(e.target.value);
+                      setNewReview({
+                        ...newReview,
+                        category: e.target.value,
+                        title: "",
+                      });
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="">Select Category</option>
+
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.cname}>
+                        {cat.cname}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                 <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    Product
+                  </label>
+
+                  <select
+                    value={newReview.title}
+                    onChange={(e) =>
+                      setNewReview({
+                        ...newReview,
+                        title: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="">Select Product</option>
+
+                    {products
+                      .filter((p) => p.category === selectedCategory)
+                      .map((product) => (
+                        <option key={product.id} value={product.name}>
+                          {product.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                
                 <InputField label="Reviewer Name" value={newReview.user} onChange={(e) => setNewReview({ ...newReview, user: e.target.value })} />
                 <InputField label="Rating (1 to 5)" type="number" min="1" max="5" value={newReview.rating} onChange={(e) => setNewReview({ ...newReview, rating: e.target.value })} />
 
