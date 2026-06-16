@@ -4,6 +4,7 @@ import { TiTickOutline, TiTick } from "react-icons/ti";
 import { HiPencil, HiTrash } from "react-icons/hi";
 import toast from "react-hot-toast";
 import api from "../../api";
+import { FaSearch, FaFilter, FaTh, FaList, FaPlus } from "react-icons/fa";
 
 const AddReviews = () => {
   const [reviews, setReviews] = useState([]);
@@ -11,6 +12,9 @@ const AddReviews = () => {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState("card");
+  const [showFilters, setShowFilters] = useState(false);
 
   const [newReview, setNewReview] = useState({
     title: "",
@@ -138,14 +142,61 @@ const AddReviews = () => {
   return (
     <div className="min-h-screen py-10 md:p-6 lg:p-0">
       <div className="max-w-7xl mx-auto black p-5">
-        <div className="flex justify-end flex-wrap items-center mb-6">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6 bg-white rounded-2xl px-3 sm:px-4 py-3 shadow-sm border border-gray-100">
 
-          <button
-            onClick={() => setShowModal(true)}
-            className="px-4 py-2 border rounded-lg text-sm cursor-pointer bg-primary text-white font-bold"
-          >
-            Add Review
-          </button>
+          {/* Search */}
+          <div className="flex items-center gap-2 flex-1 min-w-0 max-w-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+            <FaSearch className="text-gray-400 text-sm flex-shrink-0" />
+
+            <input
+              type="text"
+              placeholder="Search reviews..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 min-w-0 bg-transparent text-sm text-gray-700 outline-none"
+            />
+          </div>
+
+          {/* Count */}
+          <span className="text-xs sm:text-sm text-gray-500 font-medium hidden sm:block">
+            {reviews.length} reviews
+          </span>
+
+          <div className="flex items-center gap-2 ml-auto">
+
+            {/* View Toggle */}
+            <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+              <button
+                onClick={() => setViewMode("card")}
+                className={`p-2 rounded-lg ${viewMode === "card"
+                    ? "bg-white shadow text-primary"
+                    : "text-gray-400"
+                  }`}
+              >
+                <FaTh />
+              </button>
+
+              <button
+                onClick={() => setViewMode("table")}
+                className={`p-2 rounded-lg ${viewMode === "table"
+                    ? "bg-white shadow text-primary"
+                    : "text-gray-400"
+                  }`}
+              >
+                <FaList />
+              </button>
+            </div>
+
+            {/* Add Review */}
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md"
+            >
+              <FaPlus />
+              Add Review
+            </button>
+
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
