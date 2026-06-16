@@ -53,9 +53,9 @@ app.use('/api/users', userRouter);
 
 // Other routes (to be added)
 // const productsRouter = require('./src/routers/products');
-// const ordersRouter = require('./src/routers/orders');
+const ordersRouter = require('./src/routers/orderRouter');
 // app.use('/api/products', productsRouter);
-// app.use('/api/orders', ordersRouter);
+app.use('/api/orders', ordersRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

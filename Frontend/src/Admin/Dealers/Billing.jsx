@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  collection,
-  getDocs,
-  doc,
-  runTransaction,
-  serverTimestamp,
-} from "firebase/firestore";
-import { db } from "../../firebase";
+import api from "../../api";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import { IoMdPrint } from "react-icons/io";
 import namer from "color-namer"; // 🎨 Color name library
@@ -53,28 +46,20 @@ export default function Billing() {
     }
   };
 
-  // 🟢 Fetch all products from Firestore
+  // 🟢 Fetch all products from API
   useEffect(() => {
     const fetchProducts = async () => {
-      const snap = await getDocs(collection(db, "products"));
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setProducts(data);
+      try {
+        const res = await api.get("/products");
+        if (res.data && res.data.success) {
+          setProducts(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch products", err);
+      }
     };
     fetchProducts();
   }, []);
-
-  // 🟢 Generate incremental order number
-  const generateOrderNumber = async () => {
-    const counterRef = doc(db, "metadata", "ordersCounter");
-    const orderNum = await runTransaction(db, async (tx) => {
-      const docSnap = await tx.get(counterRef);
-      const current = docSnap.exists() ? docSnap.data().count || 0 : 0;
-      const next = current + 1;
-      tx.set(counterRef, { count: next }, { merge: true });
-      return `ORD${String(next).padStart(6, "0")}`;
-    });
-    return orderNum;
-  };
 
   // --- new helper: return image for a product given selected color (and fallback)
   const getColorImage = (p, color) => {
@@ -195,11 +180,14 @@ export default function Billing() {
 
   // 🟢 Add Product (supports Bangles with color & size)
   const handleAddProduct = (productId) => {
-    const product = products.find((p) => p.id === productId);
+    const product = products.find((p) => String(p.id) === String(productId));
     if (!product) return;
 
+    const isBangle = (product.category && product.category.toLowerCase().includes("bangle")) || 
+                     (product.productType && product.productType.toLowerCase().includes("bangle"));
+
     // If product is bangle single-color, ensure user selected color & size
-    if (product.category === "Bangle" && product.count === "SingleColor") {
+    if (isBangle && product.count === "SingleColor") {
       if (!selectedColor || !selectedSize) {
         toast.error("Select color and size before adding this bangle");
         return;
@@ -207,7 +195,7 @@ export default function Billing() {
     }
 
     const variantKey =
-      product.category === "Bangle"
+      isBangle
         ? `${productId}_${selectedSize}_${selectedColor}`
         : productId;
 
@@ -246,7 +234,7 @@ export default function Billing() {
 
     selectedProducts.forEach((key) => {
       let [id] = key.split("_");
-      const p = products.find((x) => x.id === id);
+      const p = products.find((x) => String(x.id) === String(id));
       const qty = Number(quantities[key] || 1);
       if (p) {
         totalQty += qty;
@@ -304,7 +292,7 @@ export default function Billing() {
     // Build items array with correct color-specific images
     const items = selectedProducts.map((key) => {
       const [id, size, color] = key.split("_");
-      const p = products.find((x) => x.id === id) || {};
+      const p = products.find((x) => String(x.id) === String(id)) || {};
       return {
         id: p.id || id,
         name: p.name || "-",
@@ -334,69 +322,26 @@ export default function Billing() {
     );
     const grandTotalLocal = subtotalLocal + Number(shippingCost || 0);
 
-    const orderId = await generateOrderNumber();
     const clientNow = new Date(); // use for printed time
+    let orderId = "";
 
     try {
-      await runTransaction(db, async (transaction) => {
-        const productDocs = {};
-        for (const item of items) {
-          const productRef = doc(db, "products", item.id);
-          const productSnap = await transaction.get(productRef);
-          if (!productSnap.exists())
-            throw new Error(`Product ${item.name} not found`);
-          productDocs[item.id] = { ref: productRef, data: productSnap.data() };
-        }
+      const payload = {
+        items,
+        subtotal: subtotalLocal,
+        shippingCost: Number(shippingCost || 0),
+        total: grandTotalLocal,
+        status: "Delivered",
+        ordertype: orderType,
+        shipping,
+        clientCreatedAt: clientNow.toISOString()
+      };
 
-        // update stock
-        for (const item of items) {
-          const { ref, data } = productDocs[item.id];
-          if (
-            data.category?.toLowerCase() === "bangle" &&
-            data.colors &&
-            item.color &&
-            item.size &&
-            data.count === "SingleColor"
-          ) {
-            const updatedColors = data.colors.map((c) => {
-              if (String(c.color) === String(item.color) && c.stock?.[item.size] !== undefined) {
-                return {
-                  ...c,
-                  stock: {
-                    ...c.stock,
-                    [item.size]: Math.max(0, c.stock[item.size] - item.quantity),
-                  },
-                };
-              }
-              return c;
-            });
-            transaction.update(ref, { colors: updatedColors });
-          } else if (data.stock !== undefined) {
-            const currentStock = Number(data.stock || 0);
-            if (currentStock < item.quantity)
-              throw new Error(`Not enough stock for ${item.name}`);
-            transaction.update(ref, {
-              stock: Math.max(0, currentStock - item.quantity),
-            });
-          }
-        }
-
-        const orderRef = doc(collection(db, "orders"));
-        transaction.set(orderRef, {
-          id: orderRef.id,
-          orderId,
-          items,
-          // use freshly computed subtotal and grand total so shipping is included correctly
-          subtotal: subtotalLocal,
-          shippingCost: Number(shippingCost || 0),
-          total: grandTotalLocal,
-          status: "Delivered",
-          createdAt: serverTimestamp(),
-          clientCreatedAt: clientNow.toISOString(),
-          shipping,
-          ordertype: orderType,
-        });
-      });
+      const res = await api.post("/orders/create", payload);
+      if (!res.data || !res.data.success) {
+        throw new Error(res.data?.message || "Failed to create order");
+      }
+      orderId = res.data.orderId;
 
       // After successful save, prepare print HTML
       const formatCurrency = (v) => `₹${Number(v || 0).toFixed(2)}`;
@@ -613,8 +558,9 @@ export default function Billing() {
   {/* 🔹 Dynamic Color + Size Selector */}
 {currentProduct &&
   (() => {
-    const p = products.find((x) => x.id === currentProduct);
-    if (p && p.category === "Bangle" && p.count === "SingleColor") {
+    const p = products.find((x) => String(x.id) === String(currentProduct));
+    const isBangle = p && ((p.category && p.category.toLowerCase().includes("bangle")) || (p.productType && p.productType.toLowerCase().includes("bangle")));
+    if (p && isBangle && p.count === "SingleColor") {
       const availableColors = p.colors || [];
       const availableSizes =
         availableColors.find((c) => c.color === selectedColor)?.size || [];
@@ -909,7 +855,7 @@ export default function Billing() {
               <tbody>
                 {selectedProducts.map((key) => {
                   const [id, size, color] = key.split("_");
-                  const p = products.find((x) => x.id === id) || {};
+                  const p = products.find((x) => String(x.id) === String(id)) || {};
                   const qty = quantities[key] || 1;
                   // use color-specific image when available
                   const img = getColorImage(p, color);
@@ -992,11 +938,11 @@ export default function Billing() {
 <div className="sm:hidden flex flex-col gap-3 mt-4">
   {selectedProducts.map(key => {
     const [id, size, color] = key.split("_");
-    const p = products.find(x => x.id === id) || {};
+    const p = products.find(x => String(x.id) === String(id)) || {};
     const qty = quantities[key] || 1;
     const img = getColorImage(p, color);
 
-    const isSingleColorBangle = p?.category === "Bangle" && p?.count === "SingleColor";
+    const isSingleColorBangle = p && ((p.category && p.category.toLowerCase().includes("bangle")) || (p.productType && p.productType.toLowerCase().includes("bangle"))) && p.count === "SingleColor";
 
     return (
       <div key={key} className="bg-white shadow rounded-2xl p-4 flex flex-col gap-2 border">
