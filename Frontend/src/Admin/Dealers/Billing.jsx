@@ -206,7 +206,11 @@ export default function Billing() {
       setSelectedSize("");
       setSelectedColor("");
     } else {
-      toast.error("Product already added!");
+      setQuantities((prev) => ({ ...prev, [variantKey]: (prev[variantKey] || 1) + 1 }));
+      toast.success(`Increased quantity for ${product.name}`);
+      setCurrentProduct("");
+      setSelectedSize("");
+      setSelectedColor("");
     }
   };
 
@@ -360,6 +364,9 @@ export default function Billing() {
 
         return `<tr>
             <td style="padding:6px;border:1px solid #ddd">${idx + 1}</td>
+            <td style="padding:6px;border:1px solid #ddd;text-align:center">
+              ${it.image ? `<img src="${it.image}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #ccc" alt="IMG"/>` : `<div style="width:40px;height:40px;background:#eee;border-radius:4px;display:inline-block"></div>`}
+            </td>
             <td style="padding:6px;border:1px solid #ddd">
               <strong>${it.name || "N/A"}</strong>
               <div style="font-size:12px;color:#555;margin-top:2px;">${extraInfo.trim()}</div>
@@ -393,7 +400,7 @@ export default function Billing() {
           <body>
             <div class="header">
               <div>
-            <img src="${logoUrl}" style="height:60px;" />
+            <img src="${window.location.origin}${logoUrl}" style="height:60px;" />
                 <h2>Sri Saravana Shoppings</h2>
                 <div class="muted">Invoice for Order: ${orderId}</div>
                 <div class="muted">Printed: ${clientNow.toLocaleString()}</div>
@@ -419,6 +426,7 @@ export default function Billing() {
               <thead>
                 <tr>
                   <th style="width:40px">#</th>
+                  <th style="width:60px;text-align:center">Image</th>
                   <th>Item</th>
                   <th style="width:70px;text-align:center">Qty</th>
                   <th style="width:120px;text-align:right">Price</th>
@@ -426,17 +434,17 @@ export default function Billing() {
                 </tr>
               </thead>
               <tbody>
-                ${itemsRows || `<tr><td colspan="5" style="padding:8px;border:1px solid #ddd">No items</td></tr>`}
+                ${itemsRows || `<tr><td colspan="6" style="padding:8px;border:1px solid #ddd">No items</td></tr>`}
                 <tr>
-                  <td colspan="4" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Subtotal</strong></td>
+                  <td colspan="5" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Subtotal</strong></td>
                   <td style="padding:8px;border:1px solid #ddd;text-align:right"><strong>${formatCurrency(subtotalLocal)}</strong></td>
                 </tr>
                 <tr>
-                  <td colspan="4" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Shipping</strong></td>
+                  <td colspan="5" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Shipping</strong></td>
                   <td style="padding:8px;border:1px solid #ddd;text-align:right"><strong>${formatCurrency(Number(shippingCost || 0))}</strong></td>
                 </tr>
                 <tr>
-                  <td colspan="4" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Grand Total</strong></td>
+                  <td colspan="5" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Grand Total</strong></td>
                   <td style="padding:8px;border:1px solid #ddd;text-align:right"><strong>${formatCurrency(totalForPrint)}</strong></td>
                 </tr>
               </tbody>
