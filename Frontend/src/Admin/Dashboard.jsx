@@ -40,24 +40,21 @@ const DashboardStats = ({ stats }) => (
     {stats.map((stat, i) => (
       <div
         key={i}
-        className="group relative bg-white overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100"
+        className={`group relative ${stat.bgGradient} overflow-hidden rounded-xl p-6 transition-all duration-400 hover:-translate-y-2 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_15px_40px_rgb(0,0,0,0.25)] border border-white/20`}
       >
         {/* Soft decorative background circles for modern glowing effect */}
-        <div className={`absolute -right-8 -top-8 w-32 h-32 rounded-full ${stat.bgColor} opacity-60 blur-2xl group-hover:scale-150 transition-transform duration-700 ease-in-out`}></div>
-        <div className={`absolute right-10 -bottom-10 w-24 h-24 rounded-full ${stat.bgColor} opacity-50 blur-xl group-hover:scale-125 transition-transform duration-700 ease-in-out`}></div>
+        <div className={`absolute -right-8 -top-8 w-32 h-32 rounded-sm bg-white opacity-20 blur-2xl group-hover:scale-150 transition-transform duration-700 ease-in-out`}></div>
+        <div className={`absolute right-10 -bottom-10 w-24 h-24 rounded-sm bg-white opacity-10 blur-xl group-hover:scale-125 transition-transform duration-700 ease-in-out`}></div>
 
         <div className="relative z-10 flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-gray-500 tracking-wide uppercase drop-shadow-sm">{stat.title}</p>
-            <h3 className="text-3xl font-extrabold text-gray-800 mt-2 tracking-tight group-hover:text-primary transition-colors duration-300">{stat.value}</h3>
+            <p className="text-sm font-bold text-white/90 tracking-wider uppercase drop-shadow-md">{stat.title}</p>
+            <h3 className="text-4xl font-extrabold text-white mt-2 tracking-tight drop-shadow-lg">{stat.value}</h3>
           </div>
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-${stat.iconBg.split(' ')[0].replace('bg-', '')}/30 transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-300 ${stat.iconBg}`}>
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-xl transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-300 bg-white/25 text-white backdrop-blur-md border border-white/30`}>
             {stat.icon}
           </div>
         </div>
-        
-        {/* Sleek bottom gradient line that expands on hover */}
-        <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-primary to-secondary group-hover:w-full transition-all duration-500 ease-out"></div>
       </div>
     ))}
   </div>
@@ -300,55 +297,37 @@ const Dashboard = () => {
       title: "Users",
       value: stats?.users || 0,
       icon: <FaUsers />,
-      bgColor: "bg-blue-100",
-      iconBg: "bg-blue-500 text-white",
-      round1: "bg-blue-300",
-      round2: "bg-blue-200",
+      bgGradient: "bg-gradient-to-br from-blue-500 to-blue-700",
     },
     {
       title: "Products",
       value: stats?.products || 0,
       icon: <FaBoxOpen />,
-      bgColor: "bg-green-100",
-      iconBg: "bg-green-500 text-white",
-      round1: "bg-green-300",
-      round2: "bg-green-200",
+      bgGradient: "bg-gradient-to-br from-emerald-400 to-emerald-600",
     },
     {
       title: "Delivery Orders",
       value: deliveryOrders,
       icon: <FaTruck />,
-      bgColor: "bg-purple-100",
-      iconBg: "bg-purple-500 text-white",
-      round1: "bg-purple-300",
-      round2: "bg-purple-200",
+      bgGradient: "bg-gradient-to-br from-purple-500 to-purple-700",
     },
     {
       title: "Cancelled Orders",
       value: cancelledOrders,
       icon: <FaTimesCircle />,
-      bgColor: "bg-red-100",
-      iconBg: "bg-red-500 text-white",
-      round1: "bg-red-300",
-      round2: "bg-red-200",
+      bgGradient: "bg-gradient-to-br from-red-500 to-rose-700",
     },
     {
       title: "Revenue",
       value: `₹ ${stats?.revenue?.toLocaleString() || 0}`,
       icon: <FaDollarSign />,
-      bgColor: "bg-pink-100",
-      iconBg: "bg-pink-500 text-white",
-      round1: "bg-pink-300",
-      round2: "bg-pink-200",
+      bgGradient: "bg-gradient-to-br from-pink-500 to-pink-700",
     },
     {
       title: "Low Stock",
       value: lowStockCount || 0,
       icon: <FaBoxOpen />,
-      bgColor: "bg-red-100",
-      iconBg: "bg-red-500 text-white",
-      round1: "bg-red-300",
-      round2: "bg-red-200",
+      bgGradient: "bg-gradient-to-br from-orange-400 to-orange-600",
     },
   ];
 
@@ -504,12 +483,12 @@ const Dashboard = () => {
       <DashboardStats stats={statsData} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300">
+        <div className="bg-gradient-to-br from-white to-gray-50/90 p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] transition-all duration-400 backdrop-blur-xl">
           <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">Monthly Revenue</h2>
           <Bar data={revenueChart} />
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300">
+        <div className="bg-gradient-to-br from-white to-gray-50/90 p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] transition-all duration-400 backdrop-blur-xl">
           <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">
             Product Category Distribution
           </h2>
@@ -532,7 +511,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300 w-full overflow-x-auto hidden">
+      <div className="bg-gradient-to-br from-white to-gray-50/90 p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] transition-all duration-400 backdrop-blur-xl w-full overflow-x-auto hidden">
         <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">
           Current Product Stock Levels
         </h2>
@@ -540,12 +519,12 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 mt-10 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300">
+        <div className="bg-gradient-to-br from-white to-gray-50/90 p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] transition-all duration-400 backdrop-blur-xl">
           <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">Monthly Orders</h2>
           <Line data={ordersChart} />
         </div>
 
-       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300">
+       <div className="bg-gradient-to-br from-white to-gray-50/90 p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] transition-all duration-400 backdrop-blur-xl">
       <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">
         Top Product Orders Over Months
       </h2>
@@ -568,7 +547,7 @@ const Dashboard = () => {
       </div>
 
      
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300 mt-10">
+      <div className="bg-gradient-to-br from-white to-gray-50/90 p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] transition-all duration-400 backdrop-blur-xl mt-10">
         <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">Today’s Orders</h2>
 
         {/* 🖥️ Desktop / Tablet Table */}
