@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { db } from "../../firebase";
+import api from "../../api";
 
 export default function StockDetails() {
   const [products, setProducts] = useState([]);
@@ -12,9 +11,12 @@ export default function StockDetails() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const snap = await getDocs(collection(db, "products"));
-        const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        setProducts(data);
+        const res = await api.get("/products");
+        if (res.data.success) {
+          setProducts(res.data.data);
+        } else {
+          setProducts(res.data || []);
+        }
       } catch (err) {
         console.error("Error fetching products:", err);
       } finally {
