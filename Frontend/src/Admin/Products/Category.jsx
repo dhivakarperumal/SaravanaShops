@@ -173,7 +173,7 @@ const Category = () => {
 
   // ─────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 px-3 sm:px-5 lg:px-8 py-2">
+    <div className="min-h-screen  px-3 sm:px-5 lg:px-8 py-2">
 
       {/* ── Toolbar ───────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 bg-white rounded-2xl px-3 sm:px-4 py-3 shadow-sm border border-gray-100">
@@ -303,84 +303,84 @@ const Category = () => {
           {displayed.map((cat) => (
             <div
               key={cat.id}
-              className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              className="group bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-2 border-gray-200 overflow-hidden hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:border-primary/40 hover:-translate-y-1.5 transition-all duration-300 flex flex-col"
             >
-              {/* Image */}
-              <div className="relative h-44 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+              {/* Image Section */}
+              <div className="relative h-56 bg-gray-100 overflow-hidden">
                 {cat.cimgs?.[0] ? (
                   <img
                     src={cat.cimgs[0]}
                     alt={cat.cname}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <MdOutlineCategory className="text-5xl text-gray-300" />
+                  <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                    <MdOutlineCategory className="text-6xl text-gray-200" />
                   </div>
                 )}
+                
+                {/* Floating ID Badge */}
+                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg shadow-sm border border-white/20">
+                  <span className="text-[10px] font-black text-gray-700 tracking-wider uppercase">{cat.catId}</span>
+                </div>
+
                 {/* Image count badge */}
                 {cat.cimgs?.length > 1 && (
-                  <span className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    +{cat.cimgs.length - 1} more
-                  </span>
+                  <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-white/10">
+                    +{cat.cimgs.length - 1}
+                  </div>
                 )}
-                {/* Hover actions */}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
-                  <button
-                    onClick={() => openEditModal(cat)}
-                    className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-green-600 shadow-md hover:scale-110 transition-all cursor-pointer"
-                  >
-                    <FaEdit className="text-sm" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(cat.id)}
-                    className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-red-600 shadow-md hover:scale-110 transition-all cursor-pointer"
-                  >
-                    <FaTrash className="text-sm" />
-                  </button>
-                </div>
+                
+                {/* Subtle gradient overlay at bottom of image for text contrast if needed */}
+                <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
 
-              {/* Info */}
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest">{cat.catId}</span>
-                    <h3 className="font-bold text-gray-800 text-base mt-0.5 truncate">{cat.cname}</h3>
-                  </div>
-                </div>
+              {/* Content Section */}
+              <div className="p-5 flex-1 flex flex-col">
+                <h3 className="font-extrabold text-gray-800 text-lg sm:text-xl truncate mb-1.5 group-hover:text-primary transition-colors">
+                  {cat.cname}
+                </h3>
+                
                 {cat.cdescription && (
-                  <p className="text-xs text-gray-500 mt-1.5 line-clamp-2 leading-relaxed">{cat.cdescription}</p>
+                  <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed mb-4">
+                    {cat.cdescription}
+                  </p>
                 )}
-                {/* Subcategory chips */}
-                {cat.subcategories?.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {cat.subcategories.slice(0, 3).map((s, i) => (
-                      <span key={i} className="bg-primary/8 text-primary text-[10px] font-semibold px-2 py-0.5 rounded-full border border-primary/20">
-                        {s}
-                      </span>
-                    ))}
-                    {cat.subcategories.length > 3 && (
-                      <span className="bg-gray-100 text-gray-500 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                        +{cat.subcategories.length - 3}
-                      </span>
-                    )}
+
+                {/* Subcategories (Pushed down if description is short) */}
+                <div className="mt-auto">
+                  {cat.subcategories?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {cat.subcategories.slice(0, 3).map((s, i) => (
+                        <span key={i} className="bg-gray-50 text-gray-600 text-[11px] font-semibold px-2.5 py-1 rounded-md border border-gray-100">
+                          {s}
+                        </span>
+                      ))}
+                      {cat.subcategories.length > 3 && (
+                        <span className="bg-primary/5 text-primary text-[11px] font-bold px-2.5 py-1 rounded-md">
+                          +{cat.subcategories.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100/80">
+                    <button
+                      onClick={() => openEditModal(cat)}
+                      className="flex items-center justify-center gap-2 py-2.5 bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer border border-transparent hover:border-green-100"
+                    >
+                      <FaEdit className="text-sm" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(cat.id)}
+                      className="flex items-center justify-center gap-2 py-2.5 bg-gray-50 hover:bg-red-50 text-gray-600 hover:text-red-500 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer border border-transparent hover:border-red-100"
+                    >
+                      <FaTrash className="text-sm" />
+                      <span>Delete</span>
+                    </button>
                   </div>
-                )}
-                {/* Footer actions */}
-                <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
-                  <button
-                    onClick={() => openEditModal(cat)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    <FaEdit className="text-[11px]" /> Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(cat.id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-red-50 text-red-500 hover:bg-red-100 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    <FaTrash className="text-[11px]" /> Delete
-                  </button>
                 </div>
               </div>
             </div>
