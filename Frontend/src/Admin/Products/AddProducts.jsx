@@ -578,7 +578,7 @@ export default function AddProducts() {
               <select
                 value={productType}
                 onChange={(e) => setProductType(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
               >
                 <option value="Bangles">Bangles</option>
                 <option value="Sarees">Sarees</option>
@@ -595,7 +595,7 @@ export default function AddProducts() {
                 name="category"
                 value={form.category}
                 onChange={handleCategoryChange}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
               >
                 <option value="">Select Category</option>
                 {categories
@@ -618,7 +618,7 @@ export default function AddProducts() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, subcategory: e.target.value }))
                 }
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
               >
                 <option value="">Select Subcategory</option>
                 {filteredSubcategories.map((s, idx) => (
@@ -640,7 +640,7 @@ export default function AddProducts() {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="e.g. Red Silk Saree"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
               />
             </div>
 
@@ -655,7 +655,7 @@ export default function AddProducts() {
                 onChange={handleChange}
                 rows={3}
                 placeholder="Product description..."
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none"
               />
             </div>
 
@@ -670,7 +670,7 @@ export default function AddProducts() {
                 onChange={handleChange}
                 rows={3}
                 placeholder="Additional notes..."
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none"
               />
             </div>
           </div>
@@ -693,7 +693,7 @@ export default function AddProducts() {
                 value={form.mrp}
                 onChange={handleChange}
                 placeholder="0.00"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
               />
             </div>
 
@@ -707,7 +707,7 @@ export default function AddProducts() {
                 value={form.offer}
                 onChange={handleChange}
                 placeholder="e.g. 15"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
               />
             </div>
 
@@ -720,7 +720,7 @@ export default function AddProducts() {
                 value={form.sellingprice}
                 onChange={handleSellingPriceChange}
                 placeholder="0.00"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all bg-green-50/50 font-bold text-green-700"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all bg-green-50/50 font-bold text-green-700"
               />
             </div>
 
@@ -737,7 +737,7 @@ export default function AddProducts() {
                 value={form.rating}
                 onChange={handleChange}
                 placeholder="4.5"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
               />
             </div>
           </div>
@@ -757,7 +757,7 @@ export default function AddProducts() {
               <select
                 value={banglesCountType}
                 onChange={(e) => setBanglesCountType(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
               >
                 <option value="SingleColor">Single Color</option>
                 <option value="MultiColor">Multi Color</option>
@@ -772,7 +772,7 @@ export default function AddProducts() {
                   <button
                     type="button"
                     onClick={handleAddBangleRow}
-                    className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary hover:text-white transition-all cursor-pointer"
+                    className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-md hover:bg-primary hover:text-white transition-all cursor-pointer"
                   >
                     + Add New Color
                   </button>
@@ -1070,11 +1070,11 @@ export default function AddProducts() {
                     multiple
                     ref={fileInputRefs.Bangles}
                     onChange={(e) => handleFiles(e, "Bangles")}
-                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                    className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
                   />
                   <div className="flex gap-3 flex-wrap mt-4">
                     {banglesMultiImages.map((img, idx) => (
-                      <div key={idx} className="relative group rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                      <div key={idx} className="relative group rounded-md overflow-hidden shadow-sm border border-gray-100">
                         <img
                           src={img}
                           alt="bangle"
@@ -1124,7 +1124,7 @@ export default function AddProducts() {
                 value={sareeFabricType}
                 onChange={(e) => setSareeFabricType(e.target.value)}
                 placeholder="e.g. Silk, Cotton"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
               />
             </div>
             <div>
@@ -1132,7 +1132,7 @@ export default function AddProducts() {
               <select
                 value={sareeBlouseAvailable}
                 onChange={(e) => setSareeBlouseAvailable(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
               >
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
@@ -1146,11 +1146,11 @@ export default function AddProducts() {
                 multiple
                 ref={fileInputRefs.Sarees}
                 onChange={(e) => handleFiles(e, "Sarees")}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
               />
               <div className="flex gap-3 flex-wrap mt-4">
                 {sareeImages.map((img, idx) => (
-                  <div key={idx} className="relative group rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                  <div key={idx} className="relative group rounded-md overflow-hidden shadow-sm border border-gray-100">
                     <img src={img} alt="saree" className="w-24 h-24 object-cover" />
                     <button
                       type="button"
@@ -1171,7 +1171,7 @@ export default function AddProducts() {
                 value={sareeStock}
                 onChange={(e) => setSareeStock(Number(e.target.value))}
                 placeholder="0"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
               />
             </div>
           </div>
@@ -1209,7 +1209,7 @@ export default function AddProducts() {
                         )
                       }
                       placeholder={`Item ${idx + 1} (e.g. Necklace)`}
-                      className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                      className="flex-1 border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                     />
                     {jewelListItems.length > 1 && (
                       <button
@@ -1233,7 +1233,7 @@ export default function AddProducts() {
                   multiple
                   ref={fileInputRefs.Jewels}
                   onChange={(e) => handleFiles(e, "Jewels")}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                  className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
                 />
                 <div className="flex gap-3 flex-wrap mt-4">
                   {jewelImages.map((img, idx) => (
@@ -1258,7 +1258,7 @@ export default function AddProducts() {
                   value={jewelStock}
                   onChange={(e) => setJewelStock(Number(e.target.value))}
                   placeholder="0"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                  className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                 />
               </div>
             </div>
