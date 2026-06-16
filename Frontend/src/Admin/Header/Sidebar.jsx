@@ -45,7 +45,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {/* Section Header */}
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center w-full py-2.5 px-3 cursor-pointer font-medium rounded-xl transition-all duration-300 group ${
+        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${
           open ? "text-white" : "text-gray-400"
         } hover:bg-gray-800 hover:text-white ${
           isExpanded ? "justify-start" : "justify-center"
@@ -66,7 +66,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {open && (
         <ul
           className={`text-sm space-y-1.5 mt-2 overflow-hidden transition-all duration-500 ease-in-out ${
-            isExpanded ? "pl-11" : "pl-0"
+            isExpanded ? "pl-8" : "pl-0"
           } ${
             !isExpanded
               ? "absolute left-20 top-0 bg-gray-800 shadow-2xl rounded-xl w-52 z-50 border border-gray-700 py-2"
@@ -79,9 +79,9 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                 to={item.path}
                 onClick={() => onLinkClick?.()}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 py-2 px-3 rounded-xl transition-all duration-300 ${
+                  `flex items-center gap-3 py-3 px-3 rounded-sm transition-all duration-300 ${
                     isActive
-                      ? "bg-primary text-white font-semibold shadow-md shadow-primary/30 translate-x-1"
+                      ? "bg-primary text-white font-bold shadow-md shadow-primary/30 translate-x-1"
                       : "text-gray-400 hover:text-white hover:bg-gray-700 hover:translate-x-1"
                   }`
                 }
@@ -160,11 +160,11 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
   };
 
   const navLinkClass = ({ isActive }) =>
-    `flex items-center font-medium rounded-xl transition-all duration-300 group mb-2 ${
+    `flex items-center font-medium rounded-sm transition-all duration-300 group mb-2 ${
       isActive
         ? "bg-primary text-white shadow-md shadow-primary/30"
         : "text-gray-400 hover:bg-gray-800 hover:text-white"
-    } ${isExpanded ? "px-3 py-2.5" : "p-3 justify-center"}`;
+    } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
 
   return (
     <nav className="space-y-2 p-4 flex flex-col h-full bg-gray-900 shadow-xl border-r border-gray-800">
@@ -173,7 +173,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <AiFillDashboard />
         </span>
-        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Dashboard</span>}
+        {isExpanded && <span className="ml-3 font-bold flex-1 text-left tracking-wide">Dashboard</span>}
       </NavLink>
 
       {/* Orders */}
@@ -209,7 +209,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <FaKey />
         </span>
-        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Razerpay Key</span>}
+        {isExpanded && <span className="ml-3 font-bold flex-1 text-left tracking-wide">Razerpay Key</span>}
       </NavLink>
 
       {/* Users */}
@@ -241,7 +241,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <FaReceipt />
         </span>
-        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Billings</span>}
+        {isExpanded && <span className="ml-3 font-bold flex-1 text-left tracking-wide">Billings</span>}
       </NavLink>
 
       {/* Upload Videos */}
@@ -249,7 +249,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <AiOutlineVideoCamera />
         </span>
-        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Upload Videos</span>}
+        {isExpanded && <span className="ml-3 flex-1 font-bold text-left tracking-wide">Upload Videos</span>}
       </NavLink>
 
       {/* Reviews */}
@@ -257,7 +257,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <FaStar />
         </span>
-        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Product Reviews</span>}
+        {isExpanded && <span className="ml-3 flex-1 font-bold text-left tracking-wide">Reviews</span>}
       </NavLink>
 
       {/* Settings */}
@@ -286,7 +286,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <FaHome />
         </span>
-        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Back Home</span>}
+        {isExpanded && <span className="ml-3 flex-1 font-bold text-left tracking-wide">Back Home</span>}
       </NavLink>
     </nav>
   );
