@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import imageCompression from "browser-image-compression";
 import api from "../../api";
 import toast from "react-hot-toast";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaTimes } from "react-icons/fa";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; 
 const MAX_IMAGE_SIZE = 1080; 
@@ -1028,7 +1028,7 @@ export default function AddProducts() {
 
             {/* Multi Color */}
             {banglesCountType === "MultiColor" && (
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
                     Upload Images
@@ -1060,7 +1060,7 @@ export default function AddProducts() {
                   </div>
                 </div>
                 
-                <div className="max-w-sm">
+                <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
                     Total Stock
                   </label>
@@ -1107,7 +1107,7 @@ export default function AddProducts() {
               </select>
             </div>
 
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-1">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Upload Images</label>
               <input
                 type="file"
@@ -1165,9 +1165,9 @@ export default function AddProducts() {
                   + Add Item
                 </button>
               </label>
-              <div className="space-y-3 max-w-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {jewelListItems.map((item, idx) => (
-                  <div key={idx} className="flex gap-2">
+                  <div key={idx} className="flex gap-2 items-center">
                     <input
                       type="text"
                       value={item}
@@ -1193,40 +1193,42 @@ export default function AddProducts() {
               </div>
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Upload Images</label>
-              <input
-                type="file"
-                multiple
-                ref={fileInputRefs.Jewels}
-                onChange={(e) => handleFiles(e, "Jewels")}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
-              />
-              <div className="flex gap-3 flex-wrap mt-4">
-                {jewelImages.map((img, idx) => (
-                  <div key={idx} className="relative group rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                    <img src={img} alt="jewel" className="w-24 h-24 object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(idx, "Jewels")}
-                      className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xl cursor-pointer"
-                    >
-                      &times;
-                    </button>
-                  </div>
-                ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Upload Images</label>
+                <input
+                  type="file"
+                  multiple
+                  ref={fileInputRefs.Jewels}
+                  onChange={(e) => handleFiles(e, "Jewels")}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                />
+                <div className="flex gap-3 flex-wrap mt-4">
+                  {jewelImages.map((img, idx) => (
+                    <div key={idx} className="relative group rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                      <img src={img} alt="jewel" className="w-24 h-24 object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(idx, "Jewels")}
+                        className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xl cursor-pointer"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="max-w-sm">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Total Stock</label>
-              <input
-                type="number"
-                value={jewelStock}
-                onChange={(e) => setJewelStock(Number(e.target.value))}
-                placeholder="0"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
-              />
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Total Stock</label>
+                <input
+                  type="number"
+                  value={jewelStock}
+                  onChange={(e) => setJewelStock(Number(e.target.value))}
+                  placeholder="0"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                />
+              </div>
             </div>
           </div>
         </div>
