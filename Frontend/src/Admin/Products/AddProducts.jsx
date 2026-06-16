@@ -342,7 +342,7 @@ export default function AddProducts() {
   const handleAddBangleRow = () => {
     setBanglesColorTable((prev) => [
       ...prev,
-      { id: prev.length + 1, color: "", size: [], stock: {}, image: null, productName: "" },
+      { id: prev.length + 1, color: "", size: [], stock: {}, images: [], productName: "" },
     ]);
   };
 
@@ -398,7 +398,7 @@ export default function AddProducts() {
                 Object.entries(color.stock).map(([k, v]) => [String(k), v])
               )
             : {},
-          image: color.image || null,
+          images: Array.isArray(color.images) ? color.images : (color.image ? [color.image] : []),
           productName: color.productName || "",
         }));
         setBanglesColorTable(restoreColorTable);
@@ -859,24 +859,40 @@ export default function AddProducts() {
                           <input
                             type="file"
                             accept="image/*"
+                            multiple
                             onChange={async (e) => {
-                              const file = e.target.files[0];
-                              if (!file) return;
-                              const url = await compressAndUpload(file);
+                              const files = Array.from(e.target.files);
+                              if (!files.length) return;
+                              const urls = await Promise.all(files.map(f => compressAndUpload(f)));
                               setBanglesColorTable((prev) =>
                                 prev.map((r) =>
-                                  r.id === row.id ? { ...r, image: url } : r
+                                  r.id === row.id ? { ...r, images: [...(r.images || []), ...urls] } : r
                                 )
                               );
                             }}
                           />
-                          {row.image && (
-                            <img
-                              src={row.image}
-                              alt="bangle"
-                              className="w-16 h-16 object-cover mt-1"
-                            />
-                          )}
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {row.images && row.images.map((img, idx) => (
+                              <div key={idx} className="relative group">
+                                <img
+                                  src={img}
+                                  alt="bangle"
+                                  className="w-16 h-16 object-cover rounded"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setBanglesColorTable((prev) =>
+                                    prev.map((r) =>
+                                      r.id === row.id ? { ...r, images: r.images.filter((_, i) => i !== idx) } : r
+                                    )
+                                  )}
+                                  className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded cursor-pointer"
+                                >
+                                  <FaTimes />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         </td>
                         
                         <td className="border text-center border-gray-300 p-2 align-middle">
@@ -978,25 +994,41 @@ export default function AddProducts() {
                       <input
                         type="file"
                         accept="image/*"
+                        multiple
                         onChange={async (e) => {
-                          const file = e.target.files[0];
-                          if (!file) return;
-                          const url = await compressAndUpload(file);
+                          const files = Array.from(e.target.files);
+                          if (!files.length) return;
+                          const urls = await Promise.all(files.map(f => compressAndUpload(f)));
                           setBanglesColorTable((prev) =>
                             prev.map((r) =>
-                              r.id === row.id ? { ...r, image: url } : r
+                              r.id === row.id ? { ...r, images: [...(r.images || []), ...urls] } : r
                             )
                           );
                         }}
                         className="mt-1"
                       />
-                      {row.image && (
-                        <img
-                          src={row.image}
-                          alt="bangle"
-                          className="w-24 h-24 object-cover mt-1"
-                        />
-                      )}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {row.images && row.images.map((img, idx) => (
+                          <div key={idx} className="relative group">
+                            <img
+                              src={img}
+                              alt="bangle"
+                              className="w-24 h-24 object-cover rounded"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setBanglesColorTable((prev) =>
+                                prev.map((r) =>
+                                  r.id === row.id ? { ...r, images: r.images.filter((_, i) => i !== idx) } : r
+                                )
+                              )}
+                              className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded cursor-pointer text-xl"
+                            >
+                              <FaTimes />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
                     <button
