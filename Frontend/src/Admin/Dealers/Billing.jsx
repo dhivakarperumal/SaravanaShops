@@ -1007,9 +1007,15 @@ export default function Billing() {
                             }
                           />
                           <button
-                            className="w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
-                            onClick={() => handleQuantityChange(key, qty + 1)}
-                            disabled={qty >= getAvailableStock(p, size, color)}
+                            className={`w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded ${qty >= getAvailableStock(p, size, color) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={() => {
+                              const stock = getAvailableStock(p, size, color);
+                              if (qty >= stock) {
+                                toast.error(`Only ${stock} items available in stock.`);
+                              } else {
+                                handleQuantityChange(key, qty + 1);
+                              }
+                            }}
                           >
                             +
                           </button>
@@ -1134,9 +1140,15 @@ export default function Billing() {
                   onChange={e => handleQuantityChange(key, Number(e.target.value))}
                 />
                 <button
-                  className="w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
-                  onClick={() => handleQuantityChange(key, qty + 1)}
-                  disabled={qty >= getAvailableStock(p, size, color)}
+                  className={`w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded ${qty >= getAvailableStock(p, size, color) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => {
+                    const stock = getAvailableStock(p, size, color);
+                    if (qty >= stock) {
+                      toast.error(`Only ${stock} items available in stock.`);
+                    } else {
+                      handleQuantityChange(key, qty + 1);
+                    }
+                  }}
                 >
                   +
                 </button>
