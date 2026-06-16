@@ -169,8 +169,8 @@ const AddReviews = () => {
               <button
                 onClick={() => setViewMode("card")}
                 className={`p-2 rounded-lg ${viewMode === "card"
-                    ? "bg-white shadow text-primary"
-                    : "text-gray-400"
+                  ? "bg-white shadow text-primary"
+                  : "text-gray-400"
                   }`}
               >
                 <FaTh />
@@ -179,8 +179,8 @@ const AddReviews = () => {
               <button
                 onClick={() => setViewMode("table")}
                 className={`p-2 rounded-lg ${viewMode === "table"
-                    ? "bg-white shadow text-primary"
-                    : "text-gray-400"
+                  ? "bg-white shadow text-primary"
+                  : "text-gray-400"
                   }`}
               >
                 <FaList />
@@ -200,72 +200,77 @@ const AddReviews = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {reviews.map((item) => (
-            <div
-              key={item.id}
-              className="flex flex-col md:flex-row gap-4 shadow p-4 rounded-lg bg-white"
-            >
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-24 h-24 object-cover rounded-md"
-              />
-              <div className="flex-1">
-                <div className="flex justify-between flex-wrap">
-                  <div>
-                    <span className="font-semibold">{item.user}</span>
-                    <h3 className="text-lg font-semibold">{item.title}</h3>
-                    <p className="text-sm text-gray-500">{item.category}</p>
-                  </div>
-                  <div className="flex items-center gap-1 text-yellow-500 text-sm">
-                    {[...Array(5)].map((_, i) => (
-                      <FaStar
-                        key={i}
-                        className={
-                          i < Math.round(item.rating)
-                            ? "text-yellow-500"
-                            : "text-gray-300"
-                        }
-                      />
-                    ))}
-                    <span className="text-black ml-1">{item.rating}/5</span>
+          {reviews
+            .filter((item) =>
+              item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.user?.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((item) => (
+              <div
+                key={item.id}
+                className="flex flex-col md:flex-row gap-4 shadow p-4 rounded-lg bg-white"
+              >
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-24 h-24 object-cover rounded-md"
+                />
+                <div className="flex-1">
+                  <div className="flex justify-between flex-wrap">
+                    <div>
+                      <span className="font-semibold">{item.user}</span>
+                      <h3 className="text-lg font-semibold">{item.title}</h3>
+                      <p className="text-sm text-gray-500">{item.category}</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-yellow-500 text-sm">
+                      {[...Array(5)].map((_, i) => (
+                        <FaStar
+                          key={i}
+                          className={
+                            i < Math.round(item.rating)
+                              ? "text-yellow-500"
+                              : "text-gray-300"
+                          }
+                        />
+                      ))}
+                      <span className="text-black ml-1">{item.rating}/5</span>
 
+                    </div>
                   </div>
-                </div>
-                <p className="mt-2 text-gray-600 text-sm">{item.desc}</p>
-                <div className="flex justify-between text-sm mt-2">
-                  <div className="text-gray-500">
-                    <span className="font-medium">{item.reviews}</span> Reviews ·{" "}
-                    <span>{item.rate}</span> Avg. Rating
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    <button
-                      onClick={() => handleEdit(item)}
-                      className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-gray text-xs font-semibold"
-                    >
-                      <HiPencil className="text-2xl" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-gray text-xs font-semibold"
-                    >
-                      <HiTrash className="text-2xl" />
-                    </button>
-                    <span
-                      onClick={() => toggleTick(item)}
-                      className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-xs font-semibold"
-                    >
-                      {item.tick ? (
-                        <TiTick size={25} className="text-green-600" />
-                      ) : (
-                        <TiTickOutline size={25} className="text-red-500" />
-                      )}
-                    </span>
+                  <p className="mt-2 text-gray-600 text-sm">{item.desc}</p>
+                  <div className="flex justify-between text-sm mt-2">
+                    <div className="text-gray-500">
+                      <span className="font-medium">{item.reviews}</span> Reviews ·{" "}
+                      <span>{item.rate}</span> Avg. Rating
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-gray text-xs font-semibold"
+                      >
+                        <HiPencil className="text-2xl" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-gray text-xs font-semibold"
+                      >
+                        <HiTrash className="text-2xl" />
+                      </button>
+                      <span
+                        onClick={() => toggleTick(item)}
+                        className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-xs font-semibold"
+                      >
+                        {item.tick ? (
+                          <TiTick size={25} className="text-green-600" />
+                        ) : (
+                          <TiTickOutline size={25} className="text-red-500" />
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
 
         {/* Modal */}
