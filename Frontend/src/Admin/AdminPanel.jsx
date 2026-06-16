@@ -10,6 +10,8 @@ import {
   FaTwitter,
   FaYoutube,
   FaHome,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -265,14 +267,22 @@ const AdminPanel = () => {
         onMouseEnter={() => setIsSidebarHovered(true)}
         onMouseLeave={() => setIsSidebarHovered(false)}
       >
+        {/* Toggle Button at vertical center of right edge */}
+        <button
+          onClick={() => setIsSidebarOpen((prev) => !prev)}
+          className="hidden md:flex absolute top-1/2 -right-4 transform -translate-y-1/2 w-8 h-8 bg-gray-900 border border-gray-700 shadow-lg rounded-full items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 z-50 transition-all duration-300"
+        >
+          {isSidebarOpen ? <FaChevronLeft size={12} /> : <FaChevronRight size={12} />}
+        </button>
+
         <div className="flex items-center bg-gray-900 justify-between px-4 py-4 border-b border-gray-800 relative">
           <div className="flex items-center w-full gap-3 overflow-hidden">
             {/* Logo Image with a crisp background plate */}
-            <div className="bg-white p-1.5 rounded-xl shadow-md flex-shrink-0 flex items-center justify-center">
+            <div className="bg-white p-1 rounded-xl shadow-md flex-shrink-0 flex items-center justify-center">
               <img
                 src={logo}
                 alt="Admin Logo"
-                className="w-10 h-10 object-contain"
+                className="w-12 h-12 object-contain"
               />
             </div>
             
@@ -339,19 +349,11 @@ const AdminPanel = () => {
         <header
           className={`fixed top-0 left-0 right-0 z-40 shadow bg-white text-primary flex items-center justify-between px-4 h-20 py-3 transition-all duration-300 ${contentMargin}`}
         >
-          <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="flex items-center gap-4 w-full md:w-auto ml-10 md:ml-0">
             {/* Mobile hamburger (opens mobile menu) */}
             <button
               className="md:hidden text-2xl flex items-center justify-center h-10 w-10 rounded-full hover:bg-gray-100 transition-colors"
               onClick={() => setMobileMenu(true)}
-            >
-              <FaBars />
-            </button>
-
-            {/* Desktop hamburger (collapse / expand sidebar) */}
-            <button
-              className="hidden md:flex text-2xl text-black items-center justify-center h-10 w-10 rounded-full hover:bg-gray-100 transition-colors"
-              onClick={() => setIsSidebarOpen((prev) => !prev)}
             >
               <FaBars />
             </button>
