@@ -44,7 +44,7 @@ export default function AddProducts() {
 
   // BANGLES
   const [banglesCountType, setBanglesCountType] = useState("SingleColor");
-  const [banglesColorTable, setBanglesColorTable] = useState([]);
+  const [banglesColorTable, setBanglesColorTable] = useState([{ id: 1, color: "", size: [], stock: {}, images: [], productName: "" }]);
   const [banglesMultiImages, setBanglesMultiImages] = useState([]);
   const [banglesStock, setBanglesStock] = useState("");
 
