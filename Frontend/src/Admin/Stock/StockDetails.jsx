@@ -8,6 +8,19 @@ export default function StockDetails() {
   const [expandedId, setExpandedId] = useState(null);
   const navigate = useNavigate();
 
+  const calculateColorStock = (c) => {
+    if (!c.stock) return 0;
+    return Object.values(c.stock).reduce((sum, val) => sum + (Number(val) || 0), 0);
+  };
+
+  const calculateTotalStock = (p) => {
+    if (p.productType === "Bangles" && p.count === "SingleColor") {
+      if (!p.colors || !Array.isArray(p.colors)) return 0;
+      return p.colors.reduce((total, c) => total + calculateColorStock(c), 0);
+    }
+    return p.stock || 0;
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -63,7 +76,7 @@ export default function StockDetails() {
             <td className="px-3 py-4 font-semibold text-blue-600">{p.productId}</td>
             <td className="px-3 py-4">{p.name}</td>
             <td className="px-3 py-4">{p.productType}</td>
-            <td className="px-3 py-4">{p.stock}</td>
+            <td className="px-3 py-4">{calculateTotalStock(p)}</td>
           </tr>
 
           {/* Expanded row */}
@@ -82,12 +95,17 @@ export default function StockDetails() {
                       {p.productType === "Bangles" && p.count === "SingleColor" &&
                               p.colors?.map(c => (
                                 <tr key={c.color} className="border border-gray-300 text-center">
-                                  <td className="px-3 py-4 font-semibold">{c.color}</td>
+                                  <td className="px-3 py-4 font-semibold">
+                                    <div className="flex items-center justify-center gap-2">
+                                      <div className="w-5 h-5 rounded-full border border-gray-300" style={{ backgroundColor: c.color }} title={c.color}></div>
+                                      <span>{c.color}</span>
+                                    </div>
+                                  </td>
                                   <td className="px-3 py-4">
                                     {c.size.map(sz => (
                                       <div key={sz}>{sz}: {c.stock[sz]}</div>
                                     ))}
-                                    <div>Total: {c.stocks}</div>
+                                    <div>Total: {calculateColorStock(c)}</div>
                                   </td>
                                 </tr>
                               ))
@@ -153,7 +171,7 @@ export default function StockDetails() {
           <div className="text-gray-700">{p.name}</div>
           <div className="text-gray-500 text-sm">{p.productType}</div>
         </div>
-        <div className="text-gray-800 font-semibold">{p.stock}</div>
+        <div className="text-gray-800 font-semibold">{calculateTotalStock(p)}</div>
       </div>
 
       {/* Expanded info */}
@@ -162,11 +180,14 @@ export default function StockDetails() {
           {p.productType === "Bangles" && p.count === "SingleColor" &&
             p.colors?.map(c => (
               <div key={c.color} className="border border-gray-200 rounded p-2">
-                <div className="font-semibold">{c.color}</div>
+                <div className="font-semibold flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: c.color }} title={c.color}></div>
+                  <span>{c.color}</span>
+                </div>
                 {c.size.map(sz => (
                   <div key={sz} className="text-sm">{sz}: {c.stock[sz]}</div>
                 ))}
-                <div className="text-sm font-medium">Total: {c.stocks}</div>
+                <div className="text-sm font-medium">Total: {calculateColorStock(c)}</div>
               </div>
             ))
           }
