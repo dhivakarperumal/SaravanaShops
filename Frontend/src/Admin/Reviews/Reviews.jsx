@@ -249,7 +249,7 @@ const AddReviews = () => {
 
           {/* Count */}
           <span className="text-xs sm:text-sm text-gray-500 font-medium hidden sm:block">
-            {reviews.length} reviews
+            {displayedReviews.length} reviews
           </span>
 
           <div className="flex items-center gap-2 ml-auto">
@@ -333,7 +333,7 @@ const AddReviews = () => {
                     Category
                   </h4>
 
-                  {categoryOptions.map((cat) => (
+                  {["", ...categoryOptions].map((cat) => (
                     <label
                       key={cat}
                       className="flex items-center gap-2 py-1 cursor-pointer"
@@ -352,7 +352,7 @@ const AddReviews = () => {
                       />
 
                       <span className="text-sm text-gray-700">
-                        {cat}
+                        {cat || "All"}
                       </span>
                     </label>
                   ))}
@@ -364,7 +364,7 @@ const AddReviews = () => {
                     Product
                   </h4>
 
-                  {productOptions.map((product) => (
+                  {["", ...productOptions].map((product) => (
                     <label
                       key={product}
                       className="flex items-center gap-2 py-1 cursor-pointer"
@@ -382,7 +382,7 @@ const AddReviews = () => {
                       />
 
                       <span className="text-sm text-gray-700">
-                        {product}
+                        {product || "All"}
                       </span>
                     </label>
                   ))}
