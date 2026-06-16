@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 
 import toast from "react-hot-toast";
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaSearch, FaFilter, FaThLarge, FaList, FaPlus } from 'react-icons/fa';
+import api from "../api";
 
 export default function RazorpayKeyForm() {
   const [name, setName] = useState("");
@@ -10,6 +11,8 @@ export default function RazorpayKeyForm() {
   const [keys, setKeys] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState("table");
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -18,12 +21,12 @@ export default function RazorpayKeyForm() {
     setEditingId(null);
   };
 
-  const API_URL = import.meta.env.VITE_API_URL;
+
 
   // Fetch existing keys
   const fetchKeys = async () => {
     try {
-      const response = await fetch(`${API_URL}/razorpay`);
+      const response = await fetch(`${api}/razorpay`);
       if (!response.ok) throw new Error('Failed to fetch keys');
       const data = await response.json();
       setKeys(data);
@@ -49,7 +52,7 @@ export default function RazorpayKeyForm() {
       setLoading(true);
 
       if (editingId) {
-        const response = await fetch(`${API_URL}/razorpay/${editingId}`, {
+        const response = await fetch(`${api}/razorpay/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, key })
@@ -57,7 +60,7 @@ export default function RazorpayKeyForm() {
         if (!response.ok) throw new Error('Failed to update key');
         toast.success("Key updated successfully!");
       } else {
-        const response = await fetch(`${API_URL}/razorpay`, {
+        const response = await fetch(`${api}/razorpay`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, key })
@@ -86,7 +89,7 @@ export default function RazorpayKeyForm() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this key?")) return;
     try {
-      const response = await fetch(`${API_URL}/razorpay/${id}`, {
+      const response = await fetch(`${api}/razorpay/${id}`, {
         method: 'DELETE'
       });
       if (!response.ok) throw new Error('Failed to delete key');
@@ -98,20 +101,15 @@ export default function RazorpayKeyForm() {
     }
   };
 
+  const filteredKeys = keys.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.key_id || item.key).toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="max-w-6xl mx-auto mt-10 p-6 bg-white shadow rounded-lg relative">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-bold">
-          Saved Razorpay Keys
-          <span className="text-sm text-gray-500 font-normal ml-2">Total: {keys.length}</span>
-        </h3>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors cursor-pointer"
-        >
-          + Add New Key
-        </button>
-      </div>
+    <div className="max-w-6xl mx-auto mt-10 p-6 relative">
+      
 
       {/* Modal */}
       {isModalOpen && (
@@ -173,16 +171,71 @@ export default function RazorpayKeyForm() {
         </div>
       )}
 
-      {/* Table Section */}
+      {/* Toolbar Section */}
+      <div className="flex flex-col md:flex-row items-center justify-between p-3 bg-white border border-gray-100 rounded-2xl shadow-sm mb-6 gap-4">
+        {/* Left Section */}
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="relative w-full md:w-72">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search keys..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-[#F8F9FA] border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all text-sm"
+            />
+          </div>
+          <span className="text-sm text-gray-500 whitespace-nowrap hidden sm:block">
+            {filteredKeys.length} keys
+          </span>
+        </div>
 
-  {keys.length === 0 ? (
+        {/* Right Section */}
+        <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+          {/* Filters Button */}
+          <button className="hidden sm:flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-gray-600 bg-white hover:bg-gray-50 transition-colors text-sm font-medium">
+            <FaFilter className="text-gray-700" /> Filters
+          </button>
+          
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-[#F8F9FA] p-1 rounded-xl border border-gray-200">
+            <button 
+              onClick={() => setViewMode('card')}
+              className={`p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center ${viewMode === 'card' ? 'bg-white shadow-sm text-[#9B66FF]' : 'text-gray-400 hover:text-gray-600'}`}
+              title="Grid View"
+            >
+              <FaThLarge size={16} />
+            </button>
+            <button 
+              onClick={() => setViewMode('table')}
+              className={`p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center ${viewMode === 'table' ? 'bg-white shadow-sm text-gray-600' : 'text-gray-400 hover:text-gray-600'}`}
+              title="List View"
+            >
+              <FaList size={16} />
+            </button>
+          </div>
+
+          {/* Add Button */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-gradient-to-r from-[#B484FF] to-[#9966FF] text-white px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity text-sm font-medium shadow-sm cursor-pointer"
+          >
+            <FaPlus /> Add Key
+          </button>
+        </div>
+      </div>
+
+      {/* Content Section */}
+
+  {filteredKeys.length === 0 ? (
     <p className="text-gray-500 text-center border border-dashed border-gray-300 rounded-lg py-10">
       No keys found.
     </p>
   ) : (
     <>
-      {/* Desktop Table */}
-      <div className="hidden sm:block overflow-x-auto max-h-[400px]  rounded-lg">
+      {/* Table View */}
+      {viewMode === 'table' && (
+      <div className="overflow-x-auto max-h-[400px] rounded-lg">
         <table className="min-w-full text-sm">
           <thead className="bg-primary text-white sticky top-0">
             <tr>
@@ -192,7 +245,7 @@ export default function RazorpayKeyForm() {
             </tr>
           </thead>
           <tbody>
-            {keys.map((item) => (
+            {filteredKeys.map((item) => (
               <tr key={item.id} className="border border-gray-200 hover:bg-gray-50 transition">
                 <td className="px-3 py-4">{item.name}</td>
                 <td className="px-3 py-4">{item.key_id || item.key}</td>
@@ -215,37 +268,42 @@ export default function RazorpayKeyForm() {
           </tbody>
         </table>
       </div>
+      )}
 
-      {/* Mobile Card View */}
-      <div className="sm:hidden flex flex-col gap-4 max-h-[400px] overflow-y-auto">
-        {keys.map((item) => (
+      {/* Card View */}
+      {viewMode === 'card' && (
+      <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto p-2">
+        {filteredKeys.map((item) => (
           <div
             key={item.id}
-            className="border rounded-lg shadow p-4 flex flex-col gap-2 bg-white"
+            className="border rounded-lg shadow-sm p-4 flex flex-col gap-3 bg-white hover:shadow-md transition"
           >
-            <div>
-              <span className="font-semibold">Name:</span> {item.name}
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-500 uppercase font-semibold">Name</span> 
+              <span className="font-medium text-gray-800 truncate">{item.name}</span>
             </div>
-            <div>
-              <span className="font-semibold">Key ID:</span> {item.key_id || item.key}
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-500 uppercase font-semibold">Key ID</span> 
+              <span className="font-medium text-gray-800 break-all">{item.key_id || item.key}</span>
             </div>
-            <div className="flex gap-2 mt-2">
+            <div className="flex gap-2 mt-auto pt-2 border-t">
               <button
                 onClick={() => handleEdit(item)}
-                className="flex-1 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="flex-1 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded transition flex justify-center items-center gap-2"
               >
-                Edit
+                <FaEdit size={14} /> Edit
               </button>
               <button
                 onClick={() => handleDelete(item.id)}
-                className="flex-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                className="flex-1 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded transition flex justify-center items-center gap-2"
               >
-                Delete
+                <FaTrash size={14} /> Delete
               </button>
             </div>
           </div>
         ))}
       </div>
+      )}
     </>
   )}
 
