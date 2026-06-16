@@ -275,7 +275,7 @@ const AdminPanel = () => {
           {isSidebarOpen ? <FaChevronLeft size={12} /> : <FaChevronRight size={12} />}
         </button>
 
-        <div className="flex items-center bg-gray-900 justify-between px-4 py-4 border-b border-gray-800 relative">
+        <div className="flex items-center bg-gray-900 justify-between px-4 py-3 border-b border-gray-800 relative">
           <div className="flex items-center w-full gap-3 overflow-hidden">
             {/* Logo Image with a crisp background plate */}
             <div className="bg-white p-1 rounded-xl shadow-md flex-shrink-0 flex items-center justify-center">
@@ -358,11 +358,13 @@ const AdminPanel = () => {
               <FaBars />
             </button>
 
-            <div className="flex-col hidden sm:block">
-              <h1 className="font-bold text-xl text-primary whitespace-nowrap capitalize">
-                {activeTab}
+            <div className="flex-col hidden sm:flex justify-center ml-2">
+              <h1 className="font-extrabold text-2xl text-gray-800 tracking-tight whitespace-nowrap capitalize leading-tight drop-shadow-sm">
+                {activeTab || "Dashboard"}
               </h1>
-              <p className="text-[13px] text-black">Hello, {userName || "Admin"} Welcome  </p>
+              <p className="text-[13px] font-medium text-gray-500 mt-0.5">
+                Welcome back, <span className="text-primary font-semibold">{userName || "Admin"}</span> 👋
+              </p>
             </div>
           </div>
 
