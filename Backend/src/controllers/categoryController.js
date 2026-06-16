@@ -29,18 +29,13 @@ exports.getCategories = async (req, res) => {
 // ── POST create category ───────────────────────────────────
 exports.createCategory = async (req, res) => {
   try {
-    const { catId, cname, cdescription, cimgs = [], subcategories = [] } = req.body;
-
-    if (!cname || !cdescription) {
-      return res.status(400).json({ success: false, message: 'Name and description are required.' });
-    }
+    const { catId, cname, cdescription, cimgs, subcategories, productType } = req.body;
+    if (!cname) return res.status(400).json({ success: false, message: 'cname required' });
 
     const id = catId || (await generateCategoryId());
-
     await pool.query(
-      `INSERT INTO categories (catId, cname, cdescription, cimgs, subcategories)
-       VALUES (?, ?, ?, ?, ?)`,
-      [id, cname, cdescription, JSON.stringify(cimgs), JSON.stringify(subcategories)]
+      'INSERT INTO categories (catId, cname, cdescription, cimgs, subcategories, productType) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, cname, cdescription, JSON.stringify(cimgs || []), JSON.stringify(subcategories || []), productType || null]
     );
 
     res.status(201).json({ success: true, message: 'Category created!', catId: id });
@@ -54,17 +49,12 @@ exports.createCategory = async (req, res) => {
 exports.updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const { cname, cdescription, cimgs = [], subcategories = [] } = req.body;
-
-    if (!cname || !cdescription) {
-      return res.status(400).json({ success: false, message: 'Name and description are required.' });
-    }
+    const { cname, cdescription, cimgs, subcategories, productType } = req.body;
+    if (!cname) return res.status(400).json({ success: false, message: 'cname required' });
 
     const [result] = await pool.query(
-      `UPDATE categories
-       SET cname = ?, cdescription = ?, cimgs = ?, subcategories = ?, updated_at = NOW()
-       WHERE id = ?`,
-      [cname, cdescription, JSON.stringify(cimgs), JSON.stringify(subcategories), id]
+      'UPDATE categories SET cname=?, cdescription=?, cimgs=?, subcategories=?, productType=?, updated_at=NOW() WHERE id=?',
+      [cname, cdescription, JSON.stringify(cimgs || []), JSON.stringify(subcategories || []), productType || null, id]
     );
 
     if (result.affectedRows === 0) {

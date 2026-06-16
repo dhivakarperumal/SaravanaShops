@@ -8,7 +8,7 @@ import {
 import { MdOutlineCategory } from "react-icons/md";
 import api from "../../api";
 
-const EMPTY_FORM = { catId: "", cname: "", cdescription: "", cimgs: [], subcategories: [] };
+const EMPTY_FORM = { catId: "", cname: "", cdescription: "", cimgs: [], subcategories: [], productType: "Bangles" };
 
 const Category = () => {
   // ── Data ─────────────────────────────────────────────
@@ -67,6 +67,7 @@ const Category = () => {
       cdescription:  cat.cdescription,
       cimgs:         cat.cimgs || [],
       subcategories: cat.subcategories || [],
+      productType:   cat.productType || "Bangles",
     });
     setSubcatInput("");
     setPreviewImgs(cat.cimgs || []);
@@ -124,6 +125,7 @@ const Category = () => {
         await api.put(`/categories/${editId}`, {
           cname: form.cname, cdescription: form.cdescription,
           cimgs: form.cimgs, subcategories: form.subcategories,
+          productType: form.productType,
         });
         toast.success("Category updated!");
       } else {
@@ -324,6 +326,13 @@ const Category = () => {
                   <span className="text-[10px] font-black text-gray-700 tracking-wider uppercase">{cat.catId}</span>
                 </div>
 
+                {/* Floating Product Type Badge */}
+                {cat.productType && (
+                  <div className="absolute top-3 right-3 bg-primary text-white px-2.5 py-1 rounded-lg shadow-sm border border-white/20">
+                    <span className="text-[10px] font-bold tracking-wider uppercase">{cat.productType}</span>
+                  </div>
+                )}
+
                 {/* Image count badge */}
                 {cat.cimgs?.length > 1 && (
                   <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-white/10">
@@ -412,6 +421,11 @@ const Category = () => {
                     </td>
                     <td className="px-4 py-3">
                       <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded-lg">{cat.catId}</span>
+                      {cat.productType && (
+                        <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-lg ml-2 block mt-1 w-fit">
+                          {cat.productType}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {cat.cimgs?.[0] ? (
@@ -530,6 +544,22 @@ const Category = () => {
                     placeholder="e.g. Sarees, Bangles…"
                     className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                   />
+                </div>
+
+                {/* Product Type Dropdown */}
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                    Product Type <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={form.productType}
+                    onChange={(e) => setForm((p) => ({ ...p, productType: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                  >
+                    <option value="Bangles">Bangles</option>
+                    <option value="Sarees">Sarees</option>
+                    <option value="Jewels">Jewels</option>
+                  </select>
                 </div>
 
                 {/* Description */}

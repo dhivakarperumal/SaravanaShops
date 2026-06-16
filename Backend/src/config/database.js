@@ -28,6 +28,7 @@ async function initializeDatabase() {
         cdescription TEXT,
         cimgs LONGTEXT,
         subcategories TEXT,
+        productType VARCHAR(50),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )

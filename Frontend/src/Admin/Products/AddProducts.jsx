@@ -572,11 +572,13 @@ export default function AddProducts() {
             className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
           >
             <option value="">Select Category</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.cname || c.name}>
-                {c.cname || c.name}
-              </option>
-            ))}
+            {categories
+              .filter(c => c.productType === productType || !c.productType) // Fallback for old unassigned categories if any
+              .map((c) => (
+                <option key={c.id} value={c.cname || c.name}>
+                  {c.cname || c.name}
+                </option>
+              ))}
           </select>
         </div>
 
