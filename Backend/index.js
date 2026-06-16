@@ -16,13 +16,14 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Database connection
 const pool = require('./src/config/db');
 const { initializeDatabase } = require('./src/config/database');
 const authRouter = require('./src/routers/authRouter');
+const categoryRouter = require('./src/routers/categoryRouter');
 
 // Initialize database
 initializeDatabase();
@@ -34,6 +35,9 @@ app.get('/api/health', (req, res) => {
 
 // Auth routes
 app.use('/api/auth', authRouter);
+
+// Category routes
+app.use('/api/categories', categoryRouter);
 
 // Other routes (to be added)
 // const productsRouter = require('./src/routers/products');

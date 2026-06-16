@@ -1,530 +1,669 @@
-import React, { useState, useEffect } from "react";
-import { db } from "../../firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  deleteDoc,
-  updateDoc,
-} from "firebase/firestore";
+import React, { useState, useEffect, useRef } from "react";
 import imageCompression from "browser-image-compression";
 import toast from "react-hot-toast";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import {
+  FaEdit, FaTrash, FaPlus, FaSearch, FaTh, FaList,
+  FaTimes, FaFilter, FaTag, FaLayerGroup,
+} from "react-icons/fa";
+import { MdOutlineCategory } from "react-icons/md";
+import api from "../../api";
+
+const EMPTY_FORM = { catId: "", cname: "", cdescription: "", cimgs: [], subcategories: [] };
 
 const Category = () => {
-  const [category, setCategory] = useState({
-    catId: "",
-    cname: "",
-    cdescription: "",
-    cimgs: [],
-    subcategories: [],
-  });
-
-  const [subcatInput, setSubcatInput] = useState("");
-  const [editId, setEditId] = useState(null);
-  const [previewImgs, setPreviewImgs] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // ── Data ─────────────────────────────────────────────
   const [categories, setCategories] = useState([]);
-  const [activeTab, setActiveTab] = useState("add");
+  const [loading,    setLoading]    = useState(false);
 
-  const generateCategoryId = async () => {
-    const snapshot = await getDocs(collection(db, "categories"));
-    const count = snapshot.size + 1;
-    return `CAT${String(count).padStart(3, "0")}`;
-  };
+  // ── Modal ─────────────────────────────────────────────
+  const [showModal,   setShowModal]   = useState(false);
+  const [editId,      setEditId]      = useState(null);
+  const [form,        setForm]        = useState(EMPTY_FORM);
+  const [subcatInput, setSubcatInput] = useState("");
+  const [previewImgs, setPreviewImgs] = useState([]);
+  const fileRef = useRef(null);
 
+  // ── Toolbar ───────────────────────────────────────────
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode,    setViewMode]    = useState("card");
+  const [filterOpen,  setFilterOpen]  = useState(false);
+  const [filterSub,   setFilterSub]   = useState(""); // filter by subcategory
+
+  // ── Fetch all ─────────────────────────────────────────
   const fetchCategories = async () => {
     try {
-      const snapshot = await getDocs(collection(db, "categories"));
-      const catList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setCategories(catList);
-    } catch (err) {
-      console.error("Error fetching categories:", err);
+      const res = await api.get("/categories");
+      if (res.data.success) setCategories(res.data.data);
+    } catch {
+      toast.error("Failed to load categories.");
     }
   };
 
-  useEffect(() => {
-    const init = async () => {
-      const id = await generateCategoryId();
-      setCategory((prev) => ({ ...prev, catId: id }));
-      await fetchCategories();
-    };
-    init();
-  }, []);
+  const fetchNextId = async () => {
+    try {
+      const res = await api.get("/categories/nextid");
+      if (res.data.success)
+        setForm((prev) => ({ ...prev, catId: res.data.catId }));
+    } catch {/* silent */}
+  };
 
+  useEffect(() => { fetchCategories(); }, []);
+
+  // ── Open modal for add ────────────────────────────────
+  const openAddModal = async () => {
+    setForm(EMPTY_FORM);
+    setSubcatInput("");
+    setPreviewImgs([]);
+    setEditId(null);
+    await fetchNextId();
+    setShowModal(true);
+  };
+
+  // ── Open modal for edit ───────────────────────────────
+  const openEditModal = (cat) => {
+    setForm({
+      catId:         cat.catId,
+      cname:         cat.cname,
+      cdescription:  cat.cdescription,
+      cimgs:         cat.cimgs || [],
+      subcategories: cat.subcategories || [],
+    });
+    setSubcatInput("");
+    setPreviewImgs(cat.cimgs || []);
+    setEditId(cat.id);
+    setShowModal(true);
+  };
+
+  // ── Close modal ───────────────────────────────────────
+  const closeModal = () => {
+    setShowModal(false);
+    setEditId(null);
+    setPreviewImgs([]);
+    setSubcatInput("");
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  // ── Image compress → base64 ───────────────────────────
   const handleImageChange = async (e) => {
     const files = Array.from(e.target.files);
     try {
-      const compressedFiles = await Promise.all(
-        files.map((file) =>
-          imageCompression(file, {
-            maxSizeMB: 0.2,
-            maxWidthOrHeight: 800,
-            useWebWorker: true,
-          })
+      const compressed = await Promise.all(
+        files.map((f) =>
+          imageCompression(f, { maxSizeMB: 0.2, maxWidthOrHeight: 800, useWebWorker: true })
         )
       );
-
-      const base64Images = await Promise.all(
-        compressedFiles.map(
-          (file) =>
-            new Promise((resolve, reject) => {
+      const base64 = await Promise.all(
+        compressed.map(
+          (f) =>
+            new Promise((res, rej) => {
               const reader = new FileReader();
-              reader.onload = () => resolve(reader.result);
-              reader.onerror = reject;
-              reader.readAsDataURL(file);
+              reader.onload  = () => res(reader.result);
+              reader.onerror = rej;
+              reader.readAsDataURL(f);
             })
         )
       );
-
-      setCategory((prev) => ({
-        ...prev,
-        cimgs: base64Images,
-      }));
-      setPreviewImgs(base64Images);
-      toast.success("Images uploaded & compressed!");
-    } catch (error) {
-      console.error("Image upload error:", error);
-      toast.error("Failed to compress or upload images.");
+      setForm((prev) => ({ ...prev, cimgs: base64 }));
+      setPreviewImgs(base64);
+      toast.success("Images ready!");
+    } catch {
+      toast.error("Failed to process images.");
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setCategory((prev) => ({ ...prev, [name]: value }));
-  };
-
+  // ── Submit ────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { catId, cname, cdescription, cimgs, subcategories } = category;
-
-    if (!cname || !cdescription || cimgs.length === 0) {
-      toast.error("Please fill all required fields and upload images.");
+    if (!form.cname || !form.cdescription || form.cimgs.length === 0) {
+      toast.error("Fill all required fields and upload at least one image.");
       return;
     }
-
-    const payload = {
-      ...category,
-      createdAt: new Date().toISOString(),
-    };
-
     setLoading(true);
     try {
       if (editId) {
-        await updateDoc(doc(db, "categories", editId), payload);
+        await api.put(`/categories/${editId}`, {
+          cname: form.cname, cdescription: form.cdescription,
+          cimgs: form.cimgs, subcategories: form.subcategories,
+        });
         toast.success("Category updated!");
-        setEditId(null);
       } else {
-        await addDoc(collection(db, "categories"), payload);
+        await api.post("/categories", form);
         toast.success("Category added!");
       }
-
-      const newId = await generateCategoryId();
-      setCategory({
-        catId: newId,
-        cname: "",
-        cdescription: "",
-        cimgs: [],
-        subcategories: [],
-      });
-      setSubcatInput("");
-      setPreviewImgs([]);
-      document.getElementById("cimgs").value = "";
+      closeModal();
       await fetchCategories();
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to save category.");
+      toast.error(err.response?.data?.message || "Failed to save category.");
     }
     setLoading(false);
   };
 
-  const handleEdit = (cat) => {
-    setCategory({
-      catId: cat.catId,
-      cname: cat.cname,
-      cdescription: cat.cdescription,
-      cimgs: cat.cimgs,
-      subcategories: cat.subcategories || [],
-    });
-    setSubcatInput((cat.subcategories || []).join(", "));
-    setPreviewImgs(cat.cimgs || []);
-    setEditId(cat.id);
-    setActiveTab("add");
-    toast("Editing category...");
-  };
-
+  // ── Delete ────────────────────────────────────────────
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this category?"))
-      return;
-
+    if (!window.confirm("Delete this category?")) return;
     try {
-      await deleteDoc(doc(db, "categories", id));
+      await api.delete(`/categories/${id}`);
       toast.success("Category deleted.");
       await fetchCategories();
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Failed to delete category.");
     }
   };
 
-  const handleAddSubcategory = () => {
-    const trimmed = subcatInput.trim();
-    if (trimmed && !category.subcategories.includes(trimmed)) {
-      setCategory((prev) => ({
-        ...prev,
-        subcategories: [...prev.subcategories, trimmed],
-      }));
+  // ── Subcategory helpers ───────────────────────────────
+  const addSubcat = () => {
+    const t = subcatInput.trim();
+    if (t && !form.subcategories.includes(t)) {
+      setForm((p) => ({ ...p, subcategories: [...p.subcategories, t] }));
       setSubcatInput("");
     }
   };
+  const removeSubcat = (s) =>
+    setForm((p) => ({ ...p, subcategories: p.subcategories.filter((x) => x !== s) }));
 
-  const handleRemoveSubcategory = (sub) => {
-    setCategory((prev) => ({
-      ...prev,
-      subcategories: prev.subcategories.filter((s) => s !== sub),
-    }));
-  };
+  // ── Filtered list ─────────────────────────────────────
+  const allSubcats = [...new Set(categories.flatMap((c) => c.subcategories || []))].filter(Boolean);
+  const displayed = categories.filter((cat) => {
+    const matchSearch = cat.cname?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchFilter = filterSub ? (cat.subcategories || []).includes(filterSub) : true;
+    return matchSearch && matchFilter;
+  });
 
+  const activeFilterCount = [filterSub].filter(Boolean).length;
+
+  // ─────────────────────────────────────────────────────
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 min-h-screen">
-      <div className="flex justify-between items-start sm:items-center mb-6 gap-4 flex-col sm:flex-row">
-        <div>
-          {/* <h2 className="text-3xl font-bold text-mb-1">
-            {editId ? "Edit Category" : "Add New Category"}
-          </h2> */}
-          {/* <p className="text-gray-500">Fill in the details below.</p> */}
+    <div className="min-h-screen bg-gray-50 px-3 sm:px-5 lg:px-8 py-2">
+
+      {/* ── Toolbar ───────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 bg-white rounded-2xl px-3 sm:px-4 py-3 shadow-sm border border-gray-100">
+
+        {/* Search — LEFT */}
+        <div className="flex items-center gap-2 flex-1 min-w-0 max-w-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(140,82,255,0.12)] transition-all duration-200">
+          <FaSearch className="text-gray-400 text-sm flex-shrink-0" />
+          <input
+            type="text"
+            placeholder="Search categories…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 min-w-0 bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none font-medium"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery("")} className="text-gray-400 hover:text-gray-600 text-xs flex-shrink-0">✕</button>
+          )}
         </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => {
-              setActiveTab("add");
-              setEditId(null);
-              setCategory({
-                catId: "",
-                cname: "",
-                cdescription: "",
-                cimgs: [],
-                subcategories: [],
-              });
-              setSubcatInput("");
-              setPreviewImgs([]);
-            }}
-            className={`px-4 py-2 cursor-pointer rounded-full font-medium text-sm ${
-              activeTab === "add"
-                ? "bg-primary text-white"
-                : "bg-gray-100 text-primary hover:bg-gray-200"
-            }`}
-          >
-            Add Category
-          </button>
-          <button
-            onClick={() => setActiveTab("show")}
-            className={`px-4 py-2 cursor-pointer rounded-full font-medium text-sm ${
-              activeTab === "show"
-                ? "bg-primary text-white"
-                : "bg-gray-100 text-primary hover:bg-gray-200"
-            }`}
-          >
-            Show Categories
-          </button>
-        </div>
-      </div>
 
-     
-       {activeTab === "add" && (
-  <form
-    onSubmit={handleSubmit}
-    className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 transition-all duration-300 hover:shadow-xl grid grid-cols-1 md:grid-cols-2 gap-8"
-  >
-    {/* Category ID (Read Only) */}
-    <div>
-      <label className="text-sm font-semibold text-gray-700 block mb-2">
-        Category ID
-      </label>
-      <input
-        readOnly
-        value={category.catId}
-        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-100 text-gray-700 focus:outline-none cursor-not-allowed"
-      />
-    </div>
+        {/* Count */}
+        <span className="text-xs sm:text-sm text-gray-500 font-medium hidden sm:block whitespace-nowrap">
+          {displayed.length} categor{displayed.length !== 1 ? "ies" : "y"}
+        </span>
 
-    {/* Category Name */}
-    <div>
-      <label className="text-sm font-semibold text-gray-700 block mb-2">
-        Category Name <span className="text-red-500">*</span>
-      </label>
-      <input
-        type="text"
-        name="cname"
-        value={category.cname}
-        onChange={handleChange}
-        required
-        placeholder="Enter category name"
-        className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-      />
-    </div>
+        {/* RIGHT controls */}
+        <div className="flex items-center gap-1.5 sm:gap-2 ml-auto flex-shrink-0">
 
-    {/* Description */}
-    <div className="md:col-span-2">
-      <label className="text-sm font-semibold text-gray-700 block mb-2">
-        Description <span className="text-red-500">*</span>
-      </label>
-      <textarea
-        name="cdescription"
-        value={category.cdescription}
-        onChange={handleChange}
-        required
-        placeholder="Write a short description..."
-        className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-        rows={3}
-      />
-    </div>
-
-    {/* Subcategories */}
-    {/* <div className="md:col-span-2">
-      <label className="text-sm font-semibold text-gray-700 block mb-2">
-        Subcategories
-      </label>
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={subcatInput}
-          onChange={(e) => setSubcatInput(e.target.value)}
-          placeholder="e.g. Regular Fit, Oversize, Kids"
-          className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-        />
-        <button
-          type="button"
-          onClick={handleAddSubcategory}
-          className="bg-primary cursor-pointer text-white px-5 py-2.5 rounded-xl font-medium hover:bg-blue-800 transition-all duration-200"
-        >
-          Add
-        </button>
-      </div>
-
-      {category.subcategories.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {category.subcategories.map((sub, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+          {/* Filter — RIGHT */}
+          <div className="relative">
+            <button
+              onClick={() => setFilterOpen((p) => !p)}
+              className={`relative flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all duration-200 cursor-pointer ${
+                filterOpen || activeFilterCount > 0
+                  ? "bg-primary text-white border-primary shadow-md"
+                  : "bg-gray-50 text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
+              }`}
             >
-              {sub}
-              <button
-                type="button"
-                onClick={() => handleRemoveSubcategory(sub)}
-                className="text-red-500 hover:text-red-700 cursor-pointer"
-              >
-                ×
-              </button>
+              <FaFilter className="text-xs" />
+              <span className="hidden sm:inline">Filter</span>
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
+            {/* Filter Dropdown */}
+            {filterOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl border border-gray-100 shadow-2xl z-30 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
+                  <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Filter by Subcategory</span>
+                  {filterSub && (
+                    <button onClick={() => setFilterSub("")} className="text-xs text-red-500 font-semibold hover:text-red-700 cursor-pointer flex items-center gap-1">
+                      <FaTimes className="text-[9px]" /> Clear
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-52 overflow-y-auto p-2">
+                  {allSubcats.length === 0 ? (
+                    <p className="text-xs text-gray-400 text-center py-3">No subcategories yet</p>
+                  ) : (
+                    allSubcats.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => { setFilterSub(s === filterSub ? "" : s); setFilterOpen(false); }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                          filterSub === s
+                            ? "bg-primary/10 text-primary font-semibold"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* View mode */}
+          <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+            <button
+              onClick={() => setViewMode("card")} title="Card View"
+              className={`p-1.5 sm:p-2 rounded-lg transition-all cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
+            >
+              <FaTh className="text-xs sm:text-sm" />
+            </button>
+            <button
+              onClick={() => setViewMode("table")} title="Table View"
+              className={`p-1.5 sm:p-2 rounded-lg transition-all cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
+            >
+              <FaList className="text-xs sm:text-sm" />
+            </button>
+          </div>
+
+          {/* Add Category */}
+          <button
+            onClick={openAddModal}
+            className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-primary to-secondary text-white px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+          >
+            <FaPlus className="text-xs" />
+            <span className="hidden sm:inline">Add Category</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Click outside to close filter ─────────────── */}
+      {filterOpen && (
+        <div className="fixed inset-0 z-20" onClick={() => setFilterOpen(false)} />
+      )}
+
+      {/* ── Empty State ───────────────────────────────── */}
+      {displayed.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-24 text-gray-400">
+          <MdOutlineCategory className="text-6xl mb-4 opacity-25" />
+          <p className="text-lg font-semibold">No categories found</p>
+          <p className="text-sm mt-1">
+            {searchQuery || filterSub ? "Try adjusting your search or filter" : "Click \"Add Category\" to create one"}
+          </p>
+        </div>
+      )}
+
+      {/* ── CARD MODE ─────────────────────────────────── */}
+      {viewMode === "card" && displayed.length > 0 && (
+        <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {displayed.map((cat) => (
+            <div
+              key={cat.id}
+              className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+            >
+              {/* Image */}
+              <div className="relative h-44 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                {cat.cimgs?.[0] ? (
+                  <img
+                    src={cat.cimgs[0]}
+                    alt={cat.cname}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <MdOutlineCategory className="text-5xl text-gray-300" />
+                  </div>
+                )}
+                {/* Image count badge */}
+                {cat.cimgs?.length > 1 && (
+                  <span className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    +{cat.cimgs.length - 1} more
+                  </span>
+                )}
+                {/* Hover actions */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+                  <button
+                    onClick={() => openEditModal(cat)}
+                    className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-green-600 shadow-md hover:scale-110 transition-all cursor-pointer"
+                  >
+                    <FaEdit className="text-sm" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(cat.id)}
+                    className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-red-600 shadow-md hover:scale-110 transition-all cursor-pointer"
+                  >
+                    <FaTrash className="text-sm" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest">{cat.catId}</span>
+                    <h3 className="font-bold text-gray-800 text-base mt-0.5 truncate">{cat.cname}</h3>
+                  </div>
+                </div>
+                {cat.cdescription && (
+                  <p className="text-xs text-gray-500 mt-1.5 line-clamp-2 leading-relaxed">{cat.cdescription}</p>
+                )}
+                {/* Subcategory chips */}
+                {cat.subcategories?.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {cat.subcategories.slice(0, 3).map((s, i) => (
+                      <span key={i} className="bg-primary/8 text-primary text-[10px] font-semibold px-2 py-0.5 rounded-full border border-primary/20">
+                        {s}
+                      </span>
+                    ))}
+                    {cat.subcategories.length > 3 && (
+                      <span className="bg-gray-100 text-gray-500 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                        +{cat.subcategories.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {/* Footer actions */}
+                <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+                  <button
+                    onClick={() => openEditModal(cat)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    <FaEdit className="text-[11px]" /> Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(cat.id)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-red-50 text-red-500 hover:bg-red-100 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    <FaTrash className="text-[11px]" /> Delete
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       )}
-    </div> */}
 
-    <div className="md:col-span-2">
-  <label className="text-sm font-semibold text-gray-700 block mb-2">
-    Subcategories
-  </label>
-
-  {/* Input + Add button */}
-  <div className="flex flex-col sm:flex-row gap-2 w-full">
-    <input
-      type="text"
-      value={subcatInput}
-      onChange={(e) => setSubcatInput(e.target.value)}
-      placeholder="e.g. Regular Fit, Oversize, Kids"
-      className="flex-1 w-full border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-    />
-    <button
-      type="button"
-      onClick={handleAddSubcategory}
-      className="bg-primary text-white px-5 py-2.5 rounded-xl font-medium hover:bg-blue-800 transition-all duration-200 w-full sm:w-auto"
-    >
-      Add
-    </button>
-  </div>
-
-  {/* Show Added Subcategories */}
-  {category.subcategories.length > 0 && (
-    <div className="mt-3 flex flex-wrap gap-2">
-      {category.subcategories.map((sub, idx) => (
-        <div
-          key={idx}
-          className="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm font-medium transition-all duration-200"
-        >
-          {sub}
-          <button
-            type="button"
-            onClick={() => handleRemoveSubcategory(sub)}
-            className="text-red-500 hover:text-red-700 cursor-pointer"
-          >
-            ×
-          </button>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
-
-    {/* Images */}
-    <div className="md:col-span-2">
-      <label className="text-sm font-semibold text-gray-700 block mb-2">
-        Upload Images <span className="text-red-500">*</span>
-      </label>
-      <input
-        id="cimgs"
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleImageChange}
-        required={!editId}
-        className="block w-full text-sm text-gray-700 border border-gray-300 rounded-xl cursor-pointer focus:outline-none file:mr-3 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-800 transition-all duration-200"
-      />
-      {previewImgs.length > 0 && (
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {previewImgs.map((img, index) => (
-            <img
-              key={index}
-              src={img}
-              alt={`preview-${index}`}
-              className="h-32 w-full object-cover rounded-xl border border-gray-200 shadow-sm hover:scale-105 transition-transform duration-300"
-            />
-          ))}
-        </div>
-      )}
-    </div>
-
-    {/* Submit Button */}
-    <div className="md:col-span-2 text-right mt-2">
-      <button
-        type="submit"
-        disabled={loading}
-        className="bg-cursor-pointer text-white px-8 py-2.5 cursor-pointer rounded-xl bg-primary font-semibold shadow hover:bg-blue-800 hover:shadow-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {loading
-          ? editId
-            ? "Updating..."
-            : "Adding..."
-          : editId
-          ? "Update Category"
-          : "Add Category"}
-      </button>
-    </div>
-  </form>
-)}
-
-
-      {activeTab === "show" && (
-        <div className="mt-6">
-          <h3 className="text-2xl font-semibold mb-4 text-gray-800">
-            {/* Existing Categories */}
-          </h3>
-          <div className="hidden md:block overflow-x-auto w-full shadow rounded-lg">
-            <table className="min-w-[800px] w-full text-sm text-left">
-              <thead className="bg-primary text-white font-bold">
-                <tr>
-                  <th className="px-4 py-4">Cat ID</th>
-                  <th className="px-4 py-4">Name</th>
-                  <th className="px-4 py-4">Subcategories</th>
-                  <th className="px-4 py-4">Images</th>
-                  <th className="px-4 py-4 text-center">Actions</th>
+      {/* ── TABLE MODE ────────────────────────────────── */}
+      {viewMode === "table" && displayed.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-sm min-w-[680px]">
+              <thead>
+                <tr className="bg-gradient-to-r from-primary to-secondary text-white">
+                  <th className="px-4 py-3 text-center font-semibold w-12">S.No</th>
+                  <th className="px-4 py-3 text-left font-semibold">Cat ID</th>
+                  <th className="px-4 py-3 text-left font-semibold">Image</th>
+                  <th className="px-4 py-3 text-left font-semibold">Name</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Description</th>
+                  <th className="px-4 py-3 text-left font-semibold hidden sm:table-cell">Subcategories</th>
+                  <th className="px-4 py-3 text-center font-semibold">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {categories.length > 0 ? (
-                  categories.map((cat) => (
-                    <tr key={cat.id} className="border border-gray-300 hover:bg-gray-50">
-                      <td className="px-4 py-2">{cat.catId}</td>
-                      <td className="px-4 py-2">{cat.cname}</td>
-                      <td className="px-4 py-2">
-                        {(cat.subcategories || []).join(", ")}
-                      </td>
-                      <td className="px-4 py-2">
-                        <div className="flex gap-2 flex-wrap">
-                          {(cat.cimgs || []).map((img, i) => (
-                            <img
-                              key={i}
-                              src={img}
-                              className="h-12 w-12 p-1 object-cover rounded border border-primary"
-                              alt={`cat-${i}`}
-                            />
-                          ))}
+              <tbody className="divide-y divide-gray-50">
+                {displayed.map((cat, idx) => (
+                  <tr key={cat.id} className={`hover:bg-primary/5 transition-colors ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
+                    <td className="px-4 py-3 text-center">
+                      <span className="w-7 h-7 inline-flex items-center justify-center bg-primary/10 text-primary text-xs font-bold rounded-full">{idx + 1}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded-lg">{cat.catId}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {cat.cimgs?.[0] ? (
+                        <img src={cat.cimgs[0]} alt={cat.cname} className="w-12 h-12 object-cover rounded-xl border border-gray-100" />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                          <MdOutlineCategory className="text-gray-300 text-xl" />
                         </div>
-                      </td>
-                      <td className="px-4 py-2 text-center">
-                        <div className="flex justify-center gap-3 text-gray-600 text-[8px]">
-                          <FaEdit
-                            onClick={() => handleEdit(cat)}
-                            className="hover:text-green-600 cursor-pointer border-2 border-primary h-8 w-8 rounded-full flex items-center justify-center p-1"
-                          />
-                          <FaTrash 
-                            onClick={() => handleDelete(cat.id)}
-                            className="hover:text-red-600 cursor-pointer border-2 border-primary h-8 w-8 rounded-full flex items-center justify-center p-1"
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="text-center py-4 text-gray-500">
-                      No categories found.
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-gray-800 truncate max-w-[140px]">{cat.cname}</p>
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <p className="text-xs text-gray-500 truncate max-w-[200px]">{cat.cdescription}</p>
+                    </td>
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <div className="flex flex-wrap gap-1">
+                        {(cat.subcategories || []).slice(0, 2).map((s, i) => (
+                          <span key={i} className="bg-gray-100 text-gray-600 text-[10px] font-medium px-2 py-0.5 rounded-full">{s}</span>
+                        ))}
+                        {cat.subcategories?.length > 2 && (
+                          <span className="bg-gray-100 text-gray-400 text-[10px] px-2 py-0.5 rounded-full">+{cat.subcategories.length - 2}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => openEditModal(cat)}
+                          className="w-8 h-8 rounded-lg bg-green-50 text-green-500 hover:bg-green-100 flex items-center justify-center transition-colors cursor-pointer"
+                          title="Edit"
+                        >
+                          <FaEdit className="text-xs" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(cat.id)}
+                          className="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors cursor-pointer"
+                          title="Delete"
+                        >
+                          <FaTrash className="text-xs" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                )}
+                ))}
               </tbody>
             </table>
           </div>
+        </div>
+      )}
 
-          {/* Mobile Cards */}
-          <div className="md:hidden grid grid-cols-1 gap-4">
-            {categories.map((cat) => (
-              <div
-                key={cat.id}
-                className="bg-white p-4 rounded-lg shadow border"
-              >
-                <div className="flex justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">ID: {cat.catId}</p>
-                    <h4 className="text-lg font-semibold text-primary">
-                      {cat.cname}
-                    </h4>
-                    {cat.subcategories?.length > 0 && (
-                      <p className="text-sm mt-1 text-gray-600">
-                        Subcategories: {cat.subcategories.join(", ")}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <FaEdit
-                      onClick={() => handleEdit(cat)}
-                      className="hover:text-green-600 cursor-pointer border-2 border-gray-300 h-7 w-7 rounded-lg flex items-center justify-center p-1"
-                    />
-                    <FaTrash
-                      onClick={() => handleDelete(cat.id)}
-                      className="hover:text-red-600 cursor-pointer border-2 border-gray-300 h-7 w-7 rounded-lg flex items-center justify-center p-1"
-                    />
-                  </div>
+      {/* ══════════════════════════════════════════════════
+          ADD / EDIT POPUP MODAL
+      ══════════════════════════════════════════════════ */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={closeModal}
+          />
+
+          {/* Modal Panel */}
+          <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
+
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-primary/8 to-secondary/8 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-md">
+                  <MdOutlineCategory className="text-white text-lg" />
                 </div>
-                <div className="grid grid-cols-2 gap-2 mt-3">
-                  {(cat.cimgs || []).map((img, i) => (
-                    <img
-                      key={i}
-                      src={img}
-                      className="h-24 w-full object-cover rounded border"
-                      alt={`cat-mobile-${i}`}
-                    />
-                  ))}
+                <div>
+                  <h2 className="font-extrabold text-gray-800 text-base sm:text-lg">
+                    {editId ? "Edit Category" : "Add New Category"}
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {editId ? "Update category details" : "Fill in details to create a new category"}
+                  </p>
                 </div>
               </div>
-            ))}
+              <button
+                onClick={closeModal}
+                className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors cursor-pointer flex-shrink-0"
+              >
+                <FaTimes className="text-sm" />
+              </button>
+            </div>
+
+            {/* Modal Body — scrollable */}
+            <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
+              <div className="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                {/* Cat ID */}
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                    Category ID
+                  </label>
+                  <input
+                    readOnly
+                    value={form.catId}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-100 text-gray-500 text-sm focus:outline-none cursor-not-allowed font-mono"
+                  />
+                </div>
+
+                {/* Name */}
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                    Category Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={form.cname}
+                    onChange={(e) => setForm((p) => ({ ...p, cname: e.target.value }))}
+                    required
+                    placeholder="e.g. Sarees, Bangles…"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                    Description <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={form.cdescription}
+                    onChange={(e) => setForm((p) => ({ ...p, cdescription: e.target.value }))}
+                    required
+                    placeholder="Write a short description about this category..."
+                    rows={3}
+                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none"
+                  />
+                </div>
+
+                {/* Subcategories */}
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                    Subcategories
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="flex-1 flex items-center gap-2 border border-gray-300 rounded-xl px-3 py-2.5 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                      <FaTag className="text-gray-300 text-xs flex-shrink-0" />
+                      <input
+                        type="text"
+                        value={subcatInput}
+                        onChange={(e) => setSubcatInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSubcat())}
+                        placeholder="Type & press Enter or Add…"
+                        className="flex-1 text-sm text-gray-700 outline-none bg-transparent"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addSubcat}
+                      className="bg-primary text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:opacity-90 transition cursor-pointer flex-shrink-0"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  {form.subcategories.length > 0 && (
+                    <div className="mt-2.5 flex flex-wrap gap-2">
+                      {form.subcategories.map((s, i) => (
+                        <span key={i} className="flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full border border-primary/20">
+                          {s}
+                          <button
+                            type="button"
+                            onClick={() => removeSubcat(s)}
+                            className="text-primary/60 hover:text-red-500 transition-colors cursor-pointer leading-none"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Images */}
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                    Upload Images <span className="text-red-500">*</span>
+                    {editId && <span className="text-gray-400 font-normal normal-case ml-1">(leave empty to keep existing)</span>}
+                  </label>
+
+                  {/* Dropzone-style file input */}
+                  <label className="flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-xl p-5 cursor-pointer hover:border-primary hover:bg-primary/3 transition-all group">
+                    <FaLayerGroup className="text-3xl text-gray-300 group-hover:text-primary/50 mb-2 transition-colors" />
+                    <p className="text-sm font-semibold text-gray-500 group-hover:text-primary transition-colors">
+                      Click to upload images
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP (auto-compressed)</p>
+                    <input
+                      ref={fileRef}
+                      id="cimgs"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageChange}
+                      required={!editId && form.cimgs.length === 0}
+                      className="hidden"
+                    />
+                  </label>
+
+                  {/* Previews */}
+                  {previewImgs.length > 0 && (
+                    <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 gap-3">
+                      {previewImgs.map((img, i) => (
+                        <div key={i} className="relative group/img">
+                          <img
+                            src={img}
+                            alt={`preview-${i}`}
+                            className="h-24 w-full object-cover rounded-xl border border-gray-200 shadow-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = previewImgs.filter((_, idx) => idx !== i);
+                              setPreviewImgs(updated);
+                              setForm((p) => ({ ...p, cimgs: updated }));
+                            }}
+                            className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] items-center justify-center hidden group-hover/img:flex cursor-pointer shadow"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-semibold text-sm hover:bg-gray-200 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-semibold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
+                >
+                  {loading
+                    ? (editId ? "Updating…" : "Adding…")
+                    : (editId ? "Update Category" : "Add Category")}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
