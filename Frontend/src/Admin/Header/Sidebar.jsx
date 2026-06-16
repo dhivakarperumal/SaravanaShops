@@ -34,31 +34,35 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
   }, [isExpanded]);
 
   return (
-    <div>
+    <div className="mb-1">
       {/* Section Header */}
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center w-full py-2 px-3 cursor-pointer text-gray font-bold rounded hover:bg-bgcolor transition duration-300 ${
+        className={`flex items-center w-full py-2.5 px-3 cursor-pointer font-medium rounded-xl transition-all duration-300 group ${
+          open ? "text-primary" : "text-gray-600"
+        } hover:bg-primary/10 hover:text-primary ${
           isExpanded ? "justify-start" : "justify-center"
         }`}
       >
-        <span className="w-4 h-4 text-gray flex items-center justify-center text-xl">
+        <span className={`w-5 h-5 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110 ${open ? "text-primary" : ""}`}>
           {icon}
         </span>
-        {isExpanded && <span className="ml-2 flex-1 text-left">{title}</span>}
+        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">{title}</span>}
         {isExpanded && (
-          <span className="ml-auto">{open ? <FaChevronUp /> : <FaChevronDown />}</span>
+          <span className="ml-auto text-sm transition-transform duration-300">
+            {open ? <FaChevronUp /> : <FaChevronDown />}
+          </span>
         )}
       </button>
 
       {/* Dropdown Items */}
       {open && (
         <ul
-          className={`text-sm space-y-2 mt-2 ${
-            isExpanded ? "pl-10" : "pl-0"
+          className={`text-sm space-y-1 mt-1 overflow-hidden transition-all duration-500 ease-in-out ${
+            isExpanded ? "pl-11" : "pl-0"
           } ${
             !isExpanded
-              ? "absolute left-16 top-0 bg-white shadow-md rounded-md w-48 z-50"
+              ? "absolute left-20 top-0 bg-white shadow-xl shadow-gray-200/50 rounded-xl w-52 z-50 border border-gray-100 py-2"
               : ""
           }`}
         >
@@ -68,21 +72,22 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                 to={item.path}
                 onClick={() => onLinkClick?.()}
                 className={({ isActive }) =>
-                  `flex items-center gap-2 py-2 px-2 rounded transition font-bold duration-200 ${
+                  `flex items-center gap-3 py-2 px-3 rounded-xl transition-all duration-300 ${
                     isActive
-                      ? "bg-primary text-white font-bold"
-                      : "text-textcolor hover:bg-primary hover:text-white"
+                      ? "bg-primary text-white font-semibold shadow-md shadow-primary/30 translate-x-1"
+                      : "text-gray-500 hover:text-primary hover:bg-primary/5 hover:translate-x-1"
                   }`
                 }
               >
                 {item.icon && (
-                  <span className="w-5 h-5 flex items-center justify-center text-lg flex-shrink-0">
+                  <span className="w-4 h-4 flex items-center justify-center text-lg flex-shrink-0">
                     {item.icon}
                   </span>
                 )}
-                {isExpanded && <span className="ml-2 flex-1 text-left">{item.name}</span>}
-                {item.showCount && item.count !== undefined && (
-                  <span className="bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full ml-auto">
+                {isExpanded && <span className="flex-1 text-left">{item.name}</span>}
+                {!isExpanded && <span className="flex-1 text-left ml-2">{item.name}</span>}
+                {item.showCount && item.count !== undefined && item.count > 0 && (
+                  <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto animate-pulse">
                     {item.count}
                   </span>
                 )}
@@ -147,23 +152,21 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
     }
   };
 
+  const navLinkClass = ({ isActive }) =>
+    `flex items-center font-medium rounded-xl transition-all duration-300 group mb-1 ${
+      isActive
+        ? "bg-primary text-white shadow-md shadow-primary/30"
+        : "text-gray-600 hover:bg-primary/10 hover:text-primary"
+    } ${isExpanded ? "px-3 py-2.5" : "p-3 justify-center"}`;
+
   return (
-    <nav className="space-y-3 p-4">
+    <nav className="space-y-1 p-3 flex flex-col h-full bg-white/50 backdrop-blur-sm border-r border-gray-100">
       {/* ✅ Dashboard (exact match only) */}
-      <NavLink
-        to="/superadmin"
-        end // 👈 This makes sure it's active ONLY on /superadmin
-        onClick={handleLinkClick}
-        className={({ isActive }) =>
-          `flex items-center rounded font-bold hover:bg-bgcolor transition ${
-            isActive ? "bg-primary text-white" : ""
-          } ${isExpanded ? "p-3" : "p-3 justify-center"}`
-        }
-      >
-        <span className="w-4 h-4 text-gray flex-shrink-0 flex items-center justify-center text-xl">
+      <NavLink to="/superadmin" end onClick={handleLinkClick} className={navLinkClass}>
+        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <AiFillDashboard />
         </span>
-        {isExpanded && <span className="ml-2 flex-1 text-left">Dashboard</span>}
+        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Dashboard</span>}
       </NavLink>
 
       {/* Orders */}
@@ -171,13 +174,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         title="Orders"
         icon={<FaListAlt />}
         items={[
-          {
-            name: "New Orders",
-            path: "/superadmin/newOrders",
-            showCount: true,
-            count: todayOrdersCount,
-            icon: <FaShoppingCart />,
-          },
+          { name: "New Orders", path: "/superadmin/newOrders", showCount: true, count: todayOrdersCount, icon: <FaShoppingCart /> },
           { name: "All Orders", path: "/superadmin/allOrders", icon: <FaClipboardList /> },
           { name: "Delivered", path: "/superadmin/deliveryOrder", icon: <FaCheckCircle /> },
           { name: "Cancelled", path: "/superadmin/cancleOrders", icon: <FaTimesCircle /> },
@@ -201,19 +198,11 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         onLinkClick={handleLinkClick}
       />
 
-       <NavLink
-        to="/superadmin/razerpay"
-        onClick={handleLinkClick}
-        className={({ isActive }) =>
-          `flex items-center rounded font-bold hover:bg-bgcolor transition ${
-            isActive ? "bg-primary text-white" : ""
-          } ${isExpanded ? "p-3" : "p-3 justify-center"}`
-        }
-      >
-        <span className="w-4 h-4 text-gray flex-shrink-0 flex items-center justify-center text-xl">
+       <NavLink to="/superadmin/razerpay" onClick={handleLinkClick} className={navLinkClass}>
+        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <FaBoxes />
         </span>
-        {isExpanded && <span className="ml-2 flex-1 text-left">Razerpay Key</span>}
+        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Razerpay Key</span>}
       </NavLink>
 
       {/* Users */}
@@ -241,76 +230,56 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
       />
 
       {/* Billings */}
-      <NavLink
-        to="/superadmin/billing"
-        onClick={handleLinkClick}
-        className={({ isActive }) =>
-          `flex items-center rounded font-bold hover:bg-bgcolor transition ${
-            isActive ? "bg-primary text-white" : ""
-          } ${isExpanded ? "p-3" : "p-3 justify-center"}`
-        }
-      >
-        <span className="w-4 h-4 text-gray flex-shrink-0 flex items-center justify-center text-xl">
+      <NavLink to="/superadmin/billing" onClick={handleLinkClick} className={navLinkClass}>
+        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <FaBoxes />
         </span>
-        {isExpanded && <span className="ml-2 flex-1 text-left">Billings</span>}
+        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Billings</span>}
       </NavLink>
 
       {/* Upload Videos */}
-      <NavLink
-        to="/superadmin/videos"
-        onClick={handleLinkClick}
-        className={({ isActive }) =>
-          `flex items-center rounded font-bold hover:bg-bgcolor transition ${
-            isActive ? "bg-primary text-white" : ""
-          } ${isExpanded ? "p-3" : "p-3 justify-center"}`
-        }
-      >
-        <span className="w-4 h-4 text-gray flex-shrink-0 flex items-center justify-center text-xl">
+      <NavLink to="/superadmin/videos" onClick={handleLinkClick} className={navLinkClass}>
+        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <AiOutlineVideoCamera />
         </span>
-        {isExpanded && <span className="ml-2 flex-1 text-left">Upload Videos</span>}
+        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Upload Videos</span>}
       </NavLink>
 
       {/* Reviews */}
-      <SidebarSection
-        title="Reviews"
-        icon={<FaStar />}
-        items={[{ name: "Product Reviews", path: "/superadmin/allreviews", icon: <FaStar /> }]}
-        isExpanded={isExpanded}
-        onLinkClick={handleLinkClick}
-      />
+      <NavLink to="/superadmin/allreviews" onClick={handleLinkClick} className={navLinkClass}>
+        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
+          <FaStar />
+        </span>
+        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Product Reviews</span>}
+      </NavLink>
 
       {/* Settings */}
-      <NavLink
-        to="/superadmin/settings"
-        onClick={handleLinkClick}
-        className={({ isActive }) =>
-          `flex items-center rounded font-bold hover:bg-bgcolor transition ${
-            isActive ? "bg-primary text-white" : ""
-          } ${isExpanded ? "p-3" : "p-3 justify-center"}`
-        }
-      >
-        <span className="w-4 h-4 text-gray flex-shrink-0 flex items-center justify-center text-xl">
+      <NavLink to="/superadmin/settings" onClick={handleLinkClick} className={navLinkClass}>
+        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <FaCog />
         </span>
-        {isExpanded && <span className="ml-2 flex-1 text-left">Settings</span>}
+        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Settings</span>}
       </NavLink>
+
+      {/* Spacer to push back home to bottom if needed */}
+      <div className="flex-grow"></div>
 
       {/* Back Home */}
       <NavLink
         to="/"
         onClick={handleLinkClick}
         className={({ isActive }) =>
-          `flex items-center rounded font-bold md:mb-3 mb-10 hover:bg-bgcolor transition ${
-            isActive ? "bg-bgcolor text-gray font-bold" : "hover:bg-bgcolor"
-          } ${isExpanded ? "p-3" : "p-3 justify-center"}`
+          `flex items-center font-medium rounded-xl transition-all duration-300 group mt-auto ${
+            isActive
+              ? "bg-gray-100 text-gray-800"
+              : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+          } ${isExpanded ? "px-3 py-2.5 mb-10 md:mb-3" : "p-3 justify-center mb-10 md:mb-3"}`
         }
       >
-        <span className="w-4 h-4 text-gray flex-shrink-0 flex items-center justify-center text-xl">
+        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <FaHome />
         </span>
-        {isExpanded && <span className="ml-2 flex-1 text-left">Back Home</span>}
+        {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Back Home</span>}
       </NavLink>
     </nav>
   );
