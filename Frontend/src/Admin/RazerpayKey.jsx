@@ -220,30 +220,34 @@ export default function RazorpayKeyForm() {
     <>
       {/* Table View */}
       {viewMode === 'table' && (
-      <div className="overflow-x-auto max-h-[400px] rounded-lg">
-        <table className="min-w-full text-sm">
-          <thead className="bg-primary text-white sticky top-0">
+      <div className="overflow-x-auto max-h-[500px] rounded-xl border border-gray-200 shadow-sm">
+        <table className="min-w-full text-sm text-left">
+          <thead className="bg-gradient-to-r from-primary to-secondary text-white">
             <tr>
-              <th className="px-3 py-4 text-left">Name</th>
-              <th className="px-3 py-4 text-left">Key ID</th>
-              <th className="px-3 py-4 text-center">Actions</th>
+              <th className="px-4 py-3 font-semibold w-16 text-center">S.No</th>
+              <th className="px-4 py-3 font-semibold">Name</th>
+              <th className="px-4 py-3 font-semibold">Key ID</th>
+              <th className="px-4 py-3 text-center font-semibold w-24">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            {filteredKeys.map((item) => (
-              <tr key={item.id} className="border border-gray-200 hover:bg-gray-50 transition">
-                <td className="px-3 py-4">{item.name}</td>
-                <td className="px-3 py-4">{item.key_id || item.key}</td>
-                <td className="px-3 py-4 text-center space-x-2">
+          <tbody className="bg-white divide-y divide-gray-100">
+            {filteredKeys.map((item, index) => (
+              <tr key={item.id} className="hover:bg-purple-50/30 transition-colors">
+                <td className="px-4 py-3 text-gray-500 font-medium text-center">{index + 1}</td>
+                <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
+                <td className="px-4 py-3 text-gray-600 font-mono text-xs">{item.key_id || item.key}</td>
+                <td className="px-4 py-3 text-center space-x-2">
                   <button
                     onClick={() => handleEdit(item)}
-                    className="px-2 py-2 cursor-pointer bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="p-2 cursor-pointer bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                    title="Edit"
                   >
                     <FaEdit/>
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="px-2 cursor-pointer py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    className="p-2 cursor-pointer bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                    title="Delete"
                   >
                     <FaTrash/>
                   </button>
@@ -257,30 +261,43 @@ export default function RazorpayKeyForm() {
 
       {/* Card View */}
       {viewMode === 'card' && (
-      <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto p-2">
-        {filteredKeys.map((item) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[500px] overflow-y-auto p-2">
+        {filteredKeys.map((item, index) => (
           <div
             key={item.id}
-            className="border rounded-lg shadow-sm p-4 flex flex-col gap-3 bg-white hover:shadow-md transition"
+            className="group relative bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col"
           >
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-500 uppercase font-semibold">Name</span> 
-              <span className="font-medium text-gray-800 truncate">{item.name}</span>
+            {/* Top color strip */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#9B66FF] to-[#8C52FF]"></div>
+            
+            <div className="p-5 flex flex-col flex-grow gap-4">
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col pr-2">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Key Name</span> 
+                  <span className="font-semibold text-gray-800 text-lg truncate" title={item.name}>{item.name}</span>
+                </div>
+                <div className="bg-purple-50 text-purple-600 font-bold text-xs px-2.5 py-1 rounded-md shrink-0">
+                  #{index + 1}
+                </div>
+              </div>
+              
+              <div className="flex flex-col bg-[#F8F9FA] p-3 rounded-xl border border-gray-100 mt-auto">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Key ID</span> 
+                <span className="font-mono text-sm text-gray-700 break-all">{item.key_id || item.key}</span>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-500 uppercase font-semibold">Key ID</span> 
-              <span className="font-medium text-gray-800 break-all">{item.key_id || item.key}</span>
-            </div>
-            <div className="flex gap-2 mt-auto pt-2 border-t">
+
+            {/* Action buttons at the bottom */}
+            <div className="flex mt-auto border-t border-gray-100 bg-gray-50/30">
               <button
                 onClick={() => handleEdit(item)}
-                className="flex-1 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded transition flex justify-center items-center gap-2"
+                className="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors flex justify-center items-center gap-2 border-r border-gray-100 cursor-pointer"
               >
                 <FaEdit size={14} /> Edit
               </button>
               <button
                 onClick={() => handleDelete(item.id)}
-                className="flex-1 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded transition flex justify-center items-center gap-2"
+                className="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors flex justify-center items-center gap-2 cursor-pointer"
               >
                 <FaTrash size={14} /> Delete
               </button>
