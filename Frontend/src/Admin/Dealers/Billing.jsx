@@ -89,6 +89,26 @@ export default function Billing() {
     return p.images?.[0] || (Array.isArray(p.image) && p.image[0]) || p.image || "/placeholder.jpg";
   };
 
+  // --- helper: get available stock for a product variant
+  const getAvailableStock = (product, size, color) => {
+    if (!product) return 0;
+    const isBangle = (product.category && product.category.toLowerCase().includes("bangle")) || 
+                     (product.productType && product.productType.toLowerCase().includes("bangle"));
+    if (isBangle && product.count === "SingleColor") {
+      const colorObj = product.colors?.find(c => String(c.color) === String(color));
+      if (colorObj) {
+        const stockObj = colorObj.stock || colorObj.stocks || {};
+        if (stockObj && typeof stockObj === "object" && size) {
+          return Number(stockObj[size]) || 0;
+        } else if (!isNaN(Number(stockObj))) {
+          return Number(stockObj);
+        }
+      }
+      return 0;
+    }
+    return Number(product.stock) || 0;
+  };
+
   // --- validate order before saving/printing (enhanced)
   const validateOrder = (items) => {
     if (!items || items.length === 0) {
@@ -96,13 +116,24 @@ export default function Billing() {
       return false;
     }
 
-    // Ensure bangle variants have size & color
+    // Ensure bangle variants have size & color, and check stock
     for (const key of items) {
       const parts = key.split("_");
+      const [id, size, color] = parts;
+      const product = products.find((p) => String(p.id) === String(id));
+      
       if (parts.length >= 3) {
-        const [, size, color] = parts;
         if (!size || !color) {
           toast.error("Please select size and color for all bangle items");
+          return false;
+        }
+      }
+      
+      if (product) {
+        const qty = quantities[key] || 1;
+        const stock = getAvailableStock(product, size, color);
+        if (qty > stock) {
+          toast.error(`Only ${stock} items available for ${product.name}. Please reduce quantity.`);
           return false;
         }
       }
@@ -199,14 +230,25 @@ export default function Billing() {
         ? `${productId}_${selectedSize}_${selectedColor}`
         : productId;
 
+    const stock = getAvailableStock(product, selectedSize, selectedColor);
+
     if (!selectedProducts.includes(variantKey)) {
+      if (stock < 1) {
+        toast.error("Out of stock. 0 items available.");
+        return;
+      }
       setSelectedProducts((prev) => [...prev, variantKey]);
       setQuantities((prev) => ({ ...prev, [variantKey]: 1 }));
       setCurrentProduct("");
       setSelectedSize("");
       setSelectedColor("");
     } else {
-      setQuantities((prev) => ({ ...prev, [variantKey]: (prev[variantKey] || 1) + 1 }));
+      const currentQty = quantities[variantKey] || 1;
+      if (currentQty + 1 > stock) {
+        toast.error(`Only ${stock} items available in stock.`);
+        return;
+      }
+      setQuantities((prev) => ({ ...prev, [variantKey]: currentQty + 1 }));
       toast.success(`Increased quantity for ${product.name}`);
       setCurrentProduct("");
       setSelectedSize("");
@@ -217,6 +259,15 @@ export default function Billing() {
   // 🟢 Handle quantity change
   const handleQuantityChange = (key, qty) => {
     if (qty < 1) qty = 1;
+    const [id, size, color] = key.split("_");
+    const product = products.find((p) => String(p.id) === String(id));
+    const stock = getAvailableStock(product, size, color);
+    
+    if (qty > stock) {
+      toast.error(`Only ${stock} items available in stock.`);
+      qty = stock;
+    }
+    
     setQuantities((prev) => ({ ...prev, [key]: qty }));
   };
 
@@ -673,10 +724,25 @@ export default function Billing() {
               ))}
             </select>
           </div>
+          
+          {selectedSize && selectedColor && (
+            <div className="flex items-end mb-1 ml-2">
+              <span className="text-sm font-bold text-green-600">
+                Stock: {getAvailableStock(p, selectedSize, selectedColor)}
+              </span>
+            </div>
+          )}
         </div>
       );
     }
-    return null;
+    
+    return (
+      <div className="flex gap-3 mt-3 ml-4">
+        <span className="text-sm font-bold text-green-600">
+          Stock: {getAvailableStock(p)}
+        </span>
+      </div>
+    );
   })()}
 </div>
 
@@ -893,6 +959,9 @@ export default function Billing() {
                       </td>
                       <td className="px-3 py-3">
                         <div>{p.name}</div>
+                        <div className="text-xs font-semibold text-green-600 mt-1">
+                          Stock: {getAvailableStock(p, size, color)}
+                        </div>
                         {p.list_of_items && p.list_of_items.length > 0 && (
                           <div className="text-xs text-gray-500 mt-1">
                             Items: {p.list_of_items.join(", ")}
@@ -920,15 +989,31 @@ export default function Billing() {
                         )}
                       </td>
                       <td className="px-3 py-3">
-                        <input
-                          type="number"
-                          min={1}
-                          className="w-16 border border-primary p-1 rounded text-center"
-                          value={qty}
-                          onChange={(e) =>
-                            handleQuantityChange(key, Number(e.target.value))
-                          }
-                        />
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            className="w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+                            onClick={() => handleQuantityChange(key, qty - 1)}
+                            disabled={qty <= 1}
+                          >
+                            -
+                          </button>
+                          <input
+                            type="number"
+                            min={1}
+                            className="w-14 border border-primary p-1 rounded text-center outline-none"
+                            value={qty}
+                            onChange={(e) =>
+                              handleQuantityChange(key, Number(e.target.value))
+                            }
+                          />
+                          <button
+                            className="w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+                            onClick={() => handleQuantityChange(key, qty + 1)}
+                            disabled={qty >= getAvailableStock(p, size, color)}
+                          >
+                            +
+                          </button>
+                        </div>
                       </td>
                       <td className="px-3 py-3">₹{p.sellingprice}</td>
                       <td className="px-3 py-3">
@@ -989,6 +1074,7 @@ export default function Billing() {
           <div className="flex-1">
             <h4 className="font-semibold">{p.name}</h4>
             <p className="text-sm text-gray-500">{p.category} / {p.subcategory || "-"}</p>
+            <p className="text-xs font-bold text-green-600">Stock: {getAvailableStock(p, size, color)}</p>
             {p.list_of_items && p.list_of_items.length > 0 && (
               <p className="text-xs text-gray-500 mt-1">Items: {p.list_of_items.join(", ")}</p>
             )}
@@ -1032,13 +1118,29 @@ export default function Billing() {
               </div>
             </div>
             <div className="flex gap-2 mt-2 items-center">
-              <input
-                type="number"
-                value={qty}
-                min={1}
-                className="w-16 border border-primary p-1 rounded text-center"
-                onChange={e => handleQuantityChange(key, Number(e.target.value))}
-              />
+              <div className="flex items-center justify-center gap-1">
+                <button
+                  className="w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+                  onClick={() => handleQuantityChange(key, qty - 1)}
+                  disabled={qty <= 1}
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  value={qty}
+                  min={1}
+                  className="w-14 border border-primary p-1 rounded text-center outline-none"
+                  onChange={e => handleQuantityChange(key, Number(e.target.value))}
+                />
+                <button
+                  className="w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+                  onClick={() => handleQuantityChange(key, qty + 1)}
+                  disabled={qty >= getAvailableStock(p, size, color)}
+                >
+                  +
+                </button>
+              </div>
               <span className="text-sm">₹{(p.sellingprice * qty).toFixed(2)}</span>
               <button
                 className="ml-auto px-2 py-1 bg-red-600 text-white rounded-full"
