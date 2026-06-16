@@ -26,6 +26,7 @@ const authRouter = require('./src/routers/authRouter');
 const categoryRouter = require('./src/routers/categoryRouter');
 const productRouter = require('./src/routers/productRouter');
 const razorpayRouter = require('./src/routers/razorpayRouter');
+const reviewRouter = require('./src/routers/reviewRoutes');
 
 // Initialize database
 initializeDatabase();
@@ -51,6 +52,9 @@ app.use('/api/razorpay', razorpayRouter);
 const userRouter = require('./src/routers/userRouter');
 app.use('/api/users', userRouter);
 
+// Review routes
+app.use('/api/reviews', reviewRouter);
+
 // Other routes (to be added)
 // const productsRouter = require('./src/routers/products');
 const ordersRouter = require('./src/routers/orderRouter');
@@ -71,8 +75,21 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// Start server
-app.listen(PORT, () => {
+const http = require('http');
+
+// Start server with explicit error handling to avoid unhandled EADDRINUSE crashes
+const server = http.createServer(app);
+
+server.on('error', (err) => {
+  if (err && err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+    process.exit(1);
+  }
+  console.error('Server error:', err);
+  process.exit(1);
+});
+
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
 });
