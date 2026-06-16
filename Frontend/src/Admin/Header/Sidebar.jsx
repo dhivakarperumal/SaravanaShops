@@ -261,12 +261,12 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
       </NavLink>
 
       {/* Settings */}
-      <NavLink to="/superadmin/settings" onClick={handleLinkClick} className={navLinkClass}>
+      {/* <NavLink to="/superadmin/settings" onClick={handleLinkClick} className={navLinkClass}>
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <FaCog />
         </span>
         {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Settings</span>}
-      </NavLink>
+      </NavLink> */}
 
       {/* Spacer to push back home to bottom if needed */}
       <div className="flex-grow"></div>
