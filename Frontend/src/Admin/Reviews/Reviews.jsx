@@ -3,7 +3,7 @@ import { FaStar } from "react-icons/fa";
 import { TiTickOutline, TiTick } from "react-icons/ti";
 import { HiPencil, HiTrash } from "react-icons/hi";
 import toast from "react-hot-toast";
-import axios from "axios";
+import api from "../../api";
 
 const AddReviews = () => {
   const [reviews, setReviews] = useState([]);
@@ -29,16 +29,8 @@ const AddReviews = () => {
   }, []);
 
   const fetchReviews = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:5000/api/reviews"
-      );
-
-      setReviews(res.data);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to fetch reviews");
-    }
+    const res = await api.get("/reviews");
+    setReviews(res.data);
   };
 
   const resetForm = () => {
@@ -71,15 +63,15 @@ const AddReviews = () => {
 
     try {
       if (editMode) {
-        await axios.put(
-          `http://localhost:5000/api/reviews/${editingId}`,
+        await api.put(
+          `/reviews/${editingId}`,
           newReview
         );
 
         toast.success("Review updated successfully");
       } else {
-        await axios.post(
-          "http://localhost:5000/api/reviews",
+        await api.post(
+          "/reviews",
           newReview
         );
 
@@ -109,8 +101,8 @@ const AddReviews = () => {
     if (!confirm) return;
 
     try {
-      await axios.delete(
-        `http://localhost:5000/api/reviews/${id}`
+      await api.delete(
+        `/reviews/${id}`
       );
       setReviews((prev) => prev.filter((r) => r.id !== id));
       setCheckedIds((prev) => prev.filter((cid) => cid !== id));
@@ -129,8 +121,8 @@ const AddReviews = () => {
 
 
     try {
-      await axios.patch(
-        `http://localhost:5000/api/reviews/toggle/${review.id}`
+      await api.patch(
+        `/reviews/toggle/${review.id}`
       );
       setReviews((prev) =>
         prev.map((r) =>
