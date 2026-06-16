@@ -1,788 +1,542 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import api from "../../api";
-import { FaPrint } from "react-icons/fa";
+import { FaPrint, FaTh, FaList, FaSearch, FaCalendarAlt, FaChevronDown } from "react-icons/fa";
 import logo from "/Image/logo.png";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import {
-  MdOutlineArrowBackIosNew,
-  MdOutlineArrowForwardIos,
-} from "react-icons/md";
+import { MdOutlineArrowBackIosNew, MdOutlineArrowForwardIos } from "react-icons/md";
 
-const NewOrders = () => {
-  const [orders, setOrders] = useState([]);
-  const [filteredOrders, setFilteredOrders] = useState([]);
-  const [searchText, setSearchText] = useState("");
-  const [dateFilter, setDateFilter] = useState("All");
-  const [customRange, setCustomRange] = useState({ from: "", to: "" });
-  const [cancelReason, setCancelReason] = useState("");
-  const [showCancelInput, setShowCancelInput] = useState(null);
-  const [showDocketInput, setShowDocketInput] = useState(null);
-  const [docketNumber, setDocketNumber] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [qname, setQname] = useState("");
+const DATE_OPTIONS = [
+  { label: "All Active", value: "All" },
+  { label: "Today", value: "Today" },
+  { label: "Yesterday", value: "Yesterday" },
+  { label: "This Week", value: "ThisWeek" },
+  { label: "Last Week", value: "LastWeek" },
+  { label: "This Month", value: "ThisMonth" },
+  { label: "Last Month", value: "LastMonth" },
+  { label: "Custom Range", value: "Custom" },
+];
 
-  const itemsPerPage = 10;
+const STATUS_ORDER = ["Placed", "Packing", "Shipped", "Delivered", "Cancelled"];
 
+const STATUS_STYLES = {
+  Placed:    "bg-amber-100 text-amber-700 border border-amber-300",
+  Packing:   "bg-blue-100 text-blue-700 border border-blue-300",
+  Shipped:   "bg-purple-100 text-purple-700 border border-purple-300",
+  Delivered: "bg-emerald-100 text-emerald-700 border border-emerald-300",
+  Cancelled: "bg-red-100 text-red-700 border border-red-300",
+};
+
+const STATUS_DOT = {
+  Placed:    "bg-amber-500",
+  Packing:   "bg-blue-500",
+  Shipped:   "bg-purple-500",
+  Delivered: "bg-emerald-500",
+  Cancelled: "bg-red-500",
+};
+
+const safeIndex = (arr, val) => Array.isArray(arr) ? arr.indexOf(val) : -1;
+
+export default function NewOrders() {
   const navigate = useNavigate();
 
-  const statusOrder = [
-    "Placed",
-    "Packing",
-    "Shipped",
-    "Delivered",
-    "Cancelled",
-  ];
+  const [orders, setOrders]                     = useState([]);
+  const [searchText, setSearchText]             = useState("");
+  const [dateFilter, setDateFilter]             = useState("Today");
+  const [customFrom, setCustomFrom]             = useState("");
+  const [customTo, setCustomTo]                 = useState("");
+  const [viewMode, setViewMode]                 = useState("table");
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
+  const [currentPage, setCurrentPage]           = useState(1);
+  const itemsPerPage = 20;
 
+  // Status update states
+  const [cancelReason, setCancelReason]   = useState("");
+  const [showCancelInput, setShowCancelInput] = useState(null);
+  const [showDocketInput, setShowDocketInput] = useState(null);
+  const [docketNumber, setDocketNumber]   = useState("");
+  const [qname, setQname]                 = useState("");
 
+  // Fetch orders — only active (not Delivered / Cancelled)
   useEffect(() => {
-    let temp = [...orders];
-    const now = new Date();
-
-    // 🔹 Search Filter
-    if (searchText.trim()) {
-      temp = temp.filter(
-        (o) =>
-          (o.orderId || "").toLowerCase().includes(searchText.toLowerCase()) ||
-          o.docketNumber?.toLowerCase().includes(searchText.toLowerCase())
-      );
-    }
-
-    // 🔹 Date Filter (robust parser)
-    const parseOrderDate = (o) => {
-      try {
-        if (!o) return null;
-        if (o.createdAt) return new Date(o.createdAt);
-        if (o.date) return new Date(o.date);
-        return null;
-      } catch (err) {
-        console.error("parseOrderDate error:", err, o);
-        return null;
-      }
-    };
-
-    if (dateFilter === "Today") {
-      temp = temp.filter((o) => {
-        const d = parseOrderDate(o);
-        return d && d.toDateString() === now.toDateString();
-      });
-    } else if (dateFilter === "This Week") {
-      const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
-      startOfWeek.setHours(0, 0, 0, 0);
-
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6);
-      endOfWeek.setHours(23, 59, 59, 999);
-
-      temp = temp.filter((o) => {
-        const d = parseOrderDate(o);
-        return d && d >= startOfWeek && d <= endOfWeek;
-      });
-    } else if (dateFilter === "This Month") {
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      startOfMonth.setHours(0, 0, 0, 0);
-      endOfMonth.setHours(23, 59, 59, 999);
-
-      temp = temp.filter((o) => {
-        const d = parseOrderDate(o);
-        return d && d >= startOfMonth && d <= endOfMonth;
-      });
-    } else if (dateFilter === "Custom" && customRange.from && customRange.to) {
-      const fromDate = new Date(customRange.from);
-      const toDate = new Date(customRange.to);
-      fromDate.setHours(0, 0, 0, 0);
-      toDate.setHours(23, 59, 59, 999);
-
-      temp = temp.filter((o) => {
-        const d = parseOrderDate(o);
-        return d && d >= fromDate && d <= toDate;
-      });
-    }
-
-    // 🔹 Update filtered orders
-    setFilteredOrders(temp);
-    setCurrentPage(1);
-  }, [orders, searchText, dateFilter, customRange]);
-
-  useEffect(() => {
-    const fetchOrders = async () => {
+    (async () => {
       try {
         const res = await api.get("/orders");
-        if (!res.data || !res.data.success) {
-          throw new Error("Failed to load orders from API");
-        }
-        const fetched = res.data.data;
-
-        // Filter only today's orders not Delivered/Cancelled
-        const today = new Date().toDateString();
-        const todayOrders = fetched.filter((order) => {
-          const createdAt = new Date(order.createdAt || order.date);
-          return (
-            createdAt &&
-            createdAt.toDateString() === today &&
-            order.status !== "Delivered" &&
-            order.status !== "Cancelled"
-          );
-        });
-
-        // ✅ Sort today's orders in ascending order
-        const sortedOrders = todayOrders.sort((a, b) => {
-          // Sort by orderId if available, otherwise by createdAt
-          if (a.orderId && b.orderId) {
-            const idA = parseInt(a.orderId.replace(/\D/g, "")) || 0;
-            const idB = parseInt(b.orderId.replace(/\D/g, "")) || 0;
+        if (!res.data?.success) throw new Error();
+        const active = res.data.data
+          .filter(o => o.status !== "Delivered" && o.status !== "Cancelled")
+          .sort((a, b) => {
+            const idA = parseInt((a.orderId || "").replace(/\D/g, "")) || 0;
+            const idB = parseInt((b.orderId || "").replace(/\D/g, "")) || 0;
             return idA - idB;
-          }
-
-          // fallback: sort by createdAt (oldest first)
-          const dateA = new Date(a.createdAt || a.date);
-          const dateB = new Date(b.createdAt || b.date);
-          return dateA - dateB;
-        });
-
-        setOrders(sortedOrders);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
+          });
+        setOrders(active);
+      } catch {
         toast.error("Failed to load orders");
       }
-    };
-
-    fetchOrders();
+    })();
   }, []);
 
+  // Date helpers
+  const parseDate = (o) => new Date(o.createdAt || o.date || null);
+
+  const matchesDate = (o) => {
+    const d = parseDate(o);
+    if (!d || isNaN(d)) return true;
+    const now = new Date();
+
+    switch (dateFilter) {
+      case "Today":
+        return d.toDateString() === now.toDateString();
+      case "Yesterday": {
+        const y = new Date(now); y.setDate(y.getDate() - 1);
+        return d.toDateString() === y.toDateString();
+      }
+      case "ThisWeek": {
+        const start = new Date(now); start.setDate(now.getDate() - now.getDay()); start.setHours(0,0,0,0);
+        const end   = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999);
+        return d >= start && d <= end;
+      }
+      case "LastWeek": {
+        const start = new Date(now); start.setDate(now.getDate() - now.getDay() - 7); start.setHours(0,0,0,0);
+        const end   = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999);
+        return d >= start && d <= end;
+      }
+      case "ThisMonth":
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      case "LastMonth": {
+        const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        return d.getMonth() === lm.getMonth() && d.getFullYear() === lm.getFullYear();
+      }
+      case "Custom": {
+        if (!customFrom || !customTo) return true;
+        const from = new Date(customFrom); from.setHours(0,0,0,0);
+        const to   = new Date(customTo);   to.setHours(23,59,59,999);
+        return d >= from && d <= to;
+      }
+      default: return true;
+    }
+  };
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter(o => {
+      const q = searchText.toLowerCase();
+      const matchSearch = !q ||
+        (o.orderId || "").toLowerCase().includes(q) ||
+        (o.docketNumber || "").toLowerCase().includes(q) ||
+        (o.shipping?.name || "").toLowerCase().includes(q);
+      return matchSearch && matchesDate(o);
+    });
+  }, [orders, searchText, dateFilter, customFrom, customTo]);
+
   // Pagination
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentOrders = filteredOrders.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const totalPages    = Math.ceil(filteredOrders.length / itemsPerPage);
+  const currentOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Status update
   const handleStatusUpdate = async (order, newStatus) => {
     if (!order) return;
-
-    if (newStatus === "Cancelled") {
-      setShowCancelInput(order.docId);
-      setShowDocketInput(null);
-      return;
-    }
-
-    if (newStatus === "Shipped") {
-      setShowDocketInput(order.docId);
-      setShowCancelInput(null);
-      return;
-    }
-
+    if (newStatus === "Cancelled") { setShowCancelInput(order.docId); setShowDocketInput(null); return; }
+    if (newStatus === "Shipped")   { setShowDocketInput(order.docId); setShowCancelInput(null); return; }
     try {
       const now = new Date().toISOString();
-      await api.put(`/orders/${order.docId}/status`, {
-        status: newStatus,
-        statusUpdatedAt: now,
-      });
-
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.docId === order.docId
-            ? {
-              ...o,
-              status: newStatus,
-              statusUpdatedAt: now,
-            }
-            : o
-        )
-      );
-      setShowCancelInput(null);
-      setShowDocketInput(null);
+      await api.put(`/orders/${order.docId}/status`, { status: newStatus, statusUpdatedAt: now });
+      setOrders(prev => prev.map(o => o.docId === order.docId ? { ...o, status: newStatus } : o));
+      setShowCancelInput(null); setShowDocketInput(null);
       toast.success(`Status updated to ${newStatus}`);
-    } catch (error) {
-      console.error("Error updating status:", error);
+    } catch {
       toast.error("Failed to update status");
     }
   };
 
   const handleCancelSubmit = async (order) => {
-    if (!order) return;
-    if (!cancelReason.trim()) {
-      toast.error("Please provide a cancellation reason");
-      return;
-    }
-
+    if (!cancelReason.trim()) { toast.error("Please provide a reason"); return; }
     try {
       const now = new Date().toISOString();
-      await api.put(`/orders/${order.docId}/status`, {
-        status: "Cancelled",
-        cancelledAt: now,
-        cancelReasons: cancelReason,
-        statusUpdatedAt: now,
-      });
-
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.docId === order.docId
-            ? {
-              ...o,
-              status: "Cancelled",
-              statusUpdatedAt: now,
-            }
-            : o
-        )
-      );
-
-      setShowCancelInput(null);
-      setCancelReason("");
-      toast.success("Order cancelled successfully");
-    } catch (err) {
-      console.error("Error cancelling order:", err);
-      toast.error("Failed to cancel order");
-    }
+      await api.put(`/orders/${order.docId}/status`, { status: "Cancelled", cancelledAt: now, cancelReasons: cancelReason, statusUpdatedAt: now });
+      setOrders(prev => prev.filter(o => o.docId !== order.docId));
+      setShowCancelInput(null); setCancelReason("");
+      toast.success("Order cancelled");
+    } catch { toast.error("Failed to cancel order"); }
   };
 
-  // Submit docket number for Shipped status
   const handleDocketSubmit = async (order) => {
-    if (!order) return;
-    if (!docketNumber.trim()) {
-      toast.error("Please enter a docket number");
-      return;
-    }
-
+    if (!docketNumber.trim()) { toast.error("Please enter LR number"); return; }
     try {
       const now = new Date().toISOString();
-
-      await api.put(`/orders/${order.docId}/status`, {
-        status: "Shipped",
-        docketNumber: docketNumber,
-        qname: qname,
-        statusUpdatedAt: now,
-      });
-
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.docId === order.docId
-            ? { ...o, status: "Shipped", docketNumber, qname, statusUpdatedAt: now }
-            : o
-        )
-      );
-
-      setShowDocketInput(null);
-      setQname(null)
-      setDocketNumber("");
-      setQname("")
-      toast.success("Order status updated to Shipped");
-    } catch (err) {
-      console.error("Error updating docket:", err);
-      toast.error("Failed to update order");
-    }
+      await api.put(`/orders/${order.docId}/status`, { status: "Shipped", docketNumber, qname, statusUpdatedAt: now });
+      setOrders(prev => prev.map(o => o.docId === order.docId ? { ...o, status: "Shipped", docketNumber, qname } : o));
+      setShowDocketInput(null); setDocketNumber(""); setQname("");
+      toast.success("Shipped!");
+    } catch { toast.error("Failed to update"); }
   };
 
+  // Print
   const handlePrint = (order) => {
     if (!order) return;
-    const logoUrl = logo;
     const items = Array.isArray(order.items) ? order.items : [];
-
-    const totalQuantity = items.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
-
-    const itemsHTML = items
-      .map((i, index) => {
-        const sizeVal = i.size || i.Size || i.SizeName || "";
-        const _colorVal = i.color || i.Color || "";
-        return `
+    const totalQty = items.reduce((s, i) => s + (Number(i.quantity) || 0), 0);
+    const itemsHTML = items.map((i, idx) => `
       <tr>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">${index + 1}</td>
+        <td style="border:1px solid #ddd;padding:10px;text-align:center;">${idx + 1}</td>
         <td style="border:1px solid #ddd;padding:10px;display:flex;align-items:center;gap:10px;">
-          <img src="${i.image || ""}" alt="${i.name || ""}" 
-            style="width:50px;height:50px;object-fit:cover;border-radius:5px;border:1px solid #ddd;" />
-         
-            <div style="display:flex;flex-direction:column;">
-            <span>${i.name || ""}</span>
-            <small style="color:#666;margin-top:4px;">${sizeVal ? 'Size: ' + sizeVal : ''}</small>
+          <img src="${i.image || ""}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;" />
+          <div>
+            <div>${i.name || "N/A"}</div>
+            ${i.size ? `<small style="color:#888">Size: ${i.size}</small>` : ""}
           </div>
         </td>
-        
         <td style="border:1px solid #ddd;padding:10px;text-align:center;">${i.quantity || 0}</td>
         <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${Number(i.price || 0).toFixed(2)}</td>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${Number((i.quantity || 0) * (i.price || 0)).toFixed(2)}</td>
-      </tr>`;
-      })
-      .join("");
+        <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${((i.quantity || 0) * (i.price || 0)).toFixed(2)}</td>
+      </tr>`).join("");
 
-    const html = `
-    <div id="printableArea" style="font-family: Arial, sans-serif; color: #333; padding: 30px;">
+    const html = `<div style="font-family:Arial,sans-serif;color:#333;padding:30px;">
       <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #8c52ff;padding-bottom:10px;margin-bottom:20px;">
-        <img src="${logoUrl}" style="height:60px;" />
+        <img src="${logo}" style="height:60px;" />
         <div style="font-size:28px;color:#8c52ff;font-weight:bold;">Order Invoice</div>
       </div>
-
       <div style="display:flex;justify-content:space-between;margin-top:20px;flex-wrap:wrap;">
-        <div style="width:48%; min-width:240px; font-size:16px;">
+        <div style="width:48%;min-width:240px;font-size:16px;">
           <h3 style="font-size:20px;margin-bottom:10px;">To:</h3>
           <h3 style="font-size:20px;margin-bottom:10px;">Customer Details</h3>
           <p><strong>Name:</strong> ${order.shipping?.name || "N/A"}</p>
-          
           <p><strong>Phone:</strong> ${order.shipping?.phone || "N/A"}</p>
-          <p><strong>Address:</strong> ${order.shipping?.address || ""}, ${order.shipping?.city || ""
-      }, ${order.shipping?.state || ""}, ${order.shipping?.zip || ""}</p>
+          <p><strong>Address:</strong> ${order.shipping?.address || ""}, ${order.shipping?.city || ""}, ${order.shipping?.state || ""} ${order.shipping?.zip || ""}</p>
           <p><strong>Country:</strong> ${order.shipping?.country || ""}</p>
         </div>
-
-        <div style="width:48%; min-width:240px; font-size:16px;">
+        <div style="width:48%;min-width:240px;font-size:16px;">
           <h3 style="font-size:20px;margin-bottom:10px;">From:</h3>
           <h3 style="font-size:20px;margin-bottom:10px;">Order Details</h3>
-          <p><strong>Order ID:</strong> ${order.orderId}</p>
-          <p><strong>Shop Address:</strong> Sri Saravana Bangles
-                    78/3, chetty Street Tirupattur Near AVS Mahal and Jain Temple 635601
-                    Ph: 7010575375</p>
-          <p><strong>Status:</strong> ${order.status}</p>
+          <p><strong>Order ID:</strong> ${order.orderId || "-"}</p>
+          <p><strong>Shop:</strong> Sri Saravana Bangles, 78/3 Chetty Street Tirupattur 635601. Ph: 7010575375</p>
+          <p><strong>Status:</strong> ${order.status || "-"}</p>
           <p><strong>Payment:</strong> ${order.ordertype || "Online"}</p>
-          <p><strong>Date:</strong> ${order.createdAt
-        ? new Date(order.createdAt).toLocaleString()
-        : "N/A"
-      }</p>
+          <p><strong>Date:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString() : "N/A"}</p>
         </div>
       </div>
-
       <h3 style="margin-top:30px;font-size:20px;">Items</h3>
       <table style="width:100%;border-collapse:collapse;margin-top:15px;">
-        <thead>
-          <tr style="background:#f9f9f9;">
-            <th style="border:1px solid #ddd;padding:10px;text-align:center;">ID</th>
-            <th style="border:1px solid #ddd;padding:10px;text-align:center;">Item</th>
-            <th style="border:1px solid #ddd;padding:10px;text-align:center;">Qty</th>
-            <th style="border:1px solid #ddd;padding:10px;text-align:center;">Price</th>
-            <th style="border:1px solid #ddd;padding:10px;text-align:center;">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsHTML}
-        </tbody>
+        <thead><tr style="background:#f9f9f9;">
+          <th style="border:1px solid #ddd;padding:10px;text-align:center;">ID</th>
+          <th style="border:1px solid #ddd;padding:10px;text-align:center;">Item</th>
+          <th style="border:1px solid #ddd;padding:10px;text-align:center;">Qty</th>
+          <th style="border:1px solid #ddd;padding:10px;text-align:center;">Price</th>
+          <th style="border:1px solid #ddd;padding:10px;text-align:center;">Total</th>
+        </tr></thead>
+        <tbody>${itemsHTML}</tbody>
       </table>
-
       <div style="margin-top:20px;border-top:2px solid #8c52ff;padding-top:10px;font-weight:bold;">
-        <p>Overall Qty: ${totalQuantity}</p>
+        <p>Overall Qty: ${totalQty}</p>
         <p>Subtotal: ₹${Number(order.subtotal || 0).toFixed(2)}</p>
         <p>Shipping: ₹${Number(order.shippingCost || 0).toFixed(2)}</p>
         <p>Total: ₹${Number(order.total || 0).toFixed(2)}</p>
       </div>
-
       <div style="text-align:center;margin-top:40px;font-size:13px;color:#666;border-top:1px solid #ccc;padding-top:10px;">
-        Thank you for shopping with <strong>Sri Saravana Shoppings</strong>!<br />
-        For any support, contact us at support@saravanashoppings.in
+        Thank you for shopping with <strong>Sri Saravana Shoppings</strong>!<br/>For support, contact support@saravanashoppings.in
       </div>
-    </div>
-  `;
+    </div>`;
 
-    // Create hidden iframe and print (same approach as AllOrders)
     const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    iframe.style.visibility = "hidden";
+    Object.assign(iframe.style, { position: "fixed", right: "0", bottom: "0", width: "0", height: "0", border: "0", visibility: "hidden" });
     document.body.appendChild(iframe);
-
-    const doc = (iframe.contentWindow && iframe.contentWindow.document) || iframe.contentDocument;
-
-    try {
-      doc.open();
-      doc.write(`<!doctype html><html><head><title>Invoice - ${order.orderId}</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>${html}</body></html>`);
-      doc.close();
-    } catch (err) {
-      console.error("Error writing to print iframe:", err);
-      document.body.removeChild(iframe);
-      const originalContent = document.body.innerHTML;
-      document.body.innerHTML = html;
-      window.print();
-      document.body.innerHTML = originalContent;
-      return;
-    }
-
-    const triggerPrint = () => {
-      try {
-        const win = iframe.contentWindow || iframe;
-        win.focus && win.focus();
-        win.print && win.print();
-      } catch {
-        // ignore
-      } finally {
-        setTimeout(() => {
-          try { document.body.removeChild(iframe); } catch { /* ignore */ }
-        }, 500);
-      }
-    };
-
-    const imgs = doc.getElementsByTagName("img") || [];
-    if (imgs.length === 0) {
-      setTimeout(triggerPrint, 300);
-    } else {
-      let loaded = 0;
-      let errored = 0;
-      for (let i = 0; i < imgs.length; i++) {
-        const img = imgs[i];
-        if (img.complete) {
-          loaded++;
-          if (loaded + errored === imgs.length) triggerPrint();
-        } else {
-          img.addEventListener("load", () => {
-            loaded++;
-            if (loaded + errored === imgs.length) triggerPrint();
-          });
-          img.addEventListener("error", () => {
-            errored++;
-            if (loaded + errored === imgs.length) triggerPrint();
-          });
-        }
-      }
-      setTimeout(triggerPrint, 4000);
-    }
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    doc.open(); doc.write(html); doc.close();
+    const triggerPrint = () => { iframe.contentWindow?.focus(); iframe.contentWindow?.print(); setTimeout(() => document.body.removeChild(iframe), 2000); };
+    const imgs = doc.querySelectorAll("img");
+    if (!imgs.length) { setTimeout(triggerPrint, 500); return; }
+    let done = 0;
+    imgs.forEach(img => {
+      const finish = () => { done++; if (done === imgs.length) triggerPrint(); };
+      img.addEventListener("load", finish);
+      img.addEventListener("error", finish);
+    });
+    setTimeout(triggerPrint, 4000);
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Placed":
-        return "bg-yellow-100 text-yellow-800";
-      case "Packing":
-        return "bg-blue-100 text-blue-800";
-      case "Shipped":
-        return "bg-purple-100 text-purple-800";
-      case "Out for Delivery":
-        return "bg-orange-100 text-orange-800";
-      case "Delivered":
-        return "bg-green-100 text-green-800";
-      case "Cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  const selectedDateLabel = DATE_OPTIONS.find(d => d.value === dateFilter)?.label || "Today";
 
   return (
-    <div className="p-4 sm:p-6 bg-white min-h-screen">
-      {/* Filters */}
-      <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
-        <input
-          type="text"
-          placeholder="Search by Order ID or Docket Number"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="border p-2 rounded w-full sm:w-1/3"
-        />
-        <select
-          value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
-          className="border p-2 rounded cursor-pointer"
-        >
-          <option value="All">All</option>
-          <option value="Today">Today</option>
-          <option value="This Week">This Week</option>
-          <option value="This Month">This Month</option>
-          <option value="Custom">Custom Range</option>
-        </select>
-        {dateFilter === "Custom" && (
-          <div className="flex gap-2 items-center">
+    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+
+      {/* ── TOOLBAR ──────────────────────────────────── */}
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-4 py-3 mb-5 flex flex-wrap items-center gap-3">
+
+        {/* Left: Search + count */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="relative flex-1 max-w-xs">
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
             <input
-              type="date"
-              value={customRange.from}
-              onChange={(e) =>
-                setCustomRange({ ...customRange, from: e.target.value })
-              }
-              className="border p-2 rounded"
-            />
-            <span>→</span>
-            <input
-              type="date"
-              value={customRange.to}
-              onChange={(e) =>
-                setCustomRange({ ...customRange, to: e.target.value })
-              }
-              className="border p-2 rounded"
+              type="text"
+              placeholder="Search orders..."
+              value={searchText}
+              onChange={e => { setSearchText(e.target.value); setCurrentPage(1); }}
+              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
             />
           </div>
-        )}
-      </div>
+          <span className="text-sm text-gray-500 whitespace-nowrap font-medium">
+            {filteredOrders.length} {filteredOrders.length === 1 ? "order" : "orders"}
+          </span>
+        </div>
 
-      {/* Desktop Table */}
-      <div className="hidden sm:block bg-white shadow rounded-2xl overflow-x-auto">
-        <table className="min-w-full text-sm rounded-lg overflow-hidden">
-          <thead className="bg-primary text-white">
-            <tr>
-              <th className="px-3 py-4">Order ID</th>
-              <th className="px-3 py-4">Payment</th>
-              <th className="px-3 py-4">Total</th>
-              <th className="px-3 py-4">Status</th>              
-              <th className="px-3 py-4">Action</th>
-            </tr>
-          </thead>
+        {/* Right: Date filter + view toggle */}
+        <div className="flex items-center gap-2 flex-wrap">
 
-          <tbody>
-            {currentOrders.length === 0 ? (
-              <tr>
-                <td
-                  colSpan="6"
-                  className="text-center py-6 text-gray-500 font-medium"
-                >
-                  No Orders Found
-                </td>
-              </tr>
-            ) : (
-              currentOrders.map((order) => (
-                <tr
-                  key={order.docId}
-                  className="text-center border border-gray-200 hover:bg-gray-50"
-                >
-                  <td
-                    className="px-3 py-4 text-blue-600 underline cursor-pointer"
-                    onClick={() => navigate(`/superadmin/orders/${order.docId}?page=${currentPage}`)}
-                  >
-                    {order.orderId}
-                  </td>
-                  {/* 🔹 Removed Order ID column */}
-                  <td className="px-3 py-4">{order.ordertype || "-"}</td>
-                  <td className="px-3 py-4 text-green-600 font-semibold">
-                    ₹{order.total}
-                  </td>
-                  <td className="px-3 py-4 w-120">
-                    <select
-                      value={order.status}
-                      onChange={(e) =>
-                        handleStatusUpdate(order, e.target.value)
-                      }
-                      className={
-                        getStatusColor(order.status) +
-                        " px-2 py-1 rounded w-full cursor-pointer"
-                      }
-                    >
-                      {statusOrder
-                        .filter(
-                          (status) =>
-                            statusOrder.indexOf(status) >=
-                            statusOrder.indexOf(order.status)
-                        )
-                        .map((status) => (
-                          <option key={status} value={status}>
-                            {status === "Placed" ? "Order Placed" : status}
-                          </option>
-                        ))}
-                    </select>
-
-                    {showCancelInput === order.docId && (
-                      <div className="mt-3 px-1 ">
-                        <input
-                          className="w-1/4 border border-gray-500 rounded text-xs px-3 py-2"
-                          placeholder="Reason for cancellation"
-                          value={cancelReason}
-                          onChange={(e) => setCancelReason(e.target.value)}
-                        />
-                        <button
-                          onClick={() => handleCancelSubmit(order)}
-                          className="mt-1 ml-2 bg-red-400 font-bold hover:bg-red-700 text-white text-xs px-3 py-2 rounded cursor-pointer"
-                        >
-                          Confirm
-                        </button>
-                      </div>
-                    )}
-
-                    {showDocketInput === order.docId && (
-                      <div className="mt-3  ">
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder="Enter Docket Number"
-                            className="w-1/2 border border-gray-500 rounded text-xs px-3 py-2"
-                            value={docketNumber}
-                            onChange={(e) => setDocketNumber(e.target.value)}
-                          />
-                          <input
-                            type="text"
-                            placeholder="Enter QName "
-                            className="w-1/2 border border-gray-500 rounded text-xs px-3 py-2"
-                            value={qname}
-                            onChange={(e) => setQname(e.target.value)}
-                          />
-                          <button
-                            onClick={() => handleDocketSubmit(order)}
-                            className="bg-blue-600 cursor-pointer ml-2 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded"
-                          >
-                            Submit
-                          </button>
-                        </div>
-
-                      </div>
-                    )}
-                  </td>
-
-                  {/* {orders.some((order) => order.status === "Shipped") && (
-                    <td className="px-3 py-3">
-                      {order.status === "Shipped"
-                        ? order.docketNumber || "-"
-                        : "-"}
-                    </td>
-                  )}
-
-                  
-                  {orders.some((order) => order.status === "Shipped") && (
-                    <td className="px-3 py-3">
-                      {order.status === "Shipped"
-                        ? order.qname || "-"
-                        : "-"}
-                    </td>
-                  )} */}
-
-
-                  <td className="px-3 py-4 flex justify-center">
-                    <button
-                      onClick={() => handlePrint(order)}
-                      className="text-gray-600 hover:text-black cursor-pointer"
-                    >
-                      <FaPrint />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Card View */}
-      <div className="sm:hidden flex flex-col gap-4">
-        {currentOrders.map((order) => (
-          <div
-            key={order.docId}
-            className="border rounded-lg shadow p-4 bg-white"
-          >
-            <div
-              className="text-blue-600 font-semibold underline cursor-pointer mb-2"
-              onClick={() => navigate(`/superadmin/orders/${order.docId}?page=${currentPage}`)}
+          {/* Date filter dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowDateDropdown(d => !d)}
+              className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 transition font-medium text-gray-700 cursor-pointer"
             >
-              {order.orderId}
-            </div>
-            <div className="flex justify-between mb-1">
-              <span className="font-medium">Payment:</span>{" "}
-              {order.ordertype || "-"}
-            </div>
-            <div className="flex justify-between mb-1">
-              <span className="font-medium">Total:</span>
-              <span className="text-green-600 font-semibold">
-                ₹{order.total}
-              </span>
-            </div>
-            {/* Items summary with size/color */}
-            {Array.isArray(order.items) && order.items.length > 0 && (
-              <div className="mt-2">
-                <div className="font-medium mb-1">Items</div>
-                <ul className="text-sm space-y-1">
-                  {order.items.map((it, idx) => {
-                    const sizeVal = it.size || it.Size || it.SizeName || "";
-                    const _colorVal = it.color || it.Color || "";
-                    return (
-                      <li key={idx} className="flex justify-between">
-                        <div>
-                          {it.productName || "N/A"}
-                          {sizeVal && <span className="text-gray-500 ml-2">(Size: {sizeVal})</span>}
-                          {_colorVal && <span className="text-gray-500 ml-2">(Color: {_colorVal})</span>}
-                        </div>
-                        <div>×{it.quantity || 1}</div>
-                      </li>
-                    );
-                  })}
-                </ul>
+              <FaCalendarAlt className="text-primary text-xs" />
+              <span>{selectedDateLabel}</span>
+              <FaChevronDown className="text-gray-400 text-xs" />
+            </button>
+
+            {showDateDropdown && (
+              <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-2xl shadow-xl py-2 min-w-[180px]">
+                {DATE_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setDateFilter(opt.value); setShowDateDropdown(false); setCurrentPage(1); }}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-primary/5 transition cursor-pointer ${dateFilter === opt.value ? "text-primary font-semibold bg-primary/5" : "text-gray-700"}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             )}
-            <div className="mb-1">
-              <span className="font-medium">Status: </span>
+          </div>
 
+          {/* Custom date range */}
+          {dateFilter === "Custom" && (
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={customFrom}
+                onChange={e => { setCustomFrom(e.target.value); setCurrentPage(1); }}
+                className="text-sm border border-gray-200 rounded-xl px-2 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+              <span className="text-gray-400 text-xs">to</span>
+              <input
+                type="date"
+                value={customTo}
+                onChange={e => { setCustomTo(e.target.value); setCurrentPage(1); }}
+                className="text-sm border border-gray-200 rounded-xl px-2 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+          )}
+
+          {/* View mode toggle */}
+          <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+            <button
+              onClick={() => setViewMode("card")}
+              title="Card View"
+              className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
+            >
+              <FaTh className="text-sm" />
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              title="Table View"
+              className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
+            >
+              <FaList className="text-sm" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Click outside to close dropdown */}
+      {showDateDropdown && (
+        <div className="fixed inset-0 z-40" onClick={() => setShowDateDropdown(false)} />
+      )}
+
+      {/* ── TABLE VIEW ────────────────────────────────── */}
+      {viewMode === "table" && (
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-primary text-white">
+                <tr>
+                  <th className="px-4 py-3.5 text-left font-semibold">#</th>
+                  <th className="px-4 py-3.5 text-left font-semibold">Order ID</th>
+                  <th className="px-4 py-3.5 text-left font-semibold">Customer</th>
+                  <th className="px-4 py-3.5 text-left font-semibold">Date</th>
+                  <th className="px-4 py-3.5 text-left font-semibold">Payment</th>
+                  <th className="px-4 py-3.5 text-left font-semibold">Total</th>
+                  <th className="px-4 py-3.5 text-left font-semibold">LR No</th>
+                  <th className="px-4 py-3.5 text-center font-semibold">Status</th>
+                  <th className="px-4 py-3.5 text-center font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {currentOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="py-16 text-center text-gray-400">
+                      <div className="flex flex-col items-center gap-2">
+                        <FaList className="text-4xl text-gray-200" />
+                        <span className="text-sm">No active orders found</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : currentOrders.map((order, idx) => (
+                  <tr key={order.docId} className="hover:bg-gray-50/70 transition">
+                    <td className="px-4 py-3 text-gray-400 text-xs">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => navigate(`/superadmin/orders/${order.docId}`)}
+                        className="text-primary font-semibold hover:underline text-sm"
+                      >
+                        {order.orderId}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-gray-700 text-sm">{order.shipping?.name || "—"}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 text-sm">{order.ordertype || "—"}</td>
+                    <td className="px-4 py-3 font-semibold text-emerald-600 text-sm">₹{Number(order.total || 0).toLocaleString("en-IN")}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs">{order.docketNumber || "—"}</td>
+
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex flex-col items-center gap-1.5">
+                        <select
+                          value={order.status}
+                          onChange={e => handleStatusUpdate(order, e.target.value)}
+                          className={`text-xs px-2 py-1.5 rounded-lg font-medium cursor-pointer border-0 outline-none ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-600"}`}
+                        >
+                          {STATUS_ORDER.filter(s => safeIndex(STATUS_ORDER, s) >= safeIndex(STATUS_ORDER, order.status)).map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+
+                        {showCancelInput === order.docId && (
+                          <div className="flex gap-1 mt-1">
+                            <input
+                              className="border rounded-lg text-xs px-2 py-1 w-28 focus:outline-none focus:ring-1 focus:ring-red-300"
+                              placeholder="Reason"
+                              value={cancelReason}
+                              onChange={e => setCancelReason(e.target.value)}
+                            />
+                            <button onClick={() => handleCancelSubmit(order)} className="bg-red-500 text-white text-xs px-2 py-1 rounded-lg">✓</button>
+                          </div>
+                        )}
+
+                        {showDocketInput === order.docId && (
+                          <div className="flex flex-col gap-1 mt-1 w-full">
+                            <input placeholder="LR No" className="border rounded-lg text-xs px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-300" value={docketNumber} onChange={e => setDocketNumber(e.target.value)} />
+                            <input placeholder="Courier" className="border rounded-lg text-xs px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-300" value={qname} onChange={e => setQname(e.target.value)} />
+                            <button onClick={() => handleDocketSubmit(order)} className="bg-blue-500 text-white text-xs px-2 py-1 rounded-lg">Submit</button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+
+                    <td className="px-4 py-3 text-center">
+                      <button onClick={e => { e.stopPropagation(); handlePrint(order); }} className="p-2 rounded-xl hover:bg-primary/10 text-primary transition" title="Print Invoice">
+                        <FaPrint />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── CARD VIEW ─────────────────────────────────── */}
+      {viewMode === "card" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {currentOrders.length === 0 ? (
+            <div className="col-span-full py-16 text-center text-gray-400">
+              <FaTh className="text-4xl text-gray-200 mx-auto mb-2" />
+              <span className="text-sm">No active orders found</span>
+            </div>
+          ) : currentOrders.map(order => (
+            <div key={order.docId} className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col gap-3">
+
+              {/* Header */}
+              <div className="flex items-start justify-between">
+                <div>
+                  <button
+                    onClick={() => navigate(`/superadmin/orders/${order.docId}`)}
+                    className="text-primary font-bold text-sm hover:underline"
+                  >
+                    {order.orderId}
+                  </button>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
+                  </p>
+                </div>
+                <span className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-600"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[order.status] || "bg-gray-400"}`} />
+                  {order.status}
+                </span>
+              </div>
+
+              {/* Customer */}
+              <div className="text-sm text-gray-700 font-medium truncate">{order.shipping?.name || "—"}</div>
+
+              <div className="border-t border-gray-100" />
+
+              {/* Details */}
+              <div className="grid grid-cols-2 gap-1 text-xs text-gray-500">
+                <span>Payment</span>
+                <span className="text-right text-gray-700 font-medium">{order.ordertype || "—"}</span>
+                <span>Total</span>
+                <span className="text-right text-emerald-600 font-bold">₹{Number(order.total || 0).toLocaleString("en-IN")}</span>
+                {order.docketNumber && <>
+                  <span>LR No</span>
+                  <span className="text-right text-gray-700 truncate">{order.docketNumber}</span>
+                </>}
+              </div>
+
+              {/* Status select */}
               <select
                 value={order.status}
-                onChange={(e) => handleStatusUpdate(order, e.target.value)}
-                className={
-                  getStatusColor(order.status) +
-                  " px-2 py-1 rounded w-full cursor-pointer"
-                }
+                onChange={e => handleStatusUpdate(order, e.target.value)}
+                className={`w-full text-xs px-3 py-2 rounded-xl font-medium cursor-pointer border-0 outline-none ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-600"}`}
               >
-                {statusOrder
-                  .filter(
-                    (status) =>
-                      statusOrder.indexOf(status) >=
-                      statusOrder.indexOf(order.status)
-                  )
-                  .map((status) => (
-                    <option key={status} value={status}>
-                      {status === "Placed" ? "Order Placed" : status}
-                    </option>
-                  ))}
+                {STATUS_ORDER.filter(s => safeIndex(STATUS_ORDER, s) >= safeIndex(STATUS_ORDER, order.status)).map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
               </select>
 
               {showCancelInput === order.docId && (
-                <div className="mt-2">
-                  <input
-                    className="w-full border border-gray-500 rounded text-xs px-3 py-2"
-                    placeholder="Reason for cancellation"
-                    value={cancelReason}
-                    onChange={(e) => setCancelReason(e.target.value)}
-                  />
-                  <button
-                    onClick={() => handleCancelSubmit(order)}
-                    className="mt-2 w-full bg-red-400 font-bold hover:bg-red-700 text-white text-xs px-3 py-2 rounded cursor-pointer"
-                  >
-                    Confirm
-                  </button>
+                <div className="flex gap-2">
+                  <input className="flex-1 border rounded-xl text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-red-300" placeholder="Cancellation reason" value={cancelReason} onChange={e => setCancelReason(e.target.value)} />
+                  <button onClick={() => handleCancelSubmit(order)} className="bg-red-500 text-white text-xs px-3 rounded-xl">OK</button>
                 </div>
               )}
 
               {showDocketInput === order.docId && (
-                <div className="mt-2">
-                  <div className="flex flex-col gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter Docket Number"
-                      className="w-full border border-gray-500 rounded text-xs px-3 py-2"
-                      value={docketNumber}
-                      onChange={(e) => setDocketNumber(e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Enter QName "
-                      className="w-full border border-gray-500 rounded text-xs px-3 py-2"
-                      value={qname}
-                      onChange={(e) => setQname(e.target.value)}
-                    />
-                    <button
-                      onClick={() => handleDocketSubmit(order)}
-                      className="bg-blue-600 cursor-pointer ml-2 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded"
-                    >
-                      Submit
-                    </button>
-                  </div>
-                  
+                <div className="flex flex-col gap-2">
+                  <input className="border rounded-xl text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-300" placeholder="LR Number" value={docketNumber} onChange={e => setDocketNumber(e.target.value)} />
+                  <input className="border rounded-xl text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-300" placeholder="Courier Name" value={qname} onChange={e => setQname(e.target.value)} />
+                  <button onClick={() => handleDocketSubmit(order)} className="bg-blue-500 text-white text-xs py-1.5 rounded-xl">Submit</button>
                 </div>
               )}
-            </div>
-            {order.status === "Shipped" && (
-              <div className="mt-1">
-                <span className="font-medium">Docket:</span>{" "}
-                {order.docketNumber || "-"}
-              </div>
-            )}
-            <div className="mt-2 flex justify-end">
-              <button
-                onClick={() => handlePrint(order)}
-                className="text-gray-600 hover:text-black"
-              >
-                <FaPrint />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
 
-      {/* Pagination */}
+              {/* Footer */}
+              <div className="flex justify-end">
+                <button onClick={e => { e.stopPropagation(); handlePrint(order); }} className="p-2 rounded-xl hover:bg-primary/10 text-primary transition" title="Print Invoice">
+                  <FaPrint className="text-sm" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── PAGINATION ─────────────────────────────────── */}
       {totalPages > 1 && (
-        <div className="flex  justify-center items-center  gap-2 mt-6">
+        <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
           <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
             disabled={currentPage === 1}
+            className="p-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 disabled:opacity-40 transition"
           >
             <MdOutlineArrowBackIosNew />
           </button>
@@ -791,20 +545,16 @@ const NewOrders = () => {
             <button
               key={i}
               onClick={() => setCurrentPage(i + 1)}
-              className={`cursor-pointer px-3 py-1 border rounded-full ${currentPage === i + 1
-                ? "bg-primary text-white"
-                : "bg-white text-primary"
-                }`}
+              className={`px-3.5 py-1.5 rounded-xl text-sm font-medium transition ${currentPage === i + 1 ? "bg-primary text-white shadow" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"}`}
             >
               {i + 1}
             </button>
           ))}
 
           <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
+            onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
             disabled={currentPage === totalPages}
+            className="p-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 disabled:opacity-40 transition"
           >
             <MdOutlineArrowForwardIos />
           </button>
@@ -812,6 +562,4 @@ const NewOrders = () => {
       )}
     </div>
   );
-};
-
-export default NewOrders;
+}
