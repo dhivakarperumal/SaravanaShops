@@ -72,6 +72,25 @@ async function initializeDatabase() {
       )
     `);
 
+    // ── Reviews table ───────────────────────────────────
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255),
+        category VARCHAR(255),
+        user VARCHAR(255),
+        rating DECIMAL(3,1) DEFAULT 0.0,
+        reviews INT DEFAULT 0,
+        rate DECIMAL(3,1) DEFAULT 0.0,
+        ` + "`desc`" + ` TEXT,
+        image LONGTEXT,
+        tick BOOLEAN DEFAULT FALSE,
+        date VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('✅ Database initialized: users, categories, products & razorpay_keys tables created/verified');
   } catch (error) {
     console.error('Database initialization error:', error.message);

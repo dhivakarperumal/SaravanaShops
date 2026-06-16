@@ -26,6 +26,7 @@ const authRouter = require('./src/routers/authRouter');
 const categoryRouter = require('./src/routers/categoryRouter');
 const productRouter = require('./src/routers/productRouter');
 const razorpayRouter = require('./src/routers/razorpayRouter');
+const reviewRouter = require('./src/routers/reviewRoutes');
 
 // Initialize database
 initializeDatabase();
@@ -50,6 +51,9 @@ app.use('/api/razorpay', razorpayRouter);
 // User routes
 const userRouter = require('./src/routers/userRouter');
 app.use('/api/users', userRouter);
+
+// Review routes
+app.use('/api/reviews', reviewRouter);
 
 // Other routes (to be added)
 // const productsRouter = require('./src/routers/products');
