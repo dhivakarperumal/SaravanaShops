@@ -46,12 +46,13 @@ exports.addToCart = async (req, res) => {
 
     const [existing] = await db.query(
       `
-      SELECT * FROM cart
-      WHERE user_id = ?
-      AND product_id = ?
-      AND size = ?
-      AND color = ?
-      `,
+  SELECT *
+  FROM cart
+  WHERE user_id = ?
+  AND product_id = ?
+  AND COALESCE(size,'') = ?
+  AND COALESCE(color,'') = ?
+  `,
       [
         user_id,
         product_id,
@@ -61,13 +62,16 @@ exports.addToCart = async (req, res) => {
     );
 
     if (existing.length > 0) {
+      const newQty =
+        Number(existing[0].quantity) + Number(quantity || 1);
+
       await db.query(
         `
-        UPDATE cart
-        SET quantity = quantity + ?
-        WHERE id = ?
-        `,
-        [quantity || 1, existing[0].id]
+  UPDATE cart
+  SET quantity = ?
+  WHERE id = ?
+  `,
+        [newQty, existing[0].id]
       );
 
       return res.status(200).json({
