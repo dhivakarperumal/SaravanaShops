@@ -9,14 +9,14 @@ const {
   clearCart,
 } = require("../controllers/cartController");
 
-router.get("/:userId", getUserCart);
-
 router.post("/", addToCart);
+
+router.delete("/clear/:userId", clearCart);
+
+router.get("/:userId", getUserCart);
 
 router.put("/:cartId", updateCartQuantity);
 
 router.delete("/:cartId", deleteCartItem);
-
-router.delete("/clear/:userId", clearCart);
 
 module.exports = router;

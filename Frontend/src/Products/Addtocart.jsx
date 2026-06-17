@@ -191,15 +191,15 @@ const Addtocart = ({ isOpen, onClose }) => {
                 >
                   <img
                     src={item.image || "/placeholder.jpg"}
-                    alt={item.productName || item.name}
+                    alt={item.product_name || item.name}
                     className="w-20 h-20 object-cover rounded-md flex-shrink-0"
                   />
                   <div className="flex-1 flex flex-col justify-between h-full">
                     <h3
                       className="text-sm font-semibold text-primary overflow-hidden text-ellipsis line-clamp-1"
-                      title={item.productName || item.name}
+                      title={item.product_name || item.name}
                     >
-                      {item.productName || "N/A"}
+                      {item.product_name || "N/A"}
                     </h3>
 
                     <span className="text-gray-400 text-sm">

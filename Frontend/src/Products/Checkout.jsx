@@ -163,7 +163,7 @@ const Checkout = () => {
         id: buyNowOrder.productId || "temp_buy_now",
         productId: buyNowOrder.productId || "temp_buy_now",
         name: buyNowOrder.name,
-          productName: buyNowOrder.productName || "",
+          productName: buyNowOrder.product_name || buyNowOrder.productName || "",
         sellingprice: Number(buyNowOrder.sellingprice || 0),
         quantity: Number(buyNowOrder.quantity || 1),
         size: buyNowOrder.size || "",
@@ -502,9 +502,9 @@ const Checkout = () => {
               ordertype: "Online",
                 items: cartItems.map((it) => ({
                 id: it.id,
-                productId: it.productId || it.id,
-                name: it.name,
-                productName: it.productName || "",
+                productId: it.product_id || it.id,
+                name: it.product_name,
+                productName: it.product_name || "",
                 price: Number(it.sellingprice) || 0,
                 quantity: Number(it.quantity) || 1,
                 color: it.color || "",
@@ -537,7 +537,7 @@ const Checkout = () => {
                   order_id: orderId,
                   order_total: totalAmount,
                   order_items: cartItems
-                    .map((i) => `${(i.productName || "N/A")} - Qty: ${i.quantity}${i.size ? " | Size: " + i.size : ""}${i.color ? " | Color: " + i.color : ""}`)
+                    .map((i) => `${(i.product_name || "N/A")} - Qty: ${i.quantity}${i.size ? " | Size: " + i.size : ""}${i.color ? " | Color: " + i.color : ""}`)
                     .join("\n"),
                   shipping_address: `${shipping.address}, ${shipping.city}, ${shipping.state} - ${shipping.zip}, ${shipping.country}`,
                   to_email: shipping.email,
@@ -831,9 +831,9 @@ const Checkout = () => {
             <div className="flex flex-col gap-4 mb-4 max-h-64 overflow-y-auto">
               {cartItems.map((it) => (
                 <div key={it.id} className="flex items-center gap-3">
-                    <img src={it.image || "/placeholder.jpg"} className="w-14 h-14 object-cover rounded" alt={it.productName || it.name} />
+                    <img src={it.image || "/placeholder.jpg"} className="w-14 h-14 object-cover rounded" alt={it.product_name || it.name} />
                     <div className="flex-1 flex flex-col">
-                      <span className="font-medium">{it.productName || "N/A"}</span>
+                      <span className="font-medium">{it.product_name || "N/A"}</span>
                     <span className="text-xs text-gray-500">Qty: {it.quantity || 1}</span>
                     {it.size && <span className="text-xs text-gray-400">Size: {it.size} {it.color && `| Color: ${it.color}`}</span>}
                   </div>
