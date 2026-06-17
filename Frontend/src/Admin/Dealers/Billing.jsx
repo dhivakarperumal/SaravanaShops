@@ -18,6 +18,12 @@ const Billing = () => {
   const [viewMode, setViewMode] = useState("card");
 
   const [orders, setOrders] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   
 
@@ -53,8 +59,14 @@ const Billing = () => {
     );
   });
 
+  const totalPages = Math.ceil(displayed.length / itemsPerPage);
+  const paginatedDisplayed = displayed.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
-    <div className="p-5">
+    <div className="p-8">
       <div className="flex flex-wrap items-center gap-3 mb-6 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100">
 
         <div className="flex items-center gap-2 flex-1 max-w-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
@@ -109,7 +121,7 @@ const Billing = () => {
 
       {viewMode === "card" && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {displayed.map((order) => (
+          {paginatedDisplayed.map((order) => (
             <div
               key={order.id}
               className="group bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
@@ -194,7 +206,7 @@ const Billing = () => {
               </thead>
 
               <tbody>
-                {displayed.map((order, index) => (
+                {paginatedDisplayed.map((order, index) => (
                   <tr
                     key={order.id}
                     className={` ${index % 2 === 0
@@ -203,10 +215,10 @@ const Billing = () => {
                       }`}
                   >
                     <td className="px-4 py-5 font-semibold">
-                      {index + 1}
+                      {(currentPage - 1) * itemsPerPage + index + 1}
                     </td>
 
-                    <td className="px-4 py-5 font-semibold">
+                    <td className="px-4 py-5 text-primary font-semibold">
                       {order.orderId}
                     </td>
 
@@ -236,6 +248,30 @@ const Billing = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-8 mb-4">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            Previous
+          </button>
+          
+          <span className="text-gray-600 font-medium px-4">
+            Page {currentPage} of {totalPages}
+          </span>
+          
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>
