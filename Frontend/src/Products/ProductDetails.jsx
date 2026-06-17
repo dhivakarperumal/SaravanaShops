@@ -69,6 +69,19 @@ const ProductDetails = () => {
     fetchProduct();
   }, [id]);
 
+  // Initialise selectedImage whenever the product (or its images) changes
+  useEffect(() => {
+    if (!product) return;
+    const firstImg =
+      (Array.isArray(product.images) && product.images.length > 0
+        ? product.images[0]
+        : null) ||
+      (Array.isArray(product.image) ? product.image[0] : product.image) ||
+      product.colors?.[0]?.image ||
+      null;
+    if (firstImg) setSelectedImage(firstImg);
+  }, [product]);
+
   const fetchRelatedProducts = async (category, currentId) => {
     try {
       const res = await api.get(
@@ -351,7 +364,8 @@ const ProductDetails = () => {
                     <div
                       className="absolute hidden md:block top-0 left-full ml-4 w-[450px] h-[400px] border rounded-2xl overflow-hidden shadow-lg bg-white z-[999]"
                       style={{
-                        backgroundImage: `url('${selectedImage}')`,
+                        // always fall back to images[0] so zoom is never blank
+                        backgroundImage: `url('${selectedImage || images[0]}')`,
                         backgroundRepeat: "no-repeat",
                         backgroundSize: `${zoomLevel * 100}%`,
                         backgroundPosition: backgroundPosition,
