@@ -2,9 +2,23 @@ const pool = require('../config/db');
 
 // Helper to generate the next Order ID
 async function generateOrderId(connection) {
-  const [rows] = await connection.query('SELECT COUNT(*) AS cnt FROM orders');
+  const now = new Date();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  
+  // Find orders created today to determine the daily sequence number
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  
+  const [rows] = await connection.query(
+    'SELECT COUNT(*) AS cnt FROM orders WHERE created_at >= ? AND created_at <= ?',
+    [startOfDay, endOfDay]
+  );
+  
   const count = rows[0].cnt + 1;
-  return `ORD${String(count).padStart(6, '0')}`;
+  const seq = String(count).padStart(2, '0');
+  
+  return `ORD${mm}${dd}${seq}`;
 }
 
 exports.createOrder = async (req, res) => {

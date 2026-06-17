@@ -12,7 +12,6 @@ export default function AddBilling() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
-   const [searchQuery, setSearchQuery] = useState("");
   const [quantities, setQuantities] = useState({});
   const [totals, setTotals] = useState({
     totalQty: 0,
@@ -415,7 +414,7 @@ export default function AddBilling() {
       if (!res.data || !res.data.success) {
         throw new Error(res.data?.message || "Failed to create order");
       }
-      orderId = res.data.orderId;
+      if (res.data.orderId) orderId = res.data.orderId;
 
       // After successful save, prepare print HTML
       const formatCurrency = (v) => `₹${Number(v || 0).toFixed(2)}`;
