@@ -1392,56 +1392,76 @@ const Billing = () => {
           {displayed.map((order) => (
             <div
               key={order.id}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-lg transition-all"
+              className="group bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
             >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-gray-800">
-                    {order.orderId}
-                  </h3>
+              <div className="bg-gradient-to-r from-primary to-secondary p-4 text-white">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-xs opacity-80">Order ID</p>
+                    <h3 className="font-bold text-lg">
+                      {order.orderId}
+                    </h3>
+                  </div>
 
-                  <p className="text-sm text-gray-500">
-                    {order.customerName}
-                  </p>
+                  <span className="px-3 py-1 bg-white/20 backdrop-blur rounded-full text-xs font-semibold">
+                    {order.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-5">
+                <div className="space-y-3">
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Customer</span>
+                    <span className="font-semibold">
+                      {order.customerName || order.name}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Mobile</span>
+                    <span className="font-medium">
+                      {order.mobile}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Items</span>
+                    <span className="font-medium">
+                      {order.items?.length || 0}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Amount</span>
+                    <span className="font-bold text-primary text-lg">
+                      ₹{order.totalAmount || order.total}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Date</span>
+                    <span>
+                      {order.createdAt
+                        ? new Date(order.createdAt).toLocaleDateString()
+                        : "-"}
+                    </span>
+                  </div>
+
                 </div>
 
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                  {order.status}
-                </span>
+                <button
+                  onClick={() =>
+                    navigate("/superadmin/addbilling", {
+                      state: { order },
+                    })
+                  }
+                  className="mt-5 w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-2xl font-semibold hover:opacity-90 transition-all"
+                >
+                  Generate Bill
+                </button>
               </div>
-
-              <div className="mt-4 space-y-2 text-sm">
-                <p>
-                  <span className="font-semibold">Mobile:</span>{" "}
-                  {order.mobile}
-                </p>
-
-                <p>
-                  <span className="font-semibold">Items:</span>{" "}
-                  {order.items?.length || 0}
-                </p>
-
-                <p>
-                  <span className="font-semibold">Amount:</span>{" "}
-                  ₹{order.totalAmount}
-                </p>
-
-                <p>
-                  <span className="font-semibold">Date:</span>{" "}
-                  {new Date(order.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-
-              <button
-                onClick={() =>
-                  navigate("/superadmin/addbilling", {
-                    state: { order },
-                  })
-                }
-                className="mt-4 w-full bg-primary text-white py-2 rounded-xl font-medium"
-              >
-                Generate Bill
-              </button>
             </div>
           ))}
         </div>
@@ -1468,8 +1488,8 @@ const Billing = () => {
                   <tr
                     key={order.id}
                     className={`border-b ${index % 2 === 0
-                        ? "bg-white"
-                        : "bg-gray-50"
+                      ? "bg-white"
+                      : "bg-gray-50"
                       }`}
                   >
                     <td className="px-4 py-3 font-semibold">
