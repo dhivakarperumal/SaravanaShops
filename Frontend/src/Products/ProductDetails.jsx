@@ -626,7 +626,7 @@ const ProductDetails = () => {
                           size: selectedSize,
                           color: selectedColor,
                         });
-
+                        window.dispatchEvent(new Event("cartUpdated"));
                         toast.success("Added to cart");
                       } catch (err) {
                         console.error(err);
