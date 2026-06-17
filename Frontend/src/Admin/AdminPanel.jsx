@@ -18,19 +18,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import logo from "/Image/logo.png";
 import Sidebar from "./Header/Sidebar";
 import { AiOutlineStock } from "react-icons/ai";
-import { db } from "../firebase";
 import { useContext } from "react";
 import { AuthContext } from "../PrivateRouter.jsx/AuthContext";
-
-import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  Timestamp,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+import api from "../api";
 
 const AdminPanel = () => {
   const { user, setUser } = useContext(AuthContext);
@@ -64,34 +54,6 @@ const AdminPanel = () => {
       )
     : [];
 
-  // Helper to compute total stock for a product
-  const computeStock = (product) => {
-    if (!product) return 0;
-    // If there is a top-level stock number (MultiColor, Sarees, Jewels), use that
-    if (product.stock != null && !isNaN(Number(product.stock))) {
-      return Number(product.stock);
-    }
-
-    let total = 0;
-
-    // Handle Bangles with colors -> per-size stock objects
-    if (Array.isArray(product.colors)) {
-      product.colors.forEach((c) => {
-        const stockObj = c.stock || c.stocks || {};
-        if (stockObj && typeof stockObj === "object") {
-          Object.values(stockObj).forEach((v) => {
-            const n = Number(v);
-            if (!isNaN(n)) total += n;
-          });
-        } else if (!isNaN(Number(stockObj))) {
-          total += Number(stockObj);
-        }
-      });
-    }
-
-    return total;
-  };
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
@@ -107,7 +69,6 @@ const AdminPanel = () => {
     }
   }, [user]);
 
-
   const profileRef = useRef();
   const sidebarRef = useRef(null);
   const bellRef = useRef();
@@ -115,93 +76,25 @@ const AdminPanel = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Fetch today's orders (kept as you had it)
+  // Fetch header stats from MySQL
   useEffect(() => {
-    const now = new Date();
-    const startOfToday = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    );
-    const startOfTomorrow = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + 1
-    );
-    const startTimestamp = Timestamp.fromDate(startOfToday);
-    const endTimestamp = Timestamp.fromDate(startOfTomorrow);
+    const fetchHeaderStats = async () => {
+      try {
+        const res = await api.get('/dashboard/header');
+        const data = res.data.data;
+        setOrders(data.todayOrders || []);
+        setLowStockProducts(data.lowStockProducts || []);
+        setNotifications(data.notifications || []);
+      } catch (err) {
+        console.error('Failed to fetch header stats:', err);
+      }
+    };
 
-    const ordersRef = collection(db, "orders");
-    const ordersQuery = query(
-      ordersRef,
-      where("createdAt", ">=", startTimestamp),
-      where("createdAt", "<", endTimestamp)
-    );
-
-    const unsubscribeOrders = onSnapshot(
-      ordersQuery,
-      (snapshot) => {
-        const todayOrders = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          type: "order",
-          ...doc.data(),
-        }));
-        setOrders(todayOrders);
-      },
-      (error) => console.error("Error listening to orders:", error)
-    );
-
-    return () => unsubscribeOrders();
+    fetchHeaderStats();
+    // Refresh every 60 seconds
+    const interval = setInterval(fetchHeaderStats, 60000);
+    return () => clearInterval(interval);
   }, []);
-
-  // Low stock (kept)
-  useEffect(() => {
-    const productsRef = collection(db, "products");
-    const unsubscribe = onSnapshot(
-      productsRef,
-      (snapshot) => {
-        const allProducts = snapshot.docs.map((docSnap) => {
-          const data = { id: docSnap.id, ...docSnap.data() };
-          // compute aggregated stock
-          return { ...data, stockComputed: computeStock(data) };
-        });
-        // flag low-stock using the computed stock
-        setLowStockProducts(allProducts.filter((product) => (product.stockComputed ?? 0) < 5));
-      },
-      (error) => console.error("Error listening to products:", error)
-    );
-    return () => unsubscribe();
-  }, []);
-
-  // Retailer requests -> notifications (kept)
-  useEffect(() => {
-    const retailerRef = collection(db, "users");
-    const unsubscribeRetailer = onSnapshot(
-      retailerRef,
-      (snapshot) => {
-        const retailerRequests = snapshot.docs
-          .map((docSnap) => {
-            const data = docSnap.data();
-            return {
-              id: docSnap.id,
-              ...data,
-              createdAt: data.createdAt?.toDate
-                ? data.createdAt.toDate()
-                : null,
-            };
-          })
-          .filter(
-            (user) =>
-              user.message === "I am interested in joining as a retailer"
-          );
-
-  setNotifications(() => [...orders, ...retailerRequests]);
-      },
-      (error) => console.error("Error listening to retailer requests:", error)
-    );
-
-    return () => unsubscribeRetailer();
-  }, [orders]);
 
   // Various route -> active tab mapping (kept)
   useEffect(() => {

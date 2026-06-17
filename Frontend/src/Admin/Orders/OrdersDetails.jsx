@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase";
+import api from "../../api";
 import { FaArrowLeft } from "react-icons/fa";
 import namer from "color-namer"; 
 
@@ -39,11 +38,9 @@ const OrderDetail = () => {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const orderRef = doc(db, "orders", id);
-        const orderSnap = await getDoc(orderRef);
-
-        if (orderSnap.exists()) {
-          setOrder({ id: orderSnap.id, ...orderSnap.data() });
+        const res = await api.get(`/orders/${id}`);
+        if (res.data && res.data.success) {
+          setOrder(res.data.data);
         } else {
           alert("Order not found");
           navigate("/superadmin/allOrders");
@@ -121,7 +118,7 @@ const OrderDetail = () => {
             />
           </td>
 
-          <td className="px-4 py-2 text-center">{item.name || "N/A"}</td>
+          <td className="px-4 py-2 text-center">{item.product_name || item.productName || item.name || "N/A"}</td>
 
           <td className="px-4 py-2 text-center">
             {item.size || "N/A"}
@@ -169,7 +166,7 @@ const OrderDetail = () => {
           Subtotal:
         </td>
         <td className="px-4 py-2 text-right">
-          ₹{order.subtotal?.toFixed(2) || "0.00"}
+          ₹{Number(order.subtotal || 0).toFixed(2)}
         </td>
       </tr>
 
@@ -178,7 +175,7 @@ const OrderDetail = () => {
           Shipping:
         </td>
         <td className="px-4 py-2 text-right">
-          ₹{order.shippingCost?.toFixed(2) || "0.00"}
+          ₹{Number(order.shippingCost || 0).toFixed(2)}
         </td>
       </tr>
 
@@ -187,7 +184,7 @@ const OrderDetail = () => {
           Total:
         </td>
         <td className="px-4 py-2 font-bold text-right text-primary text-lg">
-          ₹{order.total?.toFixed(2) || "0.00"}
+          ₹{Number(order.total || 0).toFixed(2)}
         </td>
       </tr>
     </tfoot>
@@ -211,7 +208,7 @@ const OrderDetail = () => {
       {/* Details */}
       <div className="flex flex-col flex-1 gap-1 text-sm">
         <div className="font-semibold text-gray-800">
-            {item.productName || "N/A"}
+            {item.product_name || item.productName || item.name || "N/A"}
           </div>
 
         <div className="flex justify-between">
@@ -263,17 +260,17 @@ const OrderDetail = () => {
 
     <div className="flex justify-between mb-1">
       <span>Subtotal</span>
-      <span>₹{order.subtotal?.toFixed(2) || "0.00"}</span>
+      <span>₹{Number(order.subtotal || 0).toFixed(2)}</span>
     </div>
 
     <div className="flex justify-between mb-1">
       <span>Shipping</span>
-      <span>₹{order.shippingCost?.toFixed(2) || "0.00"}</span>
+      <span>₹{Number(order.shippingCost || 0).toFixed(2)}</span>
     </div>
 
     <div className="flex justify-between font-bold text-primary text-base pt-2 border-t mt-2">
       <span>Total</span>
-      <span>₹{order.total?.toFixed(2) || "0.00"}</span>
+      <span>₹{Number(order.total || 0).toFixed(2)}</span>
     </div>
   </div>
 </div>

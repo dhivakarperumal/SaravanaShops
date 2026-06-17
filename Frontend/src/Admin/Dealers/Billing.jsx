@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  collection,
-  getDocs,
-  doc,
-  runTransaction,
-  serverTimestamp,
-} from "firebase/firestore";
-import { db } from "../../firebase";
+import api from "../../api";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import { IoMdPrint } from "react-icons/io";
 import namer from "color-namer"; // 🎨 Color name library
@@ -53,28 +46,20 @@ export default function Billing() {
     }
   };
 
-  // 🟢 Fetch all products from Firestore
+  // 🟢 Fetch all products from API
   useEffect(() => {
     const fetchProducts = async () => {
-      const snap = await getDocs(collection(db, "products"));
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setProducts(data);
+      try {
+        const res = await api.get("/products");
+        if (res.data && res.data.success) {
+          setProducts(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch products", err);
+      }
     };
     fetchProducts();
   }, []);
-
-  // 🟢 Generate incremental order number
-  const generateOrderNumber = async () => {
-    const counterRef = doc(db, "metadata", "ordersCounter");
-    const orderNum = await runTransaction(db, async (tx) => {
-      const docSnap = await tx.get(counterRef);
-      const current = docSnap.exists() ? docSnap.data().count || 0 : 0;
-      const next = current + 1;
-      tx.set(counterRef, { count: next }, { merge: true });
-      return `ORD${String(next).padStart(6, "0")}`;
-    });
-    return orderNum;
-  };
 
   // --- new helper: return image for a product given selected color (and fallback)
   const getColorImage = (p, color) => {
@@ -104,6 +89,26 @@ export default function Billing() {
     return p.images?.[0] || (Array.isArray(p.image) && p.image[0]) || p.image || "/placeholder.jpg";
   };
 
+  // --- helper: get available stock for a product variant
+  const getAvailableStock = (product, size, color) => {
+    if (!product) return 0;
+    const isBangle = (product.category && product.category.toLowerCase().includes("bangle")) || 
+                     (product.productType && product.productType.toLowerCase().includes("bangle"));
+    if (isBangle && product.count === "SingleColor") {
+      const colorObj = product.colors?.find(c => String(c.color) === String(color));
+      if (colorObj) {
+        const stockObj = colorObj.stock || colorObj.stocks || {};
+        if (stockObj && typeof stockObj === "object" && size) {
+          return Number(stockObj[size]) || 0;
+        } else if (!isNaN(Number(stockObj))) {
+          return Number(stockObj);
+        }
+      }
+      return 0;
+    }
+    return Number(product.stock) || 0;
+  };
+
   // --- validate order before saving/printing (enhanced)
   const validateOrder = (items) => {
     if (!items || items.length === 0) {
@@ -111,13 +116,24 @@ export default function Billing() {
       return false;
     }
 
-    // Ensure bangle variants have size & color
+    // Ensure bangle variants have size & color, and check stock
     for (const key of items) {
       const parts = key.split("_");
+      const [id, size, color] = parts;
+      const product = products.find((p) => String(p.id) === String(id));
+      
       if (parts.length >= 3) {
-        const [, size, color] = parts;
         if (!size || !color) {
           toast.error("Please select size and color for all bangle items");
+          return false;
+        }
+      }
+      
+      if (product) {
+        const qty = quantities[key] || 1;
+        const stock = getAvailableStock(product, size, color);
+        if (qty > stock) {
+          toast.error(`Only ${stock} items available for ${product.name}. Please reduce quantity.`);
           return false;
         }
       }
@@ -195,11 +211,14 @@ export default function Billing() {
 
   // 🟢 Add Product (supports Bangles with color & size)
   const handleAddProduct = (productId) => {
-    const product = products.find((p) => p.id === productId);
+    const product = products.find((p) => String(p.id) === String(productId));
     if (!product) return;
 
+    const isBangle = (product.category && product.category.toLowerCase().includes("bangle")) || 
+                     (product.productType && product.productType.toLowerCase().includes("bangle"));
+
     // If product is bangle single-color, ensure user selected color & size
-    if (product.category === "Bangle" && product.count === "SingleColor") {
+    if (isBangle && product.count === "SingleColor") {
       if (!selectedColor || !selectedSize) {
         toast.error("Select color and size before adding this bangle");
         return;
@@ -207,24 +226,48 @@ export default function Billing() {
     }
 
     const variantKey =
-      product.category === "Bangle"
+      isBangle
         ? `${productId}_${selectedSize}_${selectedColor}`
         : productId;
 
+    const stock = getAvailableStock(product, selectedSize, selectedColor);
+
     if (!selectedProducts.includes(variantKey)) {
+      if (stock < 1) {
+        toast.error("Out of stock. 0 items available.");
+        return;
+      }
       setSelectedProducts((prev) => [...prev, variantKey]);
       setQuantities((prev) => ({ ...prev, [variantKey]: 1 }));
       setCurrentProduct("");
       setSelectedSize("");
       setSelectedColor("");
     } else {
-      toast.error("Product already added!");
+      const currentQty = quantities[variantKey] || 1;
+      if (currentQty + 1 > stock) {
+        toast.error(`Only ${stock} items available in stock.`);
+        return;
+      }
+      setQuantities((prev) => ({ ...prev, [variantKey]: currentQty + 1 }));
+      toast.success(`Increased quantity for ${product.name}`);
+      setCurrentProduct("");
+      setSelectedSize("");
+      setSelectedColor("");
     }
   };
 
   // 🟢 Handle quantity change
   const handleQuantityChange = (key, qty) => {
     if (qty < 1) qty = 1;
+    const [id, size, color] = key.split("_");
+    const product = products.find((p) => String(p.id) === String(id));
+    const stock = getAvailableStock(product, size, color);
+    
+    if (qty > stock) {
+      toast.error(`Only ${stock} items available in stock.`);
+      qty = stock;
+    }
+    
     setQuantities((prev) => ({ ...prev, [key]: qty }));
   };
 
@@ -246,7 +289,7 @@ export default function Billing() {
 
     selectedProducts.forEach((key) => {
       let [id] = key.split("_");
-      const p = products.find((x) => x.id === id);
+      const p = products.find((x) => String(x.id) === String(id));
       const qty = Number(quantities[key] || 1);
       if (p) {
         totalQty += qty;
@@ -304,7 +347,7 @@ export default function Billing() {
     // Build items array with correct color-specific images
     const items = selectedProducts.map((key) => {
       const [id, size, color] = key.split("_");
-      const p = products.find((x) => x.id === id) || {};
+      const p = products.find((x) => String(x.id) === String(id)) || {};
       return {
         id: p.id || id,
         name: p.name || "-",
@@ -316,6 +359,8 @@ export default function Billing() {
         mrp: p.mrp || 0,
         price: p.sellingprice || 0,
         quantity: quantities[key] || 1,
+        list_of_items: p.list_of_items || [],
+        fabricdetails: p.fabricdetails || []
       };
     });
 
@@ -334,77 +379,49 @@ export default function Billing() {
     );
     const grandTotalLocal = subtotalLocal + Number(shippingCost || 0);
 
-    const orderId = await generateOrderNumber();
     const clientNow = new Date(); // use for printed time
+    let orderId = "";
 
     try {
-      await runTransaction(db, async (transaction) => {
-        const productDocs = {};
-        for (const item of items) {
-          const productRef = doc(db, "products", item.id);
-          const productSnap = await transaction.get(productRef);
-          if (!productSnap.exists())
-            throw new Error(`Product ${item.name} not found`);
-          productDocs[item.id] = { ref: productRef, data: productSnap.data() };
-        }
+      const payload = {
+        items,
+        subtotal: subtotalLocal,
+        shippingCost: Number(shippingCost || 0),
+        total: grandTotalLocal,
+        status: "Delivered",
+        ordertype: orderType,
+        shipping,
+        clientCreatedAt: clientNow.toISOString()
+      };
 
-        // update stock
-        for (const item of items) {
-          const { ref, data } = productDocs[item.id];
-          if (
-            data.category?.toLowerCase() === "bangle" &&
-            data.colors &&
-            item.color &&
-            item.size &&
-            data.count === "SingleColor"
-          ) {
-            const updatedColors = data.colors.map((c) => {
-              if (String(c.color) === String(item.color) && c.stock?.[item.size] !== undefined) {
-                return {
-                  ...c,
-                  stock: {
-                    ...c.stock,
-                    [item.size]: Math.max(0, c.stock[item.size] - item.quantity),
-                  },
-                };
-              }
-              return c;
-            });
-            transaction.update(ref, { colors: updatedColors });
-          } else if (data.stock !== undefined) {
-            const currentStock = Number(data.stock || 0);
-            if (currentStock < item.quantity)
-              throw new Error(`Not enough stock for ${item.name}`);
-            transaction.update(ref, {
-              stock: Math.max(0, currentStock - item.quantity),
-            });
-          }
-        }
-
-        const orderRef = doc(collection(db, "orders"));
-        transaction.set(orderRef, {
-          id: orderRef.id,
-          orderId,
-          items,
-          // use freshly computed subtotal and grand total so shipping is included correctly
-          subtotal: subtotalLocal,
-          shippingCost: Number(shippingCost || 0),
-          total: grandTotalLocal,
-          status: "Delivered",
-          createdAt: serverTimestamp(),
-          clientCreatedAt: clientNow.toISOString(),
-          shipping,
-          ordertype: orderType,
-        });
-      });
+      const res = await api.post("/orders/create", payload);
+      if (!res.data || !res.data.success) {
+        throw new Error(res.data?.message || "Failed to create order");
+      }
+      orderId = res.data.orderId;
 
       // After successful save, prepare print HTML
       const formatCurrency = (v) => `₹${Number(v || 0).toFixed(2)}`;
       const itemsRows = items.map((it, idx) => {
         const subtotal = Number(it.price || 0) * Number(it.quantity || 1);
+        let extraInfo = "";
+        if (it.size && it.size !== "undefined") extraInfo += ` Size: ${it.size}`;
+        if (it.color && it.color !== "undefined") {
+          const colorName = getColorName(it.color);
+          if (colorName !== "Unknown") extraInfo += ` Color: ${colorName}`;
+        }
+        if (it.list_of_items && it.list_of_items.length > 0) extraInfo += `<br/><span class="muted">Items: ${it.list_of_items.join(", ")}</span>`;
+        if (it.fabricdetails && it.fabricdetails.length > 0) extraInfo += `<br/><span class="muted">Fabric: ${it.fabricdetails.join(", ")}</span>`;
+
         return `<tr>
             <td style="padding:6px;border:1px solid #ddd">${idx + 1}</td>
-            <td style="padding:6px;border:1px solid #ddd">${it.productName || "N/A"}</td>
+            <td style="padding:6px;border:1px solid #ddd;text-align:center">
+              ${it.image ? `<img src="${it.image}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #ccc" alt="IMG"/>` : `<div style="width:40px;height:40px;background:#eee;border-radius:4px;display:inline-block"></div>`}
+            </td>
+            <td style="padding:6px;border:1px solid #ddd">
+              <strong>${it.name || "N/A"}</strong>
+              <div style="font-size:12px;color:#555;margin-top:2px;">${extraInfo.trim()}</div>
+            </td>
             <td style="padding:6px;border:1px solid #ddd;text-align:center">${it.quantity}</td>
             <td style="padding:6px;border:1px solid #ddd;text-align:right">${formatCurrency(it.price)}</td>
             <td style="padding:6px;border:1px solid #ddd;text-align:right">${formatCurrency(subtotal)}</td>
@@ -434,7 +451,7 @@ export default function Billing() {
           <body>
             <div class="header">
               <div>
-            <img src="${logoUrl}" style="height:60px;" />
+            <img src="${window.location.origin}${logoUrl}" style="height:60px;" />
                 <h2>Sri Saravana Shoppings</h2>
                 <div class="muted">Invoice for Order: ${orderId}</div>
                 <div class="muted">Printed: ${clientNow.toLocaleString()}</div>
@@ -460,6 +477,7 @@ export default function Billing() {
               <thead>
                 <tr>
                   <th style="width:40px">#</th>
+                  <th style="width:60px;text-align:center">Image</th>
                   <th>Item</th>
                   <th style="width:70px;text-align:center">Qty</th>
                   <th style="width:120px;text-align:right">Price</th>
@@ -467,17 +485,17 @@ export default function Billing() {
                 </tr>
               </thead>
               <tbody>
-                ${itemsRows || `<tr><td colspan="5" style="padding:8px;border:1px solid #ddd">No items</td></tr>`}
+                ${itemsRows || `<tr><td colspan="6" style="padding:8px;border:1px solid #ddd">No items</td></tr>`}
                 <tr>
-                  <td colspan="4" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Subtotal</strong></td>
+                  <td colspan="5" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Subtotal</strong></td>
                   <td style="padding:8px;border:1px solid #ddd;text-align:right"><strong>${formatCurrency(subtotalLocal)}</strong></td>
                 </tr>
                 <tr>
-                  <td colspan="4" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Shipping</strong></td>
+                  <td colspan="5" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Shipping</strong></td>
                   <td style="padding:8px;border:1px solid #ddd;text-align:right"><strong>${formatCurrency(Number(shippingCost || 0))}</strong></td>
                 </tr>
                 <tr>
-                  <td colspan="4" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Grand Total</strong></td>
+                  <td colspan="5" style="padding:8px;border:1px solid #ddd;text-align:right"><strong>Grand Total</strong></td>
                   <td style="padding:8px;border:1px solid #ddd;text-align:right"><strong>${formatCurrency(totalForPrint)}</strong></td>
                 </tr>
               </tbody>
@@ -613,8 +631,9 @@ export default function Billing() {
   {/* 🔹 Dynamic Color + Size Selector */}
 {currentProduct &&
   (() => {
-    const p = products.find((x) => x.id === currentProduct);
-    if (p && p.category === "Bangle" && p.count === "SingleColor") {
+    const p = products.find((x) => String(x.id) === String(currentProduct));
+    const isBangle = p && ((p.category && p.category.toLowerCase().includes("bangle")) || (p.productType && p.productType.toLowerCase().includes("bangle")));
+    if (p && isBangle && p.count === "SingleColor") {
       const availableColors = p.colors || [];
       const availableSizes =
         availableColors.find((c) => c.color === selectedColor)?.size || [];
@@ -705,10 +724,25 @@ export default function Billing() {
               ))}
             </select>
           </div>
+          
+          {selectedSize && selectedColor && (
+            <div className="flex items-end mb-1 ml-2">
+              <span className="text-sm font-bold text-green-600">
+                Stock: {getAvailableStock(p, selectedSize, selectedColor)}
+              </span>
+            </div>
+          )}
         </div>
       );
     }
-    return null;
+    
+    return (
+      <div className="flex gap-3 mt-3 ml-4">
+        <span className="text-sm font-bold text-green-600">
+          Stock: {getAvailableStock(p)}
+        </span>
+      </div>
+    );
   })()}
 </div>
 
@@ -909,7 +943,7 @@ export default function Billing() {
               <tbody>
                 {selectedProducts.map((key) => {
                   const [id, size, color] = key.split("_");
-                  const p = products.find((x) => x.id === id) || {};
+                  const p = products.find((x) => String(x.id) === String(id)) || {};
                   const qty = quantities[key] || 1;
                   // use color-specific image when available
                   const img = getColorImage(p, color);
@@ -923,28 +957,69 @@ export default function Billing() {
                           className="w-15 h-15 border p-1 border-gray-200"
                         />
                       </td>
-                      <td className="px-3 py-3">{p.name}</td>
-                      <td className="px-3 py-3">{p.category || "-"}</td>
-                      <td className="px-3 py-3">{size || "-"}</td>
                       <td className="px-3 py-3">
-                        <div className="flex items-center justify-center gap-2">
-                          <span
-                            className="inline-block w-4 h-4 rounded-full border border-gray-400"
-                            style={{ backgroundColor: color }}
-                          ></span>
-                          <span>{getColorName(color)}</span>
+                        <div>{p.name}</div>
+                        <div className="text-xs font-semibold text-green-600 mt-1">
+                          Stock: {getAvailableStock(p, size, color)}
                         </div>
+                        {p.list_of_items && p.list_of_items.length > 0 && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Items: {p.list_of_items.join(", ")}
+                          </div>
+                        )}
+                        {p.fabricdetails && p.fabricdetails.length > 0 && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Fabric: {p.fabricdetails.join(", ")}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-3 py-3">{p.category || "-"}</td>
+                      <td className="px-3 py-3">{size && size !== "undefined" ? size : "-"}</td>
+                      <td className="px-3 py-3">
+                        {color && color !== "undefined" ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <span
+                              className="inline-block w-4 h-4 rounded-full border border-gray-400"
+                              style={{ backgroundColor: color }}
+                            ></span>
+                            <span>{getColorName(color)}</span>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
                       </td>
                       <td className="px-3 py-3">
-                        <input
-                          type="number"
-                          min={1}
-                          className="w-16 border border-primary p-1 rounded text-center"
-                          value={qty}
-                          onChange={(e) =>
-                            handleQuantityChange(key, Number(e.target.value))
-                          }
-                        />
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            className="w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+                            onClick={() => handleQuantityChange(key, qty - 1)}
+                            disabled={qty <= 1}
+                          >
+                            -
+                          </button>
+                          <input
+                            type="number"
+                            min={1}
+                            className="w-14 border border-primary p-1 rounded text-center outline-none"
+                            value={qty}
+                            onChange={(e) =>
+                              handleQuantityChange(key, Number(e.target.value))
+                            }
+                          />
+                          <button
+                            className={`w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded ${qty >= getAvailableStock(p, size, color) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={() => {
+                              const stock = getAvailableStock(p, size, color);
+                              if (qty >= stock) {
+                                toast.error(`Only ${stock} items available in stock.`);
+                              } else {
+                                handleQuantityChange(key, qty + 1);
+                              }
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
                       </td>
                       <td className="px-3 py-3">₹{p.sellingprice}</td>
                       <td className="px-3 py-3">
@@ -992,11 +1067,11 @@ export default function Billing() {
 <div className="sm:hidden flex flex-col gap-3 mt-4">
   {selectedProducts.map(key => {
     const [id, size, color] = key.split("_");
-    const p = products.find(x => x.id === id) || {};
+    const p = products.find(x => String(x.id) === String(id)) || {};
     const qty = quantities[key] || 1;
     const img = getColorImage(p, color);
 
-    const isSingleColorBangle = p?.category === "Bangle" && p?.count === "SingleColor";
+    const isSingleColorBangle = p && ((p.category && p.category.toLowerCase().includes("bangle")) || (p.productType && p.productType.toLowerCase().includes("bangle"))) && p.count === "SingleColor";
 
     return (
       <div key={key} className="bg-white shadow rounded-2xl p-4 flex flex-col gap-2 border">
@@ -1005,6 +1080,13 @@ export default function Billing() {
           <div className="flex-1">
             <h4 className="font-semibold">{p.name}</h4>
             <p className="text-sm text-gray-500">{p.category} / {p.subcategory || "-"}</p>
+            <p className="text-xs font-bold text-green-600">Stock: {getAvailableStock(p, size, color)}</p>
+            {p.list_of_items && p.list_of_items.length > 0 && (
+              <p className="text-xs text-gray-500 mt-1">Items: {p.list_of_items.join(", ")}</p>
+            )}
+            {p.fabricdetails && p.fabricdetails.length > 0 && (
+              <p className="text-xs text-gray-500 mt-1">Fabric: {p.fabricdetails.join(", ")}</p>
+            )}
             <div className="flex gap-2 mt-1 flex-wrap">
               <div>
                 Size: {isSingleColorBangle ? (
@@ -1021,7 +1103,7 @@ export default function Billing() {
                       <option key={s} value={s}>{s}</option>
                     )) || []}
                   </select>
-                ) : size || "-"}
+                ) : (size && size !== "undefined" ? size : "-")}
               </div>
               <div>
                 Color: {isSingleColorBangle ? (
@@ -1038,17 +1120,39 @@ export default function Billing() {
                       <option key={c.color} value={c.color}>{getColorName(c.color)}</option>
                     )) || []}
                   </select>
-                ) : color || "-"}
+                ) : (color && color !== "undefined" ? color : "-")}
               </div>
             </div>
             <div className="flex gap-2 mt-2 items-center">
-              <input
-                type="number"
-                value={qty}
-                min={1}
-                className="w-16 border border-primary p-1 rounded text-center"
-                onChange={e => handleQuantityChange(key, Number(e.target.value))}
-              />
+              <div className="flex items-center justify-center gap-1">
+                <button
+                  className="w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+                  onClick={() => handleQuantityChange(key, qty - 1)}
+                  disabled={qty <= 1}
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  value={qty}
+                  min={1}
+                  className="w-14 border border-primary p-1 rounded text-center outline-none"
+                  onChange={e => handleQuantityChange(key, Number(e.target.value))}
+                />
+                <button
+                  className={`w-7 h-7 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded ${qty >= getAvailableStock(p, size, color) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => {
+                    const stock = getAvailableStock(p, size, color);
+                    if (qty >= stock) {
+                      toast.error(`Only ${stock} items available in stock.`);
+                    } else {
+                      handleQuantityChange(key, qty + 1);
+                    }
+                  }}
+                >
+                  +
+                </button>
+              </div>
               <span className="text-sm">₹{(p.sellingprice * qty).toFixed(2)}</span>
               <button
                 className="ml-auto px-2 py-1 bg-red-600 text-white rounded-full"

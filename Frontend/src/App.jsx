@@ -1,47 +1,8 @@
-// import React, { useEffect, useState } from "react";
-// import { Outlet } from "react-router-dom";
-// import Navbar from "./Components/Navbar";
-// import Header from "./Components/Header";
-// import Footer from "./Components/Footer";
-// import { ToastContainer } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-// import ScrollNavigator from "./Components/ScrollNavigator";
-// import ScrollToTop from "./Components/ScrollToTop";
-
-// function App() {
-
-//   return (
-//     <section>
-//       <Header />
-//       <ToastContainer
-//         position="top-left"
-//         autoClose={3000}
-//         hideProgressBar={false}
-//         newestOnTop={false}
-//         closeOnClick
-//         rtl={false}
-//         pauseOnFocusLoss
-//         draggable
-//         pauseOnHover
-//       />
-//       <Navbar />
-//       <ScrollToTop />
-//       <ScrollNavigator />
-//       <Outlet />
-//       <Footer />
-//     </section>
-//   );
-// }
-
-// export default App;
-
-
 import React, { useContext, useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
-// import { ToastContainer } from "react-toastify";
  import AOS from "aos";
 import "aos/dist/aos.css";
 

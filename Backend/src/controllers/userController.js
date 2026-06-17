@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const bcryptjs = require('bcryptjs');
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -91,4 +92,70 @@ const updateUser = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, deleteUser, updateUserStatus, updateUser };
+// Update current user profile
+const updateProfile = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const { username, phone } = req.body;
+
+    const connection = await pool.getConnection();
+    const [result] = await connection.query(
+      'UPDATE users SET username = COALESCE(?, username), phone = COALESCE(?, phone) WHERE user_id = ?',
+      [username, phone, user_id]
+    );
+    connection.release();
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'Profile updated successfully' });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Change password
+const changePassword = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current and new passwords are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters' });
+    }
+
+    const connection = await pool.getConnection();
+    const [users] = await connection.query('SELECT password FROM users WHERE user_id = ?', [user_id]);
+
+    if (users.length === 0) {
+      connection.release();
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = users[0];
+    const passwordMatch = await bcryptjs.compare(currentPassword, user.password);
+
+    if (!passwordMatch) {
+      connection.release();
+      return res.status(400).json({ message: 'Incorrect current password' });
+    }
+
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+    await connection.query('UPDATE users SET password = ? WHERE user_id = ?', [hashedPassword, user_id]);
+    
+    connection.release();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { getAllUsers, deleteUser, updateUserStatus, updateUser, updateProfile, changePassword };
