@@ -35,11 +35,23 @@ function Navbar() {
   const [hoveredCat, setHoveredCat] = useState(null);
 
   // Data states
-  const [categories, setCategories] = useState([
-    { id: 1, cname: "Bangles" },
-    { id: 2, cname: "Sarees" },
-    { id: 3, cname: "Jewellery" },
-  ]);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data } = await api.get('/categories');
+        if (data.success) {
+          setCategories(data.data);
+        } else {
+          setCategories(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch categories", err);
+      }
+    };
+    fetchCategories();
+  }, []);
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
@@ -169,7 +181,7 @@ function Navbar() {
               </span>
 
               <div
-                className={`absolute left-0 mt-2 bg-white border border-primary/30 rounded-xl shadow-md transition-all ${
+                className={`absolute left-0 mt-2 w-48 bg-white border border-primary/30 rounded-xl shadow-md transition-all ${
                   hoveredCat
                     ? "opacity-100 visible scale-100"
                     : "opacity-0 invisible scale-95"
@@ -177,9 +189,9 @@ function Navbar() {
               >
                 {categories.map((cat) => (
                   <button
-                    key={cat.id}
+                    key={cat.id || cat.cname}
                     onClick={() => handleCategoryClick(cat)}
-                    className="block w-full px-4 py-2 text-left text-primary hover:bg-primary hover:text-white rounded-xl"
+                    className="block w-full px-4 py-2 text-left text-primary hover:bg-primary hover:text-white rounded-xl whitespace-nowrap"
                   >
                     {cat.cname}
                   </button>

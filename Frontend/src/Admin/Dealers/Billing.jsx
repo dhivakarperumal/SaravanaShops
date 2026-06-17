@@ -383,8 +383,18 @@ export default function Billing() {
     let orderId = "";
 
     try {
+      const localUserStr = localStorage.getItem("user");
+      let localUserId = null;
+      if (localUserStr) {
+        try {
+          const parsed = JSON.parse(localUserStr);
+          localUserId = parsed.user_id || parsed.id;
+        } catch(e) {}
+      }
+
       const payload = {
         items,
+        user_id: localUserId,
         subtotal: subtotalLocal,
         shippingCost: Number(shippingCost || 0),
         total: grandTotalLocal,
