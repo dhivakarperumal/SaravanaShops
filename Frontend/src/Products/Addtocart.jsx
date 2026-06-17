@@ -196,7 +196,7 @@ const Addtocart = ({ isOpen, onClose }) => {
             cartItems.map((item) => {
               const totalPrice =
                 (parseFloat(item.sellingprice) || 0) * (item.quantity || 1);
-              const maxStock = itemStocks[item.id];
+              const maxStock = itemStocks[item.id] || 0;
 
               return (
                 <div
