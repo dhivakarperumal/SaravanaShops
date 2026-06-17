@@ -1291,6 +1291,8 @@ import {
   FaTh,
   FaList,
 } from "react-icons/fa";
+import api from "../../api";
+import toast from "react-hot-toast";
 
 const Billing = () => {
   const navigate = useNavigate();
@@ -1299,8 +1301,8 @@ const Billing = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState("card");
 
-  const billingData = [];
-  const displayed = billingData;
+  const [orders, setOrders] = useState([]);
+
   const activeFilterCount = 0;
 
   // Fetch delivered orders
@@ -1322,6 +1324,16 @@ const Billing = () => {
       }
     })();
   }, []);
+
+  const displayed = orders.filter((order) => {
+    const q = searchQuery.toLowerCase();
+
+    return (
+      order.orderId?.toLowerCase().includes(q) ||
+      order.customerName?.toLowerCase().includes(q) ||
+      order.mobile?.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="p-5">
@@ -1374,6 +1386,137 @@ const Billing = () => {
           Add Bill
         </button>
       </div>
+
+      {viewMode === "card" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {displayed.map((order) => (
+            <div
+              key={order.id}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-lg transition-all"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-bold text-gray-800">
+                    {order.orderId}
+                  </h3>
+
+                  <p className="text-sm text-gray-500">
+                    {order.customerName}
+                  </p>
+                </div>
+
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                  {order.status}
+                </span>
+              </div>
+
+              <div className="mt-4 space-y-2 text-sm">
+                <p>
+                  <span className="font-semibold">Mobile:</span>{" "}
+                  {order.mobile}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Items:</span>{" "}
+                  {order.items?.length || 0}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Amount:</span>{" "}
+                  ₹{order.totalAmount}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Date:</span>{" "}
+                  {new Date(order.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+
+              <button
+                onClick={() =>
+                  navigate("/superadmin/addbilling", {
+                    state: { order },
+                  })
+                }
+                className="mt-4 w-full bg-primary text-white py-2 rounded-xl font-medium"
+              >
+                Generate Bill
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {viewMode === "table" && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gradient-to-r from-primary to-secondary text-white">
+                  <th className="px-4 py-3 text-left">Order ID</th>
+                  <th className="px-4 py-3 text-left">Customer</th>
+                  <th className="px-4 py-3 text-left">Mobile</th>
+                  <th className="px-4 py-3 text-left">Items</th>
+                  <th className="px-4 py-3 text-left">Amount</th>
+                  <th className="px-4 py-3 text-left">Status</th>
+                  <th className="px-4 py-3 text-center">Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {displayed.map((order, index) => (
+                  <tr
+                    key={order.id}
+                    className={`border-b ${index % 2 === 0
+                        ? "bg-white"
+                        : "bg-gray-50"
+                      }`}
+                  >
+                    <td className="px-4 py-3 font-semibold">
+                      {order.orderId}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      {order.customerName}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      {order.mobile}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      {order.items?.length || 0}
+                    </td>
+
+                    <td className="px-4 py-3 font-bold text-primary">
+                      ₹{order.totalAmount}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                        {order.status}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() =>
+                          navigate("/superadmin/addbilling", {
+                            state: { order },
+                          })
+                        }
+                        className="bg-primary text-white px-4 py-2 rounded-lg"
+                      >
+                        Bill
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
