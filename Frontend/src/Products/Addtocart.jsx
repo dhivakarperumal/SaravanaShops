@@ -1,23 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { FaTimes, FaTrash, FaShoppingCart } from "react-icons/fa";
-import { auth, db } from "../firebase";
-import {
-  collection,
-  onSnapshot,
-  doc,
-  deleteDoc,
-  updateDoc,
-  getDoc,
-} from "firebase/firestore";
+import api from "../api";
 import { toast } from "react-hot-toast";
-import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
 const Addtocart = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const [itemStocks, setItemStocks] = useState({});
   const sidebarRef = useRef(null);
 
@@ -36,13 +26,7 @@ const Addtocart = ({ isOpen, onClose }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
-  // Firebase auth
-  useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribeAuth();
-  }, []);
+  const user = JSON.parse(localStorage.getItem("user"));
 
   // Fetch cart items
   useEffect(() => {
@@ -51,23 +35,24 @@ const Addtocart = ({ isOpen, onClose }) => {
       setLoading(false);
       return;
     }
-    const cartRef = collection(db, "users", user.uid, "cart");
-    const unsubscribe = onSnapshot(
-      cartRef,
-      (snapshot) => {
-        const items = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setCartItems(items);
-        setLoading(false);
-      },
-      (error) => {
-        console.error("Error fetching cart:", error);
-        toast.error("Failed to load cart.");
-        setLoading(false);
-      }
-    );
+    useEffect(() => {
+      const fetchCart = async () => {
+        try {
+          if (!user?.id) return;
+
+          const res = await api.get(`/cart/${user.id}`);
+
+          setCartItems(res.data || []);
+        } catch (error) {
+          console.error(error);
+          toast.error("Failed to load cart");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchCart();
+    }, [user]);
     return () => unsubscribe();
   }, [user]);
 
@@ -75,7 +60,7 @@ const Addtocart = ({ isOpen, onClose }) => {
   const handleRemove = async (itemId) => {
     if (!user) return;
     try {
-      await deleteDoc(doc(db, "users", user.uid, "cart", itemId));
+      await api.delete(`/cart/${itemId}`);
       toast.success("Item removed from cart");
     } catch (err) {
       console.error("Error removing item:", err);
@@ -85,30 +70,14 @@ const Addtocart = ({ isOpen, onClose }) => {
 
   // Get live stock for cart item
   const getStockForCartItem = async (item) => {
-    if (
-      item.category?.toLowerCase() === "bangle" &&
-      item.size &&
-      item.color
-    ) {
-      const prodRef = doc(db, "products", item.productId || item.id);
-      const prodSnap = await getDoc(prodRef);
-      if (!prodSnap.exists()) return 0;
-      const prodData = prodSnap.data();
-      const colorObj = prodData.colors?.find(
-        (c) =>
-          String(c.color).toLowerCase() === String(item.color).toLowerCase()
-      );
-      if (!colorObj) return 0;
-      const stockMap = colorObj.stock || {};
-      const stock =
-        stockMap?.[item.size] ?? stockMap?.[String(item.size)] ?? 0;
-      return Number(stock) || 0;
+    try {
+      const res = await api.get(`/products/${item.productId}`);
+
+      return Number(res.data.stock || 0);
+    } catch (error) {
+      console.error(error);
+      return 0;
     }
-    const prodRef = doc(db, "products", item.productId || item.id);
-    const prodSnap = await getDoc(prodRef);
-    if (!prodSnap.exists()) return 99;
-    const prodData = prodSnap.data();
-    return Number(prodData.stock) || 99;
   };
 
   // Fetch stock for all cart items when cart changes
@@ -134,7 +103,7 @@ const Addtocart = ({ isOpen, onClose }) => {
       return;
     }
     try {
-      await updateDoc(doc(db, "users", user.uid, "cart", item.id), {
+      await api.put(`/cart/${item.id}`, {
         quantity: newQty,
       });
     } catch (err) {
@@ -160,7 +129,7 @@ const Addtocart = ({ isOpen, onClose }) => {
       {/* Sidebar */}
       <div
         ref={sidebarRef}
-       className={`fixed top-0 right-0 h-[100vh] w-80 bg-white shadow-lg z-[100] transition-transform duration-300 overflow-y-auto`}
+        className={`fixed top-0 right-0 h-[100vh] w-80 bg-white shadow-lg z-[100] transition-transform duration-300 overflow-y-auto`}
       >
         {/* Header */}
         <div className="relative flex justify-between items-center bg-primary rounded-tl-2xl p-4">
