@@ -270,8 +270,9 @@ const ProductModal = ({ product, onClose }) => {
     }
 
     try {
+      const userId = user?.user_id || user?.id;
       await api.post("/cart", {
-        user_id: user.id,
+        user_id: userId,
         product_id: product.id,
         product_name: product.name,
         category: product.category,
@@ -281,7 +282,8 @@ const ProductModal = ({ product, onClose }) => {
           product.images?.[0] ||
           product.image ||
           "",
-        price: product.sellingprice,
+        mrp: product.mrp ?? null,
+        sellingprice: product.sellingprice ?? null,
         quantity,
         size: selectedSize || null,
         color: selectedColor || null,
