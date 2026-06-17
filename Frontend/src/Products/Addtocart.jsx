@@ -83,7 +83,7 @@ const Addtocart = ({ isOpen, onClose }) => {
         return 99; // Default high stock if no ID
       }
       const res = await api.get(`/products/${productId}`);
-      return Number(res.data.product?.stock || 999);
+      return Number(res.data.product?.stock);
     } catch (error) {
       console.error(error);
       return 99; // Return high stock on error to prevent blocking purchases
@@ -196,7 +196,7 @@ const Addtocart = ({ isOpen, onClose }) => {
             cartItems.map((item) => {
               const totalPrice =
                 (parseFloat(item.sellingprice) || 0) * (item.quantity || 1);
-              const maxStock = itemStocks[item.id] ?? 999;
+              const maxStock = itemStocks[item.id];
 
               return (
                 <div
