@@ -142,35 +142,60 @@ export default function VideoForm() {
     }
   };
 
-const handleEdit = (video) => {
-  setForm({
-    id: video.id,
-    dbId: video.dbId,
-    name: video.name,
-    url: video.url,
-    file: null,
-    fileName: video.fileName,
-  });
+  const handleEdit = (video) => {
+    setForm({
+      id: video.id,
+      dbId: video.dbId,
+      name: video.name,
+      url: video.url,
+      file: null,
+      fileName: video.fileName,
+    });
 
-  setIsEditing(true);
-  setShowForm(true);
-  setShowList(false);
-};
+    setIsEditing(true);
+    setShowForm(true);
+    setShowList(false);
+  };
 
- const handleDelete = async (id) => {
-  if (confirm("Are you sure you want to delete this video?")) {
-    try {
-      await api.delete(`/videos/${id}`);
+  const handleDelete = async (id) => {
+    if (confirm("Are you sure you want to delete this video?")) {
+      try {
+        await api.delete(`/videos/${id}`);
 
-      setVideos((prev) =>
-        prev.filter((video) => video.dbId !== id)
-      );
+        setVideos((prev) =>
+          prev.filter((video) => video.dbId !== id)
+        );
 
-      toast.success("Video deleted successfully!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Delete failed");
+        toast.success("Video deleted successfully!");
+      } catch (error) {
+        console.error(error);
+        toast.error("Delete failed");
+      }
     }
+  };
+
+const getYoutubeEmbedUrl = (url) => {
+  if (!url) return null;
+
+  try {
+    if (url.includes("/shorts/")) {
+      const id = url.split("/shorts/")[1].split("?")[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+
+    if (url.includes("watch?v=")) {
+      const id = new URL(url).searchParams.get("v");
+      return `https://www.youtube.com/embed/${id}`;
+    }
+
+    if (url.includes("youtu.be/")) {
+      const id = url.split("youtu.be/")[1].split("?")[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+
+    return null;
+  } catch {
+    return null;
   }
 };
 
@@ -299,11 +324,21 @@ const handleEdit = (video) => {
                       <td className="px-3 py-4">{video.id}</td>
                       <td className="px-3 py-4">{video.name}</td>
                       <td className="px-3 py-4 flex items-center justify-center">
-                        {video.url && (
-                          <video width="150" controls className="w-24 h-24">
-                            <source src={video.url} type="video/mp4" />
-                          </video>
-                        )}
+                        {video.url &&
+                          (getYoutubeEmbedUrl(video.url) ? (
+                            <iframe
+                              width="150"
+                              height="90"
+                              src={getYoutubeEmbedUrl(video.url)}
+                              title={video.name}
+                              allowFullScreen
+                              className="rounded-lg"
+                            />
+                          ) : (
+                            <video width="150" controls className="w-24 h-24">
+                              <source src={video.url} />
+                            </video>
+                          ))}
                       </td>
                       <td className="px-3 py-4">{video.date}</td>
                       <td className="px-3 py-4 space-x-2">
@@ -356,11 +391,19 @@ const handleEdit = (video) => {
                       </button>
                     </div>
                   </div>
-                  {video.url && (
-                    <video controls className="w-full h-auto rounded-lg mt-2">
-                      <source src={video.url} type="video/mp4" />
-                    </video>
-                  )}
+                  {video.url &&
+                    (getYoutubeEmbedUrl(video.url) ? (
+                      <iframe
+                        src={getYoutubeEmbedUrl(video.url)}
+                        title={video.name}
+                        allowFullScreen
+                        className="w-full h-56 rounded-lg mt-2"
+                      />
+                    ) : (
+                      <video controls className="w-full h-auto rounded-lg mt-2">
+                        <source src={video.url} />
+                      </video>
+                    ))}
                   <p className="text-sm">
                     <strong>Date:</strong> {video.date}
                   </p>
