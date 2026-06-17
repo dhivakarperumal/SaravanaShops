@@ -72,7 +72,7 @@ function Navbar() {
         const res = await api.get(`/cart/${userId}`);
         const items = Array.isArray(res.data) ? res.data : [];
         const totalCount = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
-        setCartCount(totalCount);
+        setCartCount(items.length);
       } catch (error) {
         console.error("Error fetching cart count:", error);
         setCartCount(0);
