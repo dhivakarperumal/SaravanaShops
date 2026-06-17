@@ -55,14 +55,18 @@ const Addtocart = ({ isOpen, onClose }) => {
       }
     };
 
-    fetchCart();
-  }, [user]);
+    if (isOpen) {
+      fetchCart();
+    }
+  }, [user, isOpen]);
 
   // Remove item
   const handleRemove = async (itemId) => {
     if (!user) return;
     try {
       await api.delete(`/cart/${itemId}`);
+      // Remove from local state immediately
+      setCartItems((prev) => prev.filter((item) => item.id !== itemId));
       toast.success("Item removed from cart");
     } catch (err) {
       console.error("Error removing item:", err);
@@ -73,12 +77,16 @@ const Addtocart = ({ isOpen, onClose }) => {
   // Get live stock for cart item
   const getStockForCartItem = async (item) => {
     try {
-      const res = await api.get(`/products/${item.productId}`);
-
+      const productId = item.product_id || item.productId;
+      if (!productId) {
+        console.warn("No product ID found for cart item", item);
+        return 99; // Default high stock if no ID
+      }
+      const res = await api.get(`/products/${productId}`);
       return Number(res.data.stock || 0);
     } catch (error) {
       console.error(error);
-      return 0;
+      return 99; // Return high stock on error to prevent blocking purchases
     }
   };
 
@@ -99,8 +107,8 @@ const Addtocart = ({ isOpen, onClose }) => {
     if (!user) return;
     const newQty = type === "increase" ? item.quantity + 1 : item.quantity - 1;
     if (newQty < 1) return;
-    const currentStock = itemStocks[item.id] ?? 99;
-    if (newQty > currentStock) {
+    const currentStock = itemStocks[item.id] ?? item.stock ?? 99;
+    if (newQty > currentStock && currentStock !== 99) {
       toast.error(`Only ${currentStock} item(s) available in stock.`);
       return;
     }
@@ -108,6 +116,12 @@ const Addtocart = ({ isOpen, onClose }) => {
       await api.put(`/cart/${item.id}`, {
         quantity: newQty,
       });
+      setCartItems((prev) =>
+        prev.map((cartItem) =>
+          cartItem.id === item.id ? { ...cartItem, quantity: newQty } : cartItem
+        )
+      );
+      toast.success("Quantity updated");
     } catch (err) {
       console.error("Error updating quantity:", err);
       toast.error("Failed to update quantity");
