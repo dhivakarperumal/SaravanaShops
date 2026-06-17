@@ -229,7 +229,7 @@ export default function ProductList() {
   );
 
   return (
-    <div className="px-3 sm:px-5 lg:px-8 min-h-screen ">
+    <div className="px-3 py-6 sm:px-5 lg:px-8 min-h-screen ">
 
       {/* ── Toolbar ─────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6 bg-white rounded-2xl px-3 sm:px-4 py-3 shadow-sm border border-gray-100">

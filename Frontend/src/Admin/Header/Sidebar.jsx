@@ -83,7 +83,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                   `flex items-center gap-3 py-3 px-3 rounded-sm transition-all duration-300 ${
                     isActive
                       ? "bg-primary text-white font-bold shadow-md shadow-primary/30 translate-x-1"
-                      : "text-gray-400 hover:text-white hover:bg-gray-700 hover:translate-x-1"
+                      : "text-gray-400 font-bold hover:text-white hover:bg-gray-700 hover:translate-x-1"
                   }`
                 }
               >

@@ -565,24 +565,22 @@ const AdminPanel = () => {
           <Outlet />
         </main>
 
-        <footer className="text-gray text-sm py-6 shadow mt-10">
-          <div className="max-w-screen-xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-            <div>
-              © {new Date().getFullYear()} <strong>Sri Saravana Shoppings </strong>
-              . All rights reserved. | Built by{" "}
-              <a
-                href="https://qtechx.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-primary font-medium"
-              >
-                Q-Techx Solutions
-              </a>
-            </div>
-
-           
-          </div>
-        </footer>
+        <footer className="bg-gray-50 text-gray-600 text-sm py-6 shadow">
+  <div className="max-w-screen-xl mx-auto px-4 flex justify-center items-center text-center">
+    <div>
+      © {new Date().getFullYear()} <strong>Sri Saravana Shoppings</strong>.
+      All rights reserved. | Built by{" "}
+      <a
+        href="https://qtechx.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline hover:text-primary font-medium"
+      >
+        Q-Techx Solutions
+      </a>
+    </div>
+  </div>
+</footer>
       </div>
     </div>
   );

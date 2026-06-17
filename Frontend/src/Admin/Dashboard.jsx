@@ -236,7 +236,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="px-6 py-2">
+    <div className="px-6 py-6">
       <DashboardStats stats={statsData} />
 
       {/* ── Quick Access ────────────────────────────────────────────────── */}
@@ -349,6 +349,7 @@ const Dashboard = () => {
           <table className="w-full text-sm text-left">
             <thead className="bg-primary text-white">
               <tr>
+                <th className="px-5 py-4 font-semibold whitespace-nowrap"> S No</th>
                 <th className="px-5 py-4 font-semibold whitespace-nowrap">Order ID</th>
                 <th className="px-5 py-4 font-semibold whitespace-nowrap">User ID</th>
                 <th className="px-5 py-4 font-semibold whitespace-nowrap">Amount</th>
@@ -357,12 +358,13 @@ const Dashboard = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
               {todayOrders.length > 0 ? (
-                todayOrders.map((order) => (
+                todayOrders.map((order,ind) => (
                   <tr
                     key={order.id}
                     onClick={() => navigate(`/superadmin/orders/${order.id}`)}
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
                   >
+                    <td className="px-5 py-3.5 font-semibold text-gray-800">{ind +1}</td>
                     <td className="px-5 py-3.5 font-semibold text-gray-800">{order.orderId}</td>
                     <td className="px-5 py-3.5 text-gray-700">{order.shipping_name}</td>
                     <td className="px-5 py-3.5 text-gray-700 font-medium">₹ {order.total}</td>

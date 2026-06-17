@@ -93,7 +93,7 @@ export default function RazorpayKeyForm() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 p-1 relative">
+    <div className="max-w-7xl mx-auto  p-8 relative">
       
 
       {/* Modal */}

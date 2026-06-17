@@ -91,7 +91,7 @@ export default function StockDetails() {
       
 
      
-      <div className="flex flex-wrap items-center gap-3 mb-6 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100">
+      <div className="flex flex-wrap items-center gap-3 mb-6 bg-white shadow-sm rounded-2xl px-4 py-3 border border-gray-100">
         {/* Search */}
         <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm bg-white border border-gray-200 rounded-xl px-3 py-2 focus-within:border-primary transition-all">
           <FaSearch className="text-gray-400 text-sm flex-shrink-0" />
