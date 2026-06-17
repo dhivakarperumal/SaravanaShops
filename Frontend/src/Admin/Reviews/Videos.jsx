@@ -144,9 +144,8 @@ export default function VideoForm() {
         dbId: null,
       });
       setIsEditing(false);
+      setShowModal(false);
       fetchVideos();
-      setShowForm(false);
-      setShowList(true);
     } catch (err) {
       console.error(err);
       toast.error("Error saving video.");
