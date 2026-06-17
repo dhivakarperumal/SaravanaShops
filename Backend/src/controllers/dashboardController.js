@@ -37,7 +37,7 @@ exports.getDashboardStats = async (req, res) => {
         GROUP BY product_name, DATE_FORMAT(orders.created_at, '%b'), MONTH(orders.created_at)
       `),
       pool.query(`SELECT category, COUNT(*) AS count FROM products GROUP BY category`),
-      pool.query(`SELECT name, stock FROM products ORDER BY stock ASC LIMIT 20`),
+      pool.query(`SELECT productId, name, stock, productType, count, colors, category FROM products`),
       pool.query(`SELECT * FROM orders WHERE DATE(created_at) = CURDATE() ORDER BY created_at DESC`)
     ]);
 
@@ -54,12 +54,31 @@ exports.getDashboardStats = async (req, res) => {
       if (row.status === 'Cancelled') cancelledOrders = row.count;
     });
 
+    // Helper: compute true total stock for a product
+    const computeTotalStock = (row) => {
+      if (row.productType === 'Bangles' && row.count === 'SingleColor') {
+        try {
+          const colors = typeof row.colors === 'string' ? JSON.parse(row.colors) : row.colors;
+          if (Array.isArray(colors)) {
+            return colors.reduce((total, c) => {
+              if (c.stock && typeof c.stock === 'object') {
+                return total + Object.values(c.stock).reduce((sum, v) => sum + (Number(v) || 0), 0);
+              }
+              return total;
+            }, 0);
+          }
+        } catch (e) { /* fallback to stock column */ }
+      }
+      return Number(row.stock) || 0;
+    };
+
     // Parse low stock
     let lowStockCount = 0;
     const liveStocks = liveStockResult.map(row => {
-      if (row.stock < 3) lowStockCount++;
-      return { name: row.name, stock: row.stock };
-    });
+      const totalStock = computeTotalStock(row);
+      if (totalStock < 3) lowStockCount++;
+      return { name: row.name, stock: totalStock };
+    }).sort((a, b) => a.stock - b.stock).slice(0, 20);
 
     // Parse monthly stats
     const monthlyRevenue = [];
@@ -140,15 +159,38 @@ exports.getHeaderStats = async (req, res) => {
       [notificationsResult]
     ] = await Promise.all([
       pool.query(`SELECT id, orderId, total, status, shipping_name, shipping_email, created_at FROM orders WHERE DATE(created_at) = CURDATE() ORDER BY created_at DESC`),
-      pool.query(`SELECT productId, name, category, stock FROM products WHERE stock < 5 ORDER BY stock ASC`),
+      pool.query(`SELECT productId, name, category, stock, productType, count, colors FROM products`),
       pool.query(`SELECT user_id, username, email, phone, created_at FROM users ORDER BY created_at DESC LIMIT 20`)
     ]);
+
+    // Compute real total stock for each product and filter low stock
+    const computeTotalStock = (row) => {
+      if (row.productType === 'Bangles' && row.count === 'SingleColor') {
+        try {
+          const colors = typeof row.colors === 'string' ? JSON.parse(row.colors) : row.colors;
+          if (Array.isArray(colors)) {
+            return colors.reduce((total, c) => {
+              if (c.stock && typeof c.stock === 'object') {
+                return total + Object.values(c.stock).reduce((sum, v) => sum + (Number(v) || 0), 0);
+              }
+              return total;
+            }, 0);
+          }
+        } catch (e) { /* fallback */ }
+      }
+      return Number(row.stock) || 0;
+    };
+
+    const lowStockFiltered = lowStockResult
+      .map(row => ({ productId: row.productId, name: row.name, category: row.category, stock: computeTotalStock(row) }))
+      .filter(row => row.stock < 5)
+      .sort((a, b) => a.stock - b.stock);
 
     res.json({
       success: true,
       data: {
         todayOrders: todayOrdersResult,
-        lowStockProducts: lowStockResult,
+        lowStockProducts: lowStockFiltered,
         notifications: todayOrdersResult.map(order => ({
           id: order.id,
           type: 'order',
