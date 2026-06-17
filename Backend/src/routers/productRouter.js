@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const {
   getProducts,
+  getProductById,
+  getRelatedProducts,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -10,6 +12,12 @@ const {
 
 // GET /api/products        → fetch all products
 router.get('/', getProducts);
+
+// GET /api/products/related/:category/:currentId → fetch related products
+router.get('/related/:category/:currentId', getRelatedProducts);
+
+// GET /api/products/:id    → fetch a single product
+router.get('/:id', getProductById);
 
 // GET /api/products/nextid → get next auto-generated productId
 router.get('/nextid', getNextProductId);
