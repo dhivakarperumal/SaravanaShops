@@ -359,7 +359,7 @@ export default function NewOrders() {
             <table className="min-w-full text-sm">
               <thead className="bg-primary text-white">
                 <tr>
-                  <th className="px-4 py-3.5 text-left font-semibold">#</th>
+                  <th className="px-4 py-3.5 text-left font-semibold">S No</th>
                   <th className="px-4 py-3.5 text-left font-semibold">Order ID</th>
                   <th className="px-4 py-3.5 text-left font-semibold">Customer</th>
                   <th className="px-4 py-3.5 text-left font-semibold">Date</th>

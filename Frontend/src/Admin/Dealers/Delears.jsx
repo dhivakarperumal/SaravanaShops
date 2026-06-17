@@ -368,7 +368,7 @@ const Dealers = () => {
               <table className="w-full text-sm text-left">
                 <thead className="bg-primary text-white">
                   <tr>
-                    {["#", "ID", "Name", "GST", "Phone", "Invoice", "Actions"].map((h) => (
+                    {["S No", "ID", "Name", "GST", "Phone", "Invoice", "Actions"].map((h) => (
                       <th key={h} className="px-5 py-4 font-semibold whitespace-nowrap">
                         {h}
                       </th>

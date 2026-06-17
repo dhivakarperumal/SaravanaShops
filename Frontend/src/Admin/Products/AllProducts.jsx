@@ -408,6 +408,7 @@ export default function ProductList() {
                 <table className="w-full text-sm min-w-[500px]">
                   <thead>
                     <tr className="bg-gradient-to-r from-primary to-secondary text-white">
+                      <th className="px-3 sm:px-4 py-3 text-left font-semibold">S No</th>
                       <th className="px-3 sm:px-4 py-3 text-left font-semibold">Image</th>
                       <th className="px-3 sm:px-4 py-3 text-left font-semibold">Product</th>
                       <th className="px-3 sm:px-4 py-3 text-left font-semibold hidden md:table-cell">Category</th>
@@ -420,6 +421,7 @@ export default function ProductList() {
                   <tbody className="divide-y divide-gray-50">
                     {currentItems.map((product, idx) => (
                       <tr key={product.id} className={`hover:bg-primary/5 transition-colors ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
+                        <td className="px-3 sm:px-4 py-3 text-gray-400 text-xs">{idx + 1}</td>
                         <td className="px-3 sm:px-4 py-3">
                           <img src={getImg(product)} alt={product.name}
                             className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-xl border border-gray-100" />

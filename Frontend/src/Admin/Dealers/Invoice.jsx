@@ -449,7 +449,7 @@ const Invoice = () => {
               <table className="w-full text-sm text-left">
                 <thead className="bg-primary text-white">
                   <tr>
-                    {["#", "Invoice No", "Date", "Value (₹)", "GST (₹)", "Transport (₹)", "Total (₹)", "Actions"].map((h) => (
+                    {["S No", "Invoice No", "Date", "Value (₹)", "GST (₹)", "Transport (₹)", "Total (₹)", "Actions"].map((h) => (
                       <th key={h} className="px-5 py-4 font-semibold whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
