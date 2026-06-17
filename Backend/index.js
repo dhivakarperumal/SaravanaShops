@@ -29,6 +29,7 @@ const razorpayRouter = require('./src/routers/razorpayRouter');
 const reviewRouter = require('./src/routers/reviewRoutes');
 const userRouter = require('./src/routers/userRouter');
 const ordersRouter = require('./src/routers/orderRouter');
+const invoiceRouter = require('./src/routers/invoiceRouter');
 
 
 initializeDatabase();
@@ -46,6 +47,7 @@ app.use('/api/razorpay', razorpayRouter);
 app.use('/api/users', userRouter);
 app.use('/api/reviews', reviewRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/invoices', invoiceRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

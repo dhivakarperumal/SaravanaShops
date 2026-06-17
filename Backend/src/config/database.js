@@ -134,7 +134,24 @@ async function initializeDatabase() {
       )
     `);
 
-    console.log('✅ Database initialized: users, categories, products & razorpay_keys tables created/verified');
+    // ── Invoices table ────────────────────────────────────
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS invoices (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        invoiceNo VARCHAR(100) NOT NULL,
+        invoiceDate DATE,
+        invoiceValue DECIMAL(12,2),
+        invoiceGSTValue DECIMAL(12,2),
+        invoiceTotalValue DECIMAL(12,2),
+        transportAmount DECIMAL(12,2),
+        billPdfBase64 LONGTEXT,
+        billPdfName VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    console.log('✅ Database initialized: users, categories, products, razorpay_keys, orders & invoices tables created/verified');
   } catch (error) {
     console.error('Database initialization error:', error.message);
   } finally {
