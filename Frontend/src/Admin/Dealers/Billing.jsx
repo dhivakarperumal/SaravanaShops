@@ -1350,41 +1350,43 @@ const Billing = () => {
           />
         </div>
 
-        <span className="text-sm text-gray-500">
-          {displayed.length} Bills
-        </span>
+        <div className="flex items-center gap-3 ml-auto">
+          <span className="text-sm text-gray-500">
+            {displayed.length} Bills
+          </span>
 
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border"
-        >
-          <FaFilter />
-          Filters
-        </button>
-
-        <div className="flex items-center bg-gray-100 rounded-xl p-1">
           <button
-            onClick={() => setViewMode("card")}
-            className="p-2"
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer"
           >
-            <FaTh />
+            <FaFilter />
+            Filters
           </button>
 
+          <div className="flex items-center bg-gray-100 rounded-xl p-1">
+            <button
+              onClick={() => setViewMode("card")}
+              className={`p-2 rounded-lg cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : ""}`}
+            >
+              <FaTh />
+            </button>
+
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-2 rounded-lg cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : ""}`}
+            >
+              <FaList />
+            </button>
+          </div>
+
           <button
-            onClick={() => setViewMode("table")}
-            className="p-2"
+            onClick={() => navigate("/superadmin/addbilling")}
+            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl cursor-pointer"
           >
-            <FaList />
+            <FaPlus />
+            Add Bill
           </button>
         </div>
-
-        <button
-          onClick={() => navigate("/superadmin/addbilling")}
-          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl"
-        >
-          <FaPlus />
-          Add Bill
-        </button>
       </div>
 
       {viewMode === "card" && (
