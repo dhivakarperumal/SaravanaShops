@@ -561,7 +561,7 @@ const AdminPanel = () => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 mt-20 px-2 md:px-2 py-6 overflow-y-auto">
+        <main className="flex-1 bg-gray-50 mt-15 px-2 md:px-2 py-6 overflow-y-auto">
           <Outlet />
         </main>
 
