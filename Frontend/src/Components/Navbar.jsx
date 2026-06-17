@@ -86,6 +86,35 @@ function Navbar() {
     };
   }, [user, cartOpen]);
 
+  useEffect(() => {
+  const updateCartCount = async () => {
+    if (!user) {
+      setCartCount(0);
+      return;
+    }
+
+    try {
+      const userId = user?.user_id || user?.id;
+
+      const res = await api.get(`/cart/${userId}`);
+
+      const items = Array.isArray(res.data) ? res.data : [];
+
+      setCartCount(items.length);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  updateCartCount();
+
+  window.addEventListener("cartUpdated", updateCartCount);
+
+  return () => {
+    window.removeEventListener("cartUpdated", updateCartCount);
+  };
+}, [user]);
+
   // Close all sidebars except the one clicked
   const closeAllExcept = (except) => {
     if (except !== "cart") setCartOpen(false);
