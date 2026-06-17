@@ -15,6 +15,7 @@ const Billing = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("card");
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
 
   const [dateFilter, setDateFilter] = useState("All");
   const [customStartDate, setCustomStartDate] = useState("");
@@ -143,21 +144,44 @@ const Billing = () => {
         <div className="flex items-center gap-3 ml-auto">
           
 
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-gray-200 bg-white cursor-pointer hover:bg-gray-50 transition-colors">
-            <FaFilter className="text-gray-400" />
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="bg-transparent px-7 outline-none text-sm font-medium cursor-pointer"
+          <div className="relative">
+            <div 
+              onClick={() => setShowDateDropdown(!showDateDropdown)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:bg-gray-50 transition-all select-none"
             >
-              <option value="All">All Dates</option>
-              <option value="Today">Today</option>
-              <option value="This Week">This Week</option>
-              <option value="Last Week">Last Week</option>
-              <option value="This Month">This Month</option>
-              <option value="Last Month">Last Month</option>
-              <option value="Custom Range">Custom</option>
-            </select>
+              <FaFilter className="text-primary" />
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap min-w-[80px]">
+                {dateFilter === "All" ? "All Dates" : dateFilter === "Custom Range" ? "Custom" : dateFilter}
+              </span>
+              <svg className={`w-4 h-4 text-gray-500 transition-transform ${showDateDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+
+            {showDateDropdown && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={() => setShowDateDropdown(false)}
+                ></div>
+                <div className="absolute top-full mt-2 right-0 w-48 bg-white border border-gray-100 rounded-xl shadow-xl z-50 py-2 animate-fade-in-down overflow-hidden">
+                  {["All", "Today", "This Week", "Last Week", "This Month", "Last Month", "Custom Range"].map((option) => (
+                    <div
+                      key={option}
+                      onClick={() => {
+                        setDateFilter(option);
+                        setShowDateDropdown(false);
+                      }}
+                      className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${
+                        dateFilter === option 
+                          ? "bg-primary/10 text-primary font-semibold" 
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
+                    >
+                      {option === "All" ? "All Dates" : option === "Custom Range" ? "Custom" : option}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex items-center bg-gray-100 rounded-xl p-1">
