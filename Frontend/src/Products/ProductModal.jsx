@@ -288,7 +288,7 @@ const ProductModal = ({ product, onClose }) => {
         size: selectedSize || null,
         color: selectedColor || null,
       });
-
+      window.dispatchEvent(new Event("cartUpdated"));
       toast.success("Added to cart");
 
       if (onClose) onClose();
