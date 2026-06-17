@@ -27,6 +27,7 @@ import AllUsers from "./Admin/Users/AllUsers.jsx";
 import AddReviews from "./Admin/Reviews/Reviews.jsx";
 import AddStock from "./Admin/Stock/AddStock.jsx";
 import StockDetails from "./Admin/Stock/StockDetails.jsx";
+import Billing from "./Admin/Dealers/Billing.jsx";
 import AddBilling from "./Admin/Dealers/AddBilling.jsx";
 import Dealers from "./Admin/Dealers/Delears.jsx";
 import Invoice from "./Admin/Dealers/Invoice.jsx";
@@ -98,7 +99,8 @@ const router = createBrowserRouter([
       { path: "stockDetails", element: <StockDetails/> },
 
 
-      { path: "billing", element: <AddBilling/> },
+      { path: "billing", element: <Billing/> },
+      { path: "addbilling", element: <AddBilling/>},
       { path: "dealers", element: <Dealers/> },
       { path: "invoice", element: <Invoice/> },
 
