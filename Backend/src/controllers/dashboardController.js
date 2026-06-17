@@ -131,3 +131,37 @@ exports.getDashboardStats = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to fetch dashboard stats' });
   }
 };
+
+exports.getHeaderStats = async (req, res) => {
+  try {
+    const [
+      [todayOrdersResult],
+      [lowStockResult],
+      [notificationsResult]
+    ] = await Promise.all([
+      pool.query(`SELECT id, orderId, total, status, shipping_name, shipping_email, created_at FROM orders WHERE DATE(created_at) = CURDATE() ORDER BY created_at DESC`),
+      pool.query(`SELECT productId, name, category, stock FROM products WHERE stock < 5 ORDER BY stock ASC`),
+      pool.query(`SELECT user_id, username, email, phone, created_at FROM users ORDER BY created_at DESC LIMIT 20`)
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        todayOrders: todayOrdersResult,
+        lowStockProducts: lowStockResult,
+        notifications: todayOrdersResult.map(order => ({
+          id: order.id,
+          type: 'order',
+          orderId: order.orderId,
+          name: order.shipping_name,
+          total: order.total,
+          status: order.status,
+          time: order.created_at
+        }))
+      }
+    });
+  } catch (err) {
+    console.error('getHeaderStats error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch header stats' });
+  }
+};

@@ -78,12 +78,16 @@ exports.updateProduct = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Name and productType are required.' });
     }
 
+    // Support lookup by either numeric id or productId string (e.g. "SP003")
+    const isNumeric = /^\d+$/.test(id);
+    const whereClause = isNumeric ? 'WHERE id=?' : 'WHERE productId=?';
+
     const [result] = await pool.query(
       `UPDATE products SET
         name=?, description=?, notes=?, mrp=?, offer=?, sellingprice=?, sellingpriceManually=?,
         rating=?, category=?, subcategory=?, productType=?, count=?, stock=?,
         colors=?, images=?, fabricdetails=?, list_of_items=?, updated_at=NOW()
-       WHERE id=?`,
+       ${whereClause}`,
       [
         name, description, notes, mrp || null, offer || null, sellingprice || null,
         sellingpriceManually ? 1 : 0, rating || 0.0, category, subcategory, productType, count, stock || null,
@@ -107,7 +111,9 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const [result] = await pool.query('DELETE FROM products WHERE id = ?', [id]);
+    const isNumeric = /^\d+$/.test(id);
+    const whereClause = isNumeric ? 'WHERE id = ?' : 'WHERE productId = ?';
+    const [result] = await pool.query(`DELETE FROM products ${whereClause}`, [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: 'Product not found.' });

@@ -2,8 +2,10 @@ import React, { useEffect, useState, useRef } from "react";
 import api from "../../api";
 import toast from "react-hot-toast";
 import { FaSearch, FaTimes } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 export default function AddStock() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProductId, setSelectedProductId] = useState("");
@@ -84,6 +86,7 @@ export default function AddStock() {
     try {
       await api.put(`/products/${prod.id}`, prod);
       toast.success("Stock updated successfully!");
+      navigate("/superadmin/stockDetails");
     } catch (err) {
       console.error(err);
       toast.error("Failed to update stock");
