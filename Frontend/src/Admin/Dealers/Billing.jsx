@@ -14,8 +14,11 @@ const Billing = () => {
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState("card");
+
+  const [dateFilter, setDateFilter] = useState("All");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
 
   const [orders, setOrders] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -23,7 +26,7 @@ const Billing = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, dateFilter, customStartDate, customEndDate]);
 
   
 
@@ -49,14 +52,71 @@ const Billing = () => {
 
   const displayed = orders.filter((order) => {
     const q = searchQuery.toLowerCase();
-
-    return (
+    const matchesSearch = 
       order.orderId?.toLowerCase().includes(q) ||
       order.shipping?.name?.toLowerCase().includes(q) ||
       order.shipping?.phone?.toLowerCase().includes(q) ||
       order.customerName?.toLowerCase().includes(q) ||
-      order.mobile?.toLowerCase().includes(q)
-    );
+      order.mobile?.toLowerCase().includes(q);
+
+    if (!matchesSearch) return false;
+
+    if (dateFilter === "All") return true;
+    if (!order.createdAt && !order.date) return false;
+    
+    const orderDate = new Date(order.createdAt || order.date);
+    orderDate.setHours(0,0,0,0);
+    
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    if (dateFilter === "Today") {
+      return orderDate.getTime() === today.getTime();
+    }
+    
+    const getStartOfWeek = (d) => {
+      const date = new Date(d);
+      const day = date.getDay();
+      const diff = date.getDate() - day;
+      return new Date(date.setDate(diff));
+    };
+
+    if (dateFilter === "This Week") {
+      const startOfWeek = getStartOfWeek(today);
+      return orderDate >= startOfWeek;
+    }
+    
+    if (dateFilter === "Last Week") {
+      const startOfThisWeek = getStartOfWeek(today);
+      const startOfLastWeek = new Date(startOfThisWeek);
+      startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+      return orderDate >= startOfLastWeek && orderDate < startOfThisWeek;
+    }
+    
+    if (dateFilter === "This Month") {
+      return orderDate.getMonth() === today.getMonth() && orderDate.getFullYear() === today.getFullYear();
+    }
+    
+    if (dateFilter === "Last Month") {
+      let lastMonth = today.getMonth() - 1;
+      let year = today.getFullYear();
+      if (lastMonth < 0) {
+        lastMonth = 11;
+        year -= 1;
+      }
+      return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === year;
+    }
+    
+    if (dateFilter === "Custom Range") {
+      if (!customStartDate || !customEndDate) return true;
+      const start = new Date(customStartDate);
+      start.setHours(0,0,0,0);
+      const end = new Date(customEndDate);
+      end.setHours(23,59,59,999);
+      return orderDate >= start && orderDate <= end;
+    }
+
+    return true;
   });
 
   const totalPages = Math.ceil(displayed.length / itemsPerPage);
@@ -81,17 +141,24 @@ const Billing = () => {
         </div>
 
         <div className="flex items-center gap-3 ml-auto">
-          <span className="text-sm text-gray-500">
-            {displayed.length} Bills
-          </span>
+          
 
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer"
-          >
-            <FaFilter />
-            Filters
-          </button>
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-gray-200 bg-white cursor-pointer hover:bg-gray-50 transition-colors">
+            <FaFilter className="text-gray-400" />
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="bg-transparent px-7 outline-none text-sm font-medium cursor-pointer"
+            >
+              <option value="All">All Dates</option>
+              <option value="Today">Today</option>
+              <option value="This Week">This Week</option>
+              <option value="Last Week">Last Week</option>
+              <option value="This Month">This Month</option>
+              <option value="Last Month">Last Month</option>
+              <option value="Custom Range">Custom</option>
+            </select>
+          </div>
 
           <div className="flex items-center bg-gray-100 rounded-xl p-1">
             <button
@@ -118,6 +185,29 @@ const Billing = () => {
           </button>
         </div>
       </div>
+
+      {dateFilter === "Custom Range" && (
+        <div className="mb-6 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-wrap gap-4 items-end animate-fade-in-down">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-500 font-medium">Start Date</label>
+            <input 
+              type="date" 
+              value={customStartDate}
+              onChange={(e) => setCustomStartDate(e.target.value)}
+              className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-primary"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-500 font-medium">End Date</label>
+            <input 
+              type="date" 
+              value={customEndDate}
+              onChange={(e) => setCustomEndDate(e.target.value)}
+              className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-primary"
+            />
+          </div>
+        </div>
+      )}
 
       {viewMode === "card" && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">

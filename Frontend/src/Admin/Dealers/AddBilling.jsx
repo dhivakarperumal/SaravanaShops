@@ -34,15 +34,9 @@ export default function AddBilling() {
   const [orderType, setOrderType] = useState("Shop");
   const [showColorDropdown, setShowColorDropdown] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-const [viewMode, setViewMode] = useState("card");
+  
 
 
-const displayed = products.filter((p) =>
-  p.name?.toLowerCase().includes(searchQuery.toLowerCase())
-);
-
-const activeFilterCount = 0;
 
   const logoUrl = logo;
 
@@ -616,46 +610,7 @@ const activeFilterCount = 0;
   return (
     <div className="max-w-6xl mx-auto p-4 bg-white rounded shadow-xl">
 
-      {/* Billing Toolbar */}
-<div className="flex flex-wrap items-center justify-between gap-3 mb-6 bg-white rounded-2xl px-4 py-4 shadow-sm border border-gray-100">
 
-  <div>
-    <h2 className="text-xl font-bold text-gray-800">
-      Create New Bill
-    </h2>
-    <p className="text-sm text-gray-500">
-      Add products and generate invoice
-    </p>
-  </div>
-
-  <div className="flex items-center gap-3">
-
-    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 min-w-[260px]">
-      <FaSearch className="text-gray-400" />
-      <input
-        type="text"
-        placeholder="Search product..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="bg-transparent outline-none w-full text-sm"
-      />
-    </div>
-
-    <button
-      onClick={() => {
-        setSelectedProducts([]);
-        setQuantities({});
-        setCurrentProduct("");
-        setSelectedSize("");
-        setSelectedColor("");
-      }}
-      className="px-4 py-2 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition"
-    >
-      Clear
-    </button>
-
-  </div>
-</div>
       <h2 className="text-xl font-semibold mb-4">Billing / Shop</h2>
 
       {/* Product Selection */}
