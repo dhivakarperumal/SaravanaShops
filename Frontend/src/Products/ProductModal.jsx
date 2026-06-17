@@ -270,7 +270,7 @@ const ProductModal = ({ product, onClose }) => {
     }
 
     try {
-      await api.post("/cart/add", {
+      await api.post("/cart", {
         user_id: user.id,
         product_id: product.id,
         product_name: product.name,
