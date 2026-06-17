@@ -390,6 +390,10 @@ export default function VideoForm() {
                     </th>
 
                     <th className="px-4 py-3">
+                      Videos
+                    </th>
+
+                    <th className="px-4 py-3">
                       ID
                     </th>
 
@@ -446,7 +450,7 @@ export default function VideoForm() {
 
         {/* Mobile Cards */}
         {viewMode === "card" && (
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
             {filteredVideos.map((video) => (
 
