@@ -27,7 +27,7 @@ const categoryRouter = require('./src/routers/categoryRouter');
 const productRouter = require('./src/routers/productRouter');
 const razorpayRouter = require('./src/routers/razorpayRouter');
 const reviewRouter = require('./src/routers/reviewRoutes');
-const videoRoutes = require("./routes/videoRouter");
+const videoRoutes = require("./src/routers/videoRouter");
 
 // Initialize database
 initializeDatabase();
