@@ -30,30 +30,32 @@ const Addtocart = ({ isOpen, onClose }) => {
 
   // Fetch cart items
   useEffect(() => {
-    if (!user) {
-      setCartItems([]);
-      setLoading(false);
-      return;
-    }
-    useEffect(() => {
-      const fetchCart = async () => {
-        try {
-          if (!user?.id) return;
+    const fetchCart = async () => {
+      if (!user) {
+        setCartItems([]);
+        setLoading(false);
+        return;
+      }
 
-          const res = await api.get(`/cart/${user.id}`);
+      const userId = user?.user_id || user?.id;
+      if (!userId) {
+        setCartItems([]);
+        setLoading(false);
+        return;
+      }
 
-          setCartItems(res.data || []);
-        } catch (error) {
-          console.error(error);
-          toast.error("Failed to load cart");
-        } finally {
-          setLoading(false);
-        }
-      };
+      try {
+        const res = await api.get(`/cart/${userId}`);
+        setCartItems(res.data || []);
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load cart");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      fetchCart();
-    }, [user]);
-    return () => unsubscribe();
+    fetchCart();
   }, [user]);
 
   // Remove item

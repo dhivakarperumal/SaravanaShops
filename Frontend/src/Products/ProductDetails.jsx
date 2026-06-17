@@ -638,6 +638,7 @@ const ProductDetails = () => {
                       if (!validateSelection()) return;
 
                       const user = JSON.parse(localStorage.getItem("user"));
+                      const userId = user?.user_id || user?.id;
 
                       const orderItem = {
                         productId: product.id || product.productId,
@@ -657,7 +658,7 @@ const ProductDetails = () => {
                           product.image ||
                           product.images?.[0] ||
                           "",
-                        userId: user.id,
+                        userId,
                         status: "pending",
                       };
 
