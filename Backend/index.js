@@ -27,6 +27,7 @@ const categoryRouter = require('./src/routers/categoryRouter');
 const productRouter = require('./src/routers/productRouter');
 const razorpayRouter = require('./src/routers/razorpayRouter');
 const reviewRouter = require('./src/routers/reviewRoutes');
+const videoRoutes = require("./src/routers/videoRouter");
 const userRouter = require('./src/routers/userRouter');
 const ordersRouter = require('./src/routers/orderRouter');
 const invoiceRouter = require('./src/routers/invoiceRouter');
@@ -48,6 +49,9 @@ app.use('/api/products', productRouter);
 app.use('/api/razorpay', razorpayRouter);
 app.use('/api/users', userRouter);
 app.use('/api/reviews', reviewRouter);
+
+// Video routes
+app.use("/api/videos", videoRoutes);
 app.use('/api/orders', ordersRouter);
 app.use('/api/invoices', invoiceRouter);
 app.use('/api/dealers', dealerRouter);

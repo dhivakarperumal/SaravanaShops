@@ -91,6 +91,32 @@ async function initializeDatabase() {
       )
     `);
 
+    // ── Videos table ───────────────────────────────────
+    await connection.query(`
+  CREATE TABLE IF NOT EXISTS videos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    video_id VARCHAR(20) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    url LONGTEXT NOT NULL,
+    file_name VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )
+`);
+
+    // ── Videos table ───────────────────────────────────
+    await connection.query(`
+  CREATE TABLE IF NOT EXISTS videos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    video_id VARCHAR(20) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    url LONGTEXT NOT NULL,
+    file_name VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )
+`);
+
     // ── Orders table ──────────────────────────────────────
     await connection.query(`
       CREATE TABLE IF NOT EXISTS orders (

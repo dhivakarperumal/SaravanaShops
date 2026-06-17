@@ -16,6 +16,7 @@ const AddReviews = () => {
   const [viewMode, setViewMode] = useState("card");
   const [showFilters, setShowFilters] = useState(false);
 
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -423,25 +424,39 @@ const AddReviews = () => {
           <div className="flex-1 min-w-0">
 
             {viewMode === "card" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {displayedReviews.map((item) => (
                   <div
                     key={item.id}
-                    className="flex flex-col md:flex-row gap-4 shadow p-4 rounded-lg bg-white"
+                    className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300"
                   >
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-24 h-24 object-cover rounded-md"
-                    />
-                    <div className="flex-1">
-                      <div className="flex justify-between flex-wrap">
+                    {/* Image */}
+                    <div className="h-48 overflow-hidden">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <div className="flex justify-between items-start gap-3">
                         <div>
-                          <span className="font-semibold">{item.user}</span>
-                          <h3 className="text-lg font-semibold">{item.title}</h3>
-                          <p className="text-sm text-gray-500">{item.category}</p>
+                          <span className="text-sm font-medium text-gray-500">
+                            {item.user}
+                          </span>
+
+                          <h3 className="text-lg font-semibold text-gray-800 mt-1 line-clamp-1">
+                            {item.title}
+                          </h3>
+
+                          <p className="text-sm text-gray-500">
+                            {item.category}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-1 text-yellow-500 text-sm">
+
+                        <div className="flex items-center gap-1 shrink-0">
                           {[...Array(5)].map((_, i) => (
                             <FaStar
                               key={i}
@@ -452,40 +467,42 @@ const AddReviews = () => {
                               }
                             />
                           ))}
-                          <span className="text-black ml-1">{item.rating}/5</span>
-
+                          
                         </div>
                       </div>
-                      <p className="mt-2 text-gray-600 text-sm">{item.desc}</p>
-                      <div className="flex justify-between text-sm mt-2">
-                        <div className="text-gray-500">
-                          <span className="font-medium">{item.reviews}</span> Reviews ·{" "}
-                          <span>{item.rate}</span> Avg. Rating
-                        </div>
-                        <div className="flex gap-2 items-center">
-                          <button
-                            onClick={() => handleEdit(item)}
-                            className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-gray text-xs font-semibold"
-                          >
-                            <HiPencil className="text-2xl" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-gray text-xs font-semibold"
-                          >
-                            <HiTrash className="text-2xl" />
-                          </button>
-                          <span
-                            onClick={() => toggleTick(item)}
-                            className="flex items-center cursor-pointer gap-1 border-2 py-2 px-2 rounded-full border-gray text-xs font-semibold"
-                          >
-                            {item.tick ? (
-                              <TiTick size={25} className="text-green-600" />
-                            ) : (
-                              <TiTickOutline size={25} className="text-red-500" />
-                            )}
-                          </span>
-                        </div>
+
+                      <p className="mt-3 text-sm text-gray-600 line-clamp-3">
+                        {item.desc}
+                      </p>
+
+                     
+
+                      {/* Actions */}
+                      <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-100">
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                        >
+                          <HiPencil className="text-lg" />
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-red-500 hover:bg-red-50 cursor-pointer"
+                        >
+                          <HiTrash className="text-lg" />
+                        </button>
+
+                        <button
+                          onClick={() => toggleTick(item)}
+                          className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                        >
+                          {item.tick ? (
+                            <TiTick size={22} className="text-green-600" />
+                          ) : (
+                            <TiTickOutline size={22} className="text-red-500" />
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -497,6 +514,7 @@ const AddReviews = () => {
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gradient-to-r from-primary to-secondary text-white">
+                        <th className="px-4 py-3 text-left">S.No.</th>
                         <th className="px-4 py-3 text-left">Image</th>
                         <th className="px-4 py-3 text-left">Product</th>
                         <th className="px-4 py-3 text-left">User</th>
@@ -507,11 +525,14 @@ const AddReviews = () => {
                     </thead>
 
                     <tbody>
-                      {displayedReviews.map((item) => (
+                      {displayedReviews.map((item, index) => (
                         <tr
                           key={item.id}
                           className=" hover:bg-gray-50"
                         >
+                          <td className="justify-center px-4 py-3">
+                            {index + 1}.
+                          </td>
                           <td className="px-4 py-3">
                             <img
                               src={item.image}
