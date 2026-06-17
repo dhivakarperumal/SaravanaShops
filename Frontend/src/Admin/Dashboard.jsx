@@ -489,56 +489,45 @@ const Dashboard = () => {
 
 
   return (
-    <div className="p-6">
+    <div className="px-6 py-2">
       <DashboardStats stats={statsData} />
 
-      {/* <div className="mb-8 bg-gradient-to-br from-slate-50 to-gray-100 rounded-3xl p-6 border border-gray-200/60 shadow-sm">
-       
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-lg shadow-md">
-              ⚡
-            </div>
-            <div>
-              <h2 className="text-lg font-extrabold text-gray-800 tracking-tight leading-none">Quick Access</h2>
-              <p className="text-xs text-gray-500 mt-0.5 font-medium">Jump to any section instantly</p>
-            </div>
+      {/* ── Quick Access ────────────────────────────────────────────────── */}
+      <div className="mb-8 bg-gradient-to-br from-white to-gray-50/90 rounded-3xl p-6 shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-white/80 backdrop-blur-xl transition-all duration-400 hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)]">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-lg shadow-md">
+            ⚡
           </div>
-        </div> */}
+          <div>
+            <h2 className="text-lg font-extrabold text-gray-800 tracking-tight leading-none">Quick Access</h2>
+            <p className="text-xs text-gray-500 mt-0.5 font-medium">Important shortcuts for daily tasks</p>
+          </div>
+        </div>
 
-        {/* Grid */}
-        {/* <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
           {[
-            { label: "New Orders",    icon: <FaShoppingCart />,  path: "/superadmin/newOrders",    color: "from-blue-500 to-blue-600",     shadow: "shadow-blue-200" },
-            { label: "All Orders",    icon: <FaClipboardList />, path: "/superadmin/allOrders",    color: "from-indigo-500 to-indigo-600", shadow: "shadow-indigo-200" },
-            { label: "Add Product",   icon: <FaPlusCircle />,    path: "/superadmin/addproducts",  color: "from-emerald-500 to-emerald-600",shadow: "shadow-emerald-200" },
-            { label: "Add Category",  icon: <FaTags />,          path: "/superadmin/category",     color: "from-teal-500 to-teal-600",     shadow: "shadow-teal-200" },
-            { label: "All Products",  icon: <FaBoxOpen />,       path: "/superadmin/allproducts",  color: "from-cyan-500 to-cyan-600",     shadow: "shadow-cyan-200" },
-            { label: "Stock Details", icon: <FaLayerGroup />,    path: "/superadmin/stockDetails", color: "from-orange-500 to-orange-600", shadow: "shadow-orange-200" },
-            { label: "New Users",     icon: <FaUserPlus />,      path: "/superadmin/newusers",     color: "from-purple-500 to-purple-600", shadow: "shadow-purple-200" },
-            { label: "All Users",     icon: <FaUsers />,         path: "/superadmin/allusers",     color: "from-violet-500 to-violet-600", shadow: "shadow-violet-200" },
-            { label: "Billings",      icon: <FaReceipt />,       path: "/superadmin/billing",      color: "from-pink-500 to-pink-600",     shadow: "shadow-pink-200" },
-            { label: "Dealers",       icon: <FaHandshake />,     path: "/superadmin/dealers",      color: "from-rose-500 to-rose-600",     shadow: "shadow-rose-200" },
-            { label: "Reviews",       icon: <FaStar />,          path: "/superadmin/allreviews",   color: "from-yellow-400 to-yellow-500", shadow: "shadow-yellow-200" },
-            { label: "Razerpay Key",  icon: <FaKey />,           path: "/superadmin/razerpay",     color: "from-gray-600 to-gray-700",     shadow: "shadow-gray-300" },
+            { label: "New Orders",   icon: <FaShoppingCart />,  path: "/superadmin/newOrders",   color: "from-blue-500 to-blue-600",     shadow: "shadow-blue-200" },
+            { label: "All Orders",   icon: <FaClipboardList />, path: "/superadmin/allOrders",   color: "from-indigo-500 to-indigo-600", shadow: "shadow-indigo-200" },
+            { label: "Add Product",  icon: <FaPlusCircle />,    path: "/superadmin/addproducts", color: "from-emerald-500 to-emerald-600",shadow: "shadow-emerald-200" },
+            { label: "All Products", icon: <FaBoxOpen />,       path: "/superadmin/allproducts", color: "from-cyan-500 to-cyan-600",     shadow: "shadow-cyan-200" },
+            { label: "Invoices",     icon: <FaReceipt />,       path: "/superadmin/invoice",     color: "from-purple-500 to-purple-600", shadow: "shadow-purple-200" },
+            { label: "Dealers",      icon: <FaHandshake />,     path: "/superadmin/dealers",     color: "from-rose-500 to-rose-600",     shadow: "shadow-rose-200" },
           ].map((item, idx) => (
             <button
               key={idx}
               onClick={() => navigate(item.path)}
-              className="group flex flex-col items-center gap-2.5 p-3 rounded-2xl bg-white hover:bg-gray-50 border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+              className="group flex flex-col items-center gap-3 p-4 rounded-2xl bg-white hover:bg-gray-50 border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer"
             >
-           
               <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white text-xl shadow-lg ${item.shadow} group-hover:scale-110 group-hover:shadow-xl transition-all duration-300`}>
                 {item.icon}
               </div>
-            
-              <span className="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 text-center leading-tight transition-colors duration-200">
+              <span className="text-xs font-bold text-gray-600 group-hover:text-gray-900 text-center transition-colors duration-200">
                 {item.label}
               </span>
             </button>
           ))}
-        </div> 
-      </div>*/}
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="bg-gradient-to-br from-white to-gray-50/90 p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] transition-all duration-400 backdrop-blur-xl">
