@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import { IoMdPrint } from "react-icons/io";
@@ -8,6 +9,7 @@ import logo from "/Image/logo.png";
 import { FaSearch } from "react-icons/fa";
 
 export default function AddBilling() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
    const [searchQuery, setSearchQuery] = useState("");
@@ -610,8 +612,15 @@ export default function AddBilling() {
   return (
     <div className="max-w-6xl mx-auto p-4 bg-white rounded shadow-xl">
 
-
-      <h2 className="text-xl font-semibold mb-4">Billing / Shop</h2>
+      <div className="flex items-center gap-4 mb-6 mt-2 ml-2">
+        <button
+          onClick={() => navigate(-1)}
+          className="p-2.5 bg-gray-100 hover:bg-gray-200 rounded-full cursor-pointer transition-colors"
+        >
+          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        </button>
+        <h2 className="text-2xl font-semibold text-gray-800">Add New Billing</h2>
+      </div>
 
       {/* Product Selection */}
       <div className="mb-4">
@@ -808,7 +817,7 @@ export default function AddBilling() {
           </div>
 
           {/* Address */}
-          <div className="flex flex-col md:col-span-2">
+          <div className="flex flex-col">
             <label className="mb-1 font-medium text-gray-700">Address</label>
             <input
               type="text"
@@ -917,10 +926,10 @@ export default function AddBilling() {
           </div>
 
           {/* Order Type */}
-          <div className="mb-4">
+          <div className="flex flex-col">
             <label className="mb-1 font-medium text-gray-700">Order Type</label>
             <select
-              className="w-full mt-1 border border-gray-300 rounded-lg px-4 py-3.5 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
               value={orderType}
               required
               onChange={(e) => {

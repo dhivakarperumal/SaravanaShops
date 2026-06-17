@@ -236,7 +236,7 @@ export default function RazorpayKeyForm() {
                 <td className="px-4 py-3 text-gray-500 font-medium text-center">{index + 1}</td>
                 <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
                 <td className="px-4 py-3 text-gray-600 font-mono text-xs">{item.key_id || item.key}</td>
-                <td className="px-4 py-3 text-center space-x-2">
+                <td className="px-4 flex py-3 text-center space-x-2">
                   <button
                     onClick={() => handleEdit(item)}
                     className="p-2 cursor-pointer bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
