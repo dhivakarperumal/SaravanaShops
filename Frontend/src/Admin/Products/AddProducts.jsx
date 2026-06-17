@@ -564,8 +564,8 @@ export default function AddProducts() {
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Basic Details Card */}
         <div className="bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
-          <div className="bg-[#d8bfff] border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
-            <h2 className="text-base font-bold text-[#5b2db5]">1. Basic Details</h2>
+          <div className="bg-primary border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
+            <h2 className="text-base font-bold text-white">Basic Details</h2>
           </div>
 
           <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -676,11 +676,11 @@ export default function AddProducts() {
 
           {/* Pricing & Rating Section */}
           <div className="border-t border-gray-100">
-            <div className="bg-[#d8bfff] border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
-              <h2 className="text-base font-bold text-[#5b2db5]">
-                2. Pricing & Rating
+            {/* <div className="bg-primary border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
+              <h2 className="text-base font-bold text-white">
+                Pricing & Rating
               </h2>
-            </div>
+            </div> */}
 
             <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
@@ -749,8 +749,8 @@ export default function AddProducts() {
         {/* BANGLES */}
         {productType === "Bangles" && (
           <div className="bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
-            <div className="bg-[#d8bfff] border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
-              <h2 className="text-base font-bold text-[#5b2db5]">3. Bangles Specifics</h2>
+            <div className="bg-primary border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
+              <h2 className="text-base font-bold text-white">Bangles Specifics</h2>
             </div>
 
             <div className="p-6 sm:p-8">
@@ -1117,8 +1117,8 @@ export default function AddProducts() {
         {/* SAREES */}
         {productType === "Sarees" && (
           <div className="bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
-            <div className="bg-[#d8bfff] border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
-              <h2 className="text-base font-bold text-gray-800">3. Saree Specifics</h2>
+            <div className="bg-primary border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
+              <h2 className="text-base font-bold text-white">Saree Specifics</h2>
             </div>
             <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
@@ -1185,8 +1185,8 @@ export default function AddProducts() {
         {/* JEWELS */}
         {productType === "Jewels" && (
           <div className="bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
-            <div className="bg-[#d8bfff] border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
-              <h2 className="text-base font-bold text-gray-800">3. Jewelry Specifics</h2>
+            <div className="bg-primary border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
+              <h2 className="text-base font-bold text-white">Jewelry Specifics</h2>
             </div>
             <div className="p-6 sm:p-8 space-y-6">
 
@@ -1209,11 +1209,13 @@ export default function AddProducts() {
                         value={item}
                         onChange={(e) =>
                           setJewelListItems((prev) =>
-                            prev.map((v, i) => (i === idx ? e.target.value : v))
+                            prev.map((v, i) =>
+                              i === idx ? e.target.value : v
+                            )
                           )
                         }
-                        placeholder={`Item ${idx + 1} (e.g. Necklace)`}
-                        className="flex-1 border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                        placeholder="Necklace, Earrings, Chain..."
+                        className="flex-1 bg-white border border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 transition-all"
                       />
                       {jewelListItems.length > 1 && (
                         <button
