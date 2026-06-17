@@ -1330,6 +1330,8 @@ const Billing = () => {
 
     return (
       order.orderId?.toLowerCase().includes(q) ||
+      order.shipping?.name?.toLowerCase().includes(q) ||
+      order.shipping?.phone?.toLowerCase().includes(q) ||
       order.customerName?.toLowerCase().includes(q) ||
       order.mobile?.toLowerCase().includes(q)
     );
@@ -1417,14 +1419,14 @@ const Billing = () => {
                   <div className="flex justify-between">
                     <span className="text-gray-500">Customer</span>
                     <span className="font-semibold">
-                      {order.customerName || order.name}
+                      {order.shipping?.name || order.customerName || order.name || "-"}
                     </span>
                   </div>
 
                   <div className="flex justify-between">
                     <span className="text-gray-500">Mobile</span>
                     <span className="font-medium">
-                      {order.mobile}
+                      {order.shipping?.phone || order.mobile || "-"}
                     </span>
                   </div>
 
@@ -1438,7 +1440,7 @@ const Billing = () => {
                   <div className="flex justify-between">
                     <span className="text-gray-500">Amount</span>
                     <span className="font-bold text-primary text-lg">
-                      ₹{order.totalAmount || order.total}
+                      ₹{order.total || order.totalAmount || 0}
                     </span>
                   </div>
 
@@ -1499,11 +1501,11 @@ const Billing = () => {
                     </td>
 
                     <td className="px-4 py-3">
-                      {order.customerName}
+                      {order.shipping?.name || order.customerName || order.name || "-"}
                     </td>
 
                     <td className="px-4 py-3">
-                      {order.mobile}
+                      {order.shipping?.phone || order.mobile || "-"}
                     </td>
 
                     <td className="px-4 py-3">
@@ -1511,7 +1513,7 @@ const Billing = () => {
                     </td>
 
                     <td className="px-4 py-3 font-bold text-primary">
-                      ₹{order.totalAmount}
+                      ₹{order.total || order.totalAmount || 0}
                     </td>
 
                     <td className="px-4 py-3">
