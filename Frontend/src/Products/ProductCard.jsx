@@ -51,6 +51,7 @@ const ProductCard = ({ product, onOpenModal }) => {
       const res = await api.post("/wishlist", payload);
       if (res.data.success) {
         toast.success(`${product.name} added to wishlist`);
+        window.dispatchEvent(new Event("wishlistUpdated"));
       } else {
         toast.error(res.data.message || `Failed to add ${product.name} to wishlist`);
       }

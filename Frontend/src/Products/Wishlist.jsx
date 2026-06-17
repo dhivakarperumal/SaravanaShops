@@ -76,6 +76,7 @@ const Wishlist = ({ isOpen, onClose }) => {
       if (res.data.success) {
         setWishlist(wishlist.filter(item => item.id !== itemId));
         toast.success("Item removed from wishlist");
+        window.dispatchEvent(new Event("wishlistUpdated"));
       }
     } catch (err) {
       console.error("Error removing item:", err);

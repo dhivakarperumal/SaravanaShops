@@ -317,6 +317,7 @@ const ProductDetails = () => {
 
                         if (res.data.success) {
                           toast.success(`${product.name} added to wishlist`);
+                          window.dispatchEvent(new Event("wishlistUpdated"));
                         } else {
                           toast.error(res.data.message || "Failed to add to wishlist");
                         }

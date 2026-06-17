@@ -86,7 +86,7 @@ function Navbar() {
     };
   }, [user, cartOpen]);
 
-  // Fetch wishlist count when wishlist opens or user changes
+  // Fetch wishlist count when wishlist opens, user changes, or wishlist is updated
   useEffect(() => {
     const updateWishlistCount = async () => {
       if (!user) {
@@ -108,9 +108,14 @@ function Navbar() {
       }
     };
     updateWishlistCount();
+
+    // Listen for instant wishlist updates from other components
+    window.addEventListener("wishlistUpdated", updateWishlistCount);
+
     // Update wishlist count every 2 seconds when wishlist is open
     const interval = wishlistOpen ? setInterval(updateWishlistCount, 2000) : null;
     return () => {
+      window.removeEventListener("wishlistUpdated", updateWishlistCount);
       if (interval) clearInterval(interval);
     };
   }, [user, wishlistOpen]);
