@@ -63,11 +63,20 @@ const Addtocart = ({ isOpen, onClose }) => {
 
   // Remove item
   const handleRemove = async (itemId) => {
-    if (!user) return;
+    const userId = getUserId();
+
+    if (!userId) {
+      toast.error("Please login first");
+      return;
+    }
+
     try {
       await api.delete(`/cart/${itemId}`);
-      // Remove from local state immediately
-      setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+
+      setCartItems((prev) =>
+        prev.filter((item) => item.id !== itemId)
+      );
+
       toast.success("Item removed from cart");
     } catch (err) {
       console.error("Error removing item:", err);
