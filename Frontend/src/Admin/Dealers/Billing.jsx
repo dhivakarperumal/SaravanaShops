@@ -1462,8 +1462,8 @@ const Billing = () => {
                   Generate Bill
                 </button>
               </div>
-            </div>
-          ))}
+            </div> 
+          ))} 
         </div>
       )}
 
