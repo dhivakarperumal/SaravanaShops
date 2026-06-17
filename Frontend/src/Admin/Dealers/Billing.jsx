@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../../api";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import { IoMdPrint } from "react-icons/io";
-import namer from "color-namer"; // 🎨 Color name library
+import namer from "color-namer"; 
 import toast from "react-hot-toast";
 import logo from "/Image/logo.png";
 
