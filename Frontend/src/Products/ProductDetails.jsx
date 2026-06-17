@@ -292,34 +292,41 @@ const ProductDetails = () => {
                   <button
                     className="absolute top-4 right-4 bg-white text-primary hover:text-red-500 p-2 rounded-full shadow-md hover:scale-110 transition cursor-pointer"
                     onClick={async () => {
-                      if (!validateSelection()) return;
-
                       const user = JSON.parse(localStorage.getItem("user"));
-                      const userId = user?.user_id || user?.id;
+                      const userId = user?.user_id || user?.id || user?.uid;
+
+                      if (!userId) {
+                        toast.error("Please login to add to wishlist");
+                        return;
+                      }
 
                       try {
-                        await api.post("/cart", {
+                        const res = await api.post("/wishlist", {
                           user_id: userId,
                           product_id: product.id,
                           product_name: product.name,
-                          category: product.category,
-                          subcategory: product.subcategory,
+                          mrp: product.mrp || "",
+                          sellingprice: product.sellingprice || "",
                           image:
                             selectedImage ||
-                            product.image ||
                             product.images?.[0] ||
-                            "",
-                          mrp: product.mrp ?? null,
-                          sellingprice: product.sellingprice ?? null,
-                          quantity,
-                          size: selectedSize,
-                          color: selectedColor,
+                            product.image ||
+                            (product.colors && Object.values(product.colors)?.[0]?.image) ||
+                            "/placeholder.jpg",
                         });
 
-                        toast.success("Added to cart");
-                      } catch (err) {
-                        console.log(err);
-                        toast.error("Failed to add cart");
+                        if (res.data.success) {
+                          toast.success(`${product.name} added to wishlist`);
+                        } else {
+                          toast.error(res.data.message || "Failed to add to wishlist");
+                        }
+                      } catch (error) {
+                        if (error.response?.status === 400 && error.response?.data?.message === 'Product already in wishlist') {
+                          toast.info(`${product.name} is already in your wishlist`);
+                        } else {
+                          console.error("Error adding to wishlist:", error);
+                          toast.error("Failed to add to wishlist");
+                        }
                       }
                     }}
                   >
