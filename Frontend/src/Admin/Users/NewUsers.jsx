@@ -361,17 +361,23 @@ const NewUsers = () => {
       <AnimatePresence>
         {selectedUser && (
           <motion.div
-            className="fixed inset-0 bg-black/80 bg-opacity-40 flex justify-center items-center z-50"
+            className="fixed inset-0 bg-black/40 flex justify-center items-center z-[9999]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white p-6 rounded-lg w-full max-w-md"
+              className="bg-white p-6 rounded-lg w-full max-w-md shadow-2xl relative"
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -50, opacity: 0 }}
             >
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="absolute top-2 right-3 cursor-pointer text-gray-500 hover:text-red-500 text-xl font-bold"
+              >
+                ×
+              </button>
               <h2 className="text-lg font-bold mb-4">
                 {isEdit ? "Edit User" : "User Details"}
               </h2>
@@ -383,16 +389,10 @@ const NewUsers = () => {
                 />
               ) : (
                 <>
-                  <p><strong>Name:</strong> {selectedUser.username}</p>
-                  <p><strong>Email:</strong> {selectedUser.email}</p>
-                  <p><strong>Phone:</strong> {selectedUser.phone}</p>
-                  <p><strong>Role:</strong> {selectedUser.role}</p>
-                  <button
-                    onClick={() => setSelectedUser(null)}
-                    className="mt-4 bg-blue-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-blue-700"
-                  >
-                    Close
-                  </button>
+                  <p><strong className="text-gray-700">Name:</strong> <span className="text-gray-900">{selectedUser.username}</span></p>
+                  <p><strong className="text-gray-700">Email:</strong> <span className="text-gray-900">{selectedUser.email}</span></p>
+                  <p><strong className="text-gray-700">Phone:</strong> <span className="text-gray-900">{selectedUser.phone}</span></p>
+                  <p><strong className="text-gray-700">Role:</strong> <span className="text-gray-900 capitalize">{selectedUser.role}</span></p>
                 </>
               )}
             </motion.div>
@@ -420,14 +420,13 @@ const EditForm = ({ user, onClose, onSave }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <label className="block text-sm font-medium">Name</label>
+        <label className="block text-sm font-medium">Username</label>
         <input
           type="text"
-          name="name"
-          value={editedUser.username}
+          name="username"
+          value={editedUser.username || ""}
           onChange={handleChange}
-          disabled
-          className="w-full pl-10 cursor-not-allowed bg-gray-200 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
       <div>
@@ -435,10 +434,9 @@ const EditForm = ({ user, onClose, onSave }) => {
         <input
           type="email"
           name="email"
-          value={editedUser.email}
+          value={editedUser.email || ""}
           onChange={handleChange}
-          disabled
-          className="w-full border px-3 cursor-not-allowed bg-gray-200 py-2 rounded focus:outline-none focus:ring focus:ring-blue-500"
+          className="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
       <div>
@@ -446,10 +444,9 @@ const EditForm = ({ user, onClose, onSave }) => {
         <input
           type="text"
           name="phone"
-          value={editedUser.phone}
+          value={editedUser.phone || ""}
           onChange={handleChange}
-          disabled
-          className="w-full cursor-not-allowed bg-gray-200 border px-3 py-2 rounded focus:outline-none focus:ring focus:ring-blue-500"
+          className="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
       <div>

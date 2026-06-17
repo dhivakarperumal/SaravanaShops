@@ -5,7 +5,7 @@ import {
   MdOutlineArrowBackIosNew,
   MdOutlineArrowForwardIos,
 } from "react-icons/md";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "../../api";
 
 const AllUsers = () => {
@@ -215,9 +215,9 @@ const AllUsers = () => {
           <input
             type="text"
             name="username"
-            value={editedUser.username}
-            disabled
-            className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+            value={editedUser.username || ""}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
         <div>
@@ -225,9 +225,9 @@ const AllUsers = () => {
           <input
             type="email"
             name="email"
-            value={editedUser.email}
-            disabled
-            className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+            value={editedUser.email || ""}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
         <div>
@@ -235,9 +235,9 @@ const AllUsers = () => {
           <input
             type="text"
             name="phone"
-            value={editedUser.phone}
-            disabled
-            className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+            value={editedUser.phone || ""}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
         <div>
@@ -437,90 +437,102 @@ const AllUsers = () => {
       )}
 
       {/* Add User Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-lg relative">
-            <button
-              onClick={handleModalClose}
-              className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-xl font-bold"
+      <AnimatePresence>
+        {showAddModal && (
+          <motion.div 
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-2xl relative"
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
             >
-              ×
-            </button>
-
-            <h3 className="text-xl font-semibold mb-4">Add New User</h3>
-            <div className="space-y-3">
-              <input
-                type="text"
-                name="username"
-                value={newUser.username}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, username: e.target.value })
-                }
-                placeholder="Username"
-                className="w-full border border-gray-300 px-3 py-2 rounded"
-              />
-              <input
-                type="email"
-                name="email"
-                value={newUser.email}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, email: e.target.value })
-                }
-                placeholder="Email"
-                className="w-full border border-gray-300 px-3 py-2 rounded"
-              />
-              <input
-                type="text"
-                name="phone"
-                value={newUser.phone}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, phone: e.target.value })
-                }
-                placeholder="Phone"
-                className="w-full border border-gray-300 px-3 py-2 rounded"
-              />
-              <select
-                name="role"
-                value={newUser.role}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, role: e.target.value })
-                }
-                className="w-full border border-gray-300 px-3 py-2 rounded"
+              <button
+                onClick={handleModalClose}
+                className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-xl font-bold cursor-pointer"
               >
-                <option value="select">Select</option>
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
+                ×
+              </button>
 
-              <div className="relative">
+              <h3 className="text-xl font-semibold mb-4">Add New User</h3>
+              <div className="space-y-3">
                 <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={newUser.password}
+                  type="text"
+                  name="username"
+                  value={newUser.username}
                   onChange={(e) =>
-                    setNewUser({ ...newUser, password: e.target.value })
+                    setNewUser({ ...newUser, username: e.target.value })
                   }
-                  placeholder="Password"
-                  className="w-full border border-gray-300 px-3 py-2 rounded"
+                  placeholder="Username"
+                  className="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                <input
+                  type="email"
+                  name="email"
+                  value={newUser.email}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, email: e.target.value })
+                  }
+                  placeholder="Email"
+                  className="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <input
+                  type="text"
+                  name="phone"
+                  value={newUser.phone}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, phone: e.target.value })
+                  }
+                  placeholder="Phone"
+                  className="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <select
+                  name="role"
+                  value={newUser.role}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, role: e.target.value })
+                  }
+                  className="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                  <option value="select">Select</option>
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={newUser.password}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, password: e.target.value })
+                    }
+                    placeholder="Password"
+                    className="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 cursor-pointer"
+                  >
+                    {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                  </button>
+                </div>
+                <button
+                  onClick={handleAddUser}
+                  className="w-full bg-primary cursor-pointer text-white py-2 rounded hover:bg-secondary mt-2 transition-colors"
+                >
+                  Save User
                 </button>
               </div>
-              <button
-                onClick={handleAddUser}
-                className="w-full bg-primary cursor-pointer text-white py-2 rounded hover:bg-secondary mt-2"
-              >
-                Save User
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -558,39 +570,67 @@ const AllUsers = () => {
       )}
 
       {/* View User Modal */}
-      {modalType === "view" && selectedUser && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-lg relative">
-            <button
-              onClick={handleModalClose}
-              className="absolute top-2 right-3 cursor-pointer text-gray-500 hover:text-red-500 text-xl font-bold"
+      <AnimatePresence>
+        {modalType === "view" && selectedUser && (
+          <motion.div 
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-2xl relative"
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
             >
-              ×
-            </button>
-            <h3 className="text-xl font-semibold mb-4">View User</h3>
-            <p><strong>Username:</strong> {selectedUser.username}</p>
-            <p><strong>Email:</strong> {selectedUser.email}</p>
-            <p><strong>Phone:</strong> {selectedUser.phone}</p>
-            <p><strong>Role:</strong> {selectedUser.role}</p>
-          </div>
-        </div>
-      )}
+              <button
+                onClick={handleModalClose}
+                className="absolute top-2 right-3 cursor-pointer text-gray-500 hover:text-red-500 text-xl font-bold"
+              >
+                ×
+              </button>
+              <h3 className="text-xl font-semibold mb-4">View User</h3>
+              <div className="space-y-3">
+                <p><strong className="text-gray-700">Username:</strong> <span className="text-gray-900">{selectedUser.username}</span></p>
+                <p><strong className="text-gray-700">Email:</strong> <span className="text-gray-900">{selectedUser.email}</span></p>
+                <p><strong className="text-gray-700">Phone:</strong> <span className="text-gray-900">{selectedUser.phone}</span></p>
+                <p><strong className="text-gray-700">Role:</strong> <span className="text-gray-900 capitalize">{selectedUser.role}</span></p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Edit User Modal */}
       <AnimatePresence>
         {selectedUser && isEdit && (
-          <div
-            className="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
+          <motion.div
+            className="fixed inset-0 bg-black/40 flex justify-center items-center z-[9999]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            <div className="bg-white p-6 rounded-lg w-full max-w-md">
-              <h3 className="text-xl font-semibold mb-4">Edit User Role</h3>
+            <motion.div 
+              className="bg-white p-6 rounded-lg w-full max-w-md shadow-2xl relative"
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
+            >
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="absolute top-2 right-3 cursor-pointer text-gray-500 hover:text-red-500 text-xl font-bold"
+              >
+                ×
+              </button>
+              <h3 className="text-xl font-semibold mb-4">Edit User</h3>
               <EditForm
                 user={selectedUser}
                 onClose={() => setSelectedUser(null)}
                 onSave={handleUpdateUser}
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
