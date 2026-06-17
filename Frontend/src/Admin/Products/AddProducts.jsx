@@ -8,7 +8,6 @@ import { FaTrash, FaTimes } from "react-icons/fa";
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_IMAGE_SIZE = 1080;
 
-
 export default function AddProducts() {
   const location = useLocation();
   const initialData = location.state?.product || null;
@@ -564,9 +563,9 @@ export default function AddProducts() {
 
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Basic Details Card */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="bg-gray-50/80 border-b border-gray-100 px-6 sm:px-8 py-4">
-            <h2 className="text-base font-bold text-gray-800">1. Basic Details</h2>
+        <div className="bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
+          <div className="bg-[#d8bfff] border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
+            <h2 className="text-base font-bold text-[#5b2db5]">1. Basic Details</h2>
           </div>
 
           <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -578,7 +577,7 @@ export default function AddProducts() {
               <select
                 value={productType}
                 onChange={(e) => setProductType(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
               >
                 <option value="Bangles">Bangles</option>
                 <option value="Sarees">Sarees</option>
@@ -595,7 +594,7 @@ export default function AddProducts() {
                 name="category"
                 value={form.category}
                 onChange={handleCategoryChange}
-                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
               >
                 <option value="">Select Category</option>
                 {categories
@@ -618,7 +617,7 @@ export default function AddProducts() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, subcategory: e.target.value }))
                 }
-                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
               >
                 <option value="">Select Subcategory</option>
                 {filteredSubcategories.map((s, idx) => (
@@ -640,7 +639,7 @@ export default function AddProducts() {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="e.g. Red Silk Saree"
-                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
               />
             </div>
 
@@ -655,7 +654,7 @@ export default function AddProducts() {
                 onChange={handleChange}
                 rows={3}
                 placeholder="Product description..."
-                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none"
+                className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none"
               />
             </div>
 
@@ -670,15 +669,15 @@ export default function AddProducts() {
                 onChange={handleChange}
                 rows={3}
                 placeholder="Additional notes..."
-                className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none"
+                className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none"
               />
             </div>
           </div>
 
           {/* Pricing & Rating Section */}
           <div className="border-t border-gray-100">
-            <div className="bg-gray-50/80 border-b border-gray-100 px-6 sm:px-8 py-4">
-              <h2 className="text-base font-bold text-gray-800">
+            <div className="bg-[#d8bfff] border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
+              <h2 className="text-base font-bold text-[#5b2db5]">
                 2. Pricing & Rating
               </h2>
             </div>
@@ -694,7 +693,7 @@ export default function AddProducts() {
                   value={form.mrp}
                   onChange={handleChange}
                   placeholder="0.00"
-                  className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                  className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                 />
               </div>
 
@@ -708,7 +707,7 @@ export default function AddProducts() {
                   value={form.offer}
                   onChange={handleChange}
                   placeholder="e.g. 15"
-                  className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                  className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                 />
               </div>
 
@@ -721,7 +720,7 @@ export default function AddProducts() {
                   value={form.sellingprice}
                   onChange={handleSellingPriceChange}
                   placeholder="0.00"
-                  className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all bg-green-50/50 font-bold text-green-700"
+                  className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all bg-green-50/50 font-bold text-green-700"
                 />
               </div>
 
@@ -738,7 +737,7 @@ export default function AddProducts() {
                   value={form.rating}
                   onChange={handleChange}
                   placeholder="4.5"
-                  className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                  className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                 />
               </div>
             </div>
@@ -749,9 +748,9 @@ export default function AddProducts() {
 
         {/* BANGLES */}
         {productType === "Bangles" && (
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="bg-gray-50/80 border-b border-gray-100 px-6 sm:px-8 py-4">
-              <h2 className="text-base font-bold text-gray-800">3. Bangles Specifics</h2>
+          <div className="bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
+            <div className="bg-[#d8bfff] border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
+              <h2 className="text-base font-bold text-[#5b2db5]">3. Bangles Specifics</h2>
             </div>
 
             <div className="p-6 sm:p-8">
@@ -762,7 +761,7 @@ export default function AddProducts() {
                 <select
                   value={banglesCountType}
                   onChange={(e) => setBanglesCountType(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                  className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
                 >
                   <option value="SingleColor">Single Color</option>
                   <option value="MultiColor">Multi Color</option>
@@ -827,7 +826,7 @@ export default function AddProducts() {
                                     )
                                   )
                                 }
-                                className="w-full border border-gray-300 rounded px-2 py-1"
+                                className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded px-2 py-1"
                               />
                             </td>
                             <td className="border border-gray-300 p-2 flex flex-wrap gap-1 align-top">
@@ -1075,7 +1074,7 @@ export default function AddProducts() {
                       multiple
                       ref={fileInputRefs.Bangles}
                       onChange={(e) => handleFiles(e, "Bangles")}
-                      className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                      className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
                     />
                     <div className="flex gap-3 flex-wrap mt-4">
                       {banglesMultiImages.map((img, idx) => (
@@ -1106,7 +1105,7 @@ export default function AddProducts() {
                       value={banglesStock}
                       onChange={(e) => setBanglesStock(Number(e.target.value))}
                       placeholder="0"
-                      className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                      className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -1117,8 +1116,8 @@ export default function AddProducts() {
 
         {/* SAREES */}
         {productType === "Sarees" && (
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="bg-gray-50/80 border-b border-gray-100 px-6 sm:px-8 py-4">
+          <div className="bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
+            <div className="bg-[#d8bfff] border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
               <h2 className="text-base font-bold text-gray-800">3. Saree Specifics</h2>
             </div>
             <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -1129,7 +1128,7 @@ export default function AddProducts() {
                   value={sareeFabricType}
                   onChange={(e) => setSareeFabricType(e.target.value)}
                   placeholder="e.g. Silk, Cotton"
-                  className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                  className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                 />
               </div>
               <div>
@@ -1137,7 +1136,7 @@ export default function AddProducts() {
                 <select
                   value={sareeBlouseAvailable}
                   onChange={(e) => setSareeBlouseAvailable(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                  className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
                 >
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
@@ -1151,7 +1150,7 @@ export default function AddProducts() {
                   multiple
                   ref={fileInputRefs.Sarees}
                   onChange={(e) => handleFiles(e, "Sarees")}
-                  className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                  className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
                 />
                 <div className="flex gap-3 flex-wrap mt-4">
                   {sareeImages.map((img, idx) => (
@@ -1176,7 +1175,7 @@ export default function AddProducts() {
                   value={sareeStock}
                   onChange={(e) => setSareeStock(Number(e.target.value))}
                   placeholder="0"
-                  className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                  className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                 />
               </div>
             </div>
@@ -1185,8 +1184,8 @@ export default function AddProducts() {
 
         {/* JEWELS */}
         {productType === "Jewels" && (
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="bg-gray-50/80 border-b border-gray-100 px-6 sm:px-8 py-4">
+          <div className="bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
+            <div className="bg-[#d8bfff] border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
               <h2 className="text-base font-bold text-gray-800">3. Jewelry Specifics</h2>
             </div>
             <div className="p-6 sm:p-8 space-y-6">
@@ -1238,7 +1237,7 @@ export default function AddProducts() {
                     multiple
                     ref={fileInputRefs.Jewels}
                     onChange={(e) => handleFiles(e, "Jewels")}
-                    className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
+                    className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
                   />
                   <div className="flex gap-3 flex-wrap mt-4">
                     {jewelImages.map((img, idx) => (
@@ -1263,7 +1262,7 @@ export default function AddProducts() {
                     value={jewelStock}
                     onChange={(e) => setJewelStock(Number(e.target.value))}
                     placeholder="0"
-                    className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                    className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                   />
                 </div>
               </div>
