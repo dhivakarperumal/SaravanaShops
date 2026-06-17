@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import api from "../../api";
 import { toast } from "react-hot-toast";
 import {
@@ -160,12 +160,11 @@ export default function VideoForm() {
       name: video.name,
       url: video.url,
       file: null,
-      fileName: video.fileName,
+      fileName: video.fileName || "",
     });
 
     setIsEditing(true);
-    setShowForm(true);
-    setShowList(false);
+    setShowModal(true); 
   };
 
   const handleDelete = async (id) => {
@@ -215,7 +214,7 @@ export default function VideoForm() {
   );
 
   return (
-    <div className="max-w-5xl mx-auto mt-4 p-4 bg-white rounded-lg shadow-md">
+    <div className="max-w-5xl mx-auto mt-4">
       {/* Header */}
       <div className="flex flex-wrap items-center gap-3 mb-6 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100">
 
@@ -282,7 +281,7 @@ export default function VideoForm() {
 
           <div className="bg-white w-full max-w-3xl rounded-2xl p-6">
 
-            <div className="flex justify-between items-center border-b pb-3">
+            <div className="flex justify-between items-center border-b border-gray-200 pb-3">
 
               <h2 className="text-xl font-bold">
                 {isEditing
@@ -291,6 +290,7 @@ export default function VideoForm() {
               </h2>
 
               <button
+                className="cursor-pointer"
                 onClick={() => {
                   setShowModal(false);
                   setIsEditing(false);
@@ -301,8 +301,8 @@ export default function VideoForm() {
 
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-              <div className="flex flex-col md:flex-row md:gap-4">
+            <form onSubmit={handleSubmit} className="space-y-4 mb-6 mt-2">
+              <div className="flex flex-col md:flex-row md:gap-4 ">
                 <div className="flex-1">
                   <label>Video ID</label>
                   <input
@@ -382,7 +382,7 @@ export default function VideoForm() {
                   <tr className="bg-gradient-to-r from-primary to-secondary text-white">
 
                     <th className="px-4 py-3">
-                      Video
+                      S.no.
                     </th>
 
                     <th className="px-4 py-3">
@@ -394,19 +394,15 @@ export default function VideoForm() {
                     </th>
 
                     <th className="px-4 py-3">
-                      ID
-                    </th>
-
-                    <th className="px-4 py-3">
                       Actions
                     </th>
 
                   </tr>
                 </thead>
                 <tbody>
-                  {videos.map((video) => (
+                  {videos.map((video, index) => (
                     <tr key={video.dbId} className="text-center border-gray-200">
-                      <td className="px-3 py-4">{video.id}</td>
+                      <td className="px-3 py-4">{index + 1}.</td>
                       <td className="px-3 py-4">{video.name}</td>
                       <td className="px-3 py-4 flex items-center justify-center">
                         {video.url &&
@@ -425,7 +421,6 @@ export default function VideoForm() {
                             </video>
                           ))}
                       </td>
-                      <td className="px-3 py-4">{video.date}</td>
                       <td className="px-3 py-4 space-x-2">
                         <button
                           onClick={() => handleEdit(video)}
@@ -452,7 +447,7 @@ export default function VideoForm() {
         {viewMode === "card" && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-            {filteredVideos.map((video) => (
+            {filteredVideos.map((video, index) => (
 
               <div
                 key={video.dbId}
@@ -482,26 +477,26 @@ export default function VideoForm() {
                   {video.name}
                 </h3>
 
-                <p className="text-sm text-gray-500">
-                  {video.id}
-                </p>
+                {/* <p className="text-sm text-gray-500">
+                  {index + 1}.
+                </p> */}
 
                 <div className="flex justify-end gap-2 mt-4">
 
                   <button
                     onClick={() => handleEdit(video)}
-                    className="w-10 h-10 rounded-xl bg-green-50 text-green-600"
+                    className="w-10 h-10 rounded-xl bg-green-50 text-green-600 cursor-pointer"
                   >
-                    ✏️
+                    <FaEdit />
                   </button>
 
                   <button
                     onClick={() =>
                       handleDelete(video.dbId)
                     }
-                    className="w-10 h-10 rounded-xl bg-red-50 text-red-600"
+                    className="w-10 h-10 rounded-xl bg-red-50 text-red-600 cursor-pointer"
                   >
-                    🗑️
+                    <FaTrash />
                   </button>
 
                 </div>
