@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaEye, FaEdit, FaTrash, FaPlus, FaSearch, FaFilter, FaThLarge, FaList } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaEdit, FaTrash, FaPlus, FaSearch, FaFilter, FaThLarge, FaList } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import {
   MdOutlineArrowBackIosNew,
@@ -24,6 +24,7 @@ const AllUsers = () => {
     role: "user",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
@@ -114,28 +115,24 @@ const AllUsers = () => {
   };
 
   const handleAddUser = async () => {
-    const { username, email, phone, role } = newUser;
+    const { username, email, phone, role, password } = newUser;
 
-    if (!username || !email || !phone || role === "select") {
+    if (!username || !email || !phone || role === "select" || !password) {
       toast.error("Please fill all required fields");
       return;
     }
 
     try {
-      const firstFour = username.slice(0, 4);
-      const lastFour = phone.slice(-4);
-      const autoPassword = `${firstFour}${lastFour}`;
-
       await api.post('/auth/register', {
         username,
         email,
         phone,
-        password: autoPassword,
-        confirmPassword: autoPassword,
+        password,
+        confirmPassword: password,
         role
       });
 
-      toast.success(`User created successfully! Password: ${autoPassword}`);
+      toast.success("User created successfully!");
       setShowAddModal(false);
       setNewUser({
         username: "",
@@ -275,7 +272,7 @@ const AllUsers = () => {
   };
 
   return (
-    <div className="p-6  min-h-screen">
+    <div className="p-8  min-h-screen">
       {/* Toolbar Section */}
       <div className="flex flex-col md:flex-row items-center justify-between p-3 bg-white border border-gray-100 rounded-2xl shadow-sm mb-6 gap-4">
         {/* Left Section */}
@@ -407,7 +404,7 @@ const AllUsers = () => {
                       <span className="font-semibold text-gray-800 text-lg truncate">{user.username}</span>
                     </div>
                     <div className="bg-purple-50 text-purple-600 font-bold text-xs px-2.5 py-1 rounded-md shrink-0">
-                      #{(currentPage - 1) * pageSize + ind + 1}
+                      S No{(currentPage - 1) * pageSize + ind + 1}
                     </div>
                   </div>
 
@@ -495,14 +492,25 @@ const AllUsers = () => {
                 <option value="admin">Admin</option>
               </select>
 
-              <input
-                type="text"
-                disabled
-                value={`${newUser.username.slice(0, 4)}${newUser.phone.slice(
-                  -4
-                )}`}
-                className="w-full border border-gray-300 px-3 py-2 rounded bg-gray-100"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={newUser.password}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, password: e.target.value })
+                  }
+                  placeholder="Password"
+                  className="w-full border border-gray-300 px-3 py-2 rounded"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                </button>
+              </div>
               <button
                 onClick={handleAddUser}
                 className="w-full bg-primary cursor-pointer text-white py-2 rounded hover:bg-secondary mt-2"

@@ -193,7 +193,7 @@ const Dealers = () => {
 
   // ═══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="px-3 sm:px-5 lg:px-6 min-h-screen bg-gray-50 py-6">
+    <div className="px-3 sm:px-5 lg:p-8 min-h-screen bg-gray-50 py-6">
       {/* ── Toolbar ──────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-5 bg-white rounded-2xl px-3 sm:px-4 py-3 shadow-sm border border-gray-100">
         {/* Search */}

@@ -133,7 +133,7 @@ const NewUsers = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-8">
       {/* Toolbar Section */}
       <div className="flex flex-col md:flex-row items-center justify-between p-3 bg-white border border-gray-100 rounded-2xl shadow-sm mb-6 gap-4">
         {/* Left Section */}
