@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api";
 import {
-  FaSearch, FaFilter, FaTh, FaList, FaTimes
+  FaSearch, FaFilter, FaTh, FaList, FaTimes, FaEdit
 } from "react-icons/fa";
 import { MdOutlineArrowBackIosNew, MdOutlineArrowForwardIos } from "react-icons/md";
 
@@ -185,6 +185,7 @@ export default function StockDetails() {
                 <th className="px-3 py-4">Name</th>
                 <th className="px-3 py-4">Category</th>
                 <th className="px-3 py-4">Total Stock</th>
+                <th className="px-3 py-4 w-24">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -206,12 +207,21 @@ export default function StockDetails() {
                         <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">{p.productType || p.category}</span>
                       </td>
                       <td className="px-3 py-4 font-bold">{calculateTotalStock(p)}</td>
+                      <td className="px-3 py-4">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigate(`/superadmin/stocks/${p.productId}`); }}
+                          className="flex items-center gap-1.5 mx-auto px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-xs font-semibold hover:bg-primary hover:text-white transition-all cursor-pointer"
+                        >
+                          <FaEdit className="text-[11px]" />
+                          Edit
+                        </button>
+                      </td>
                     </tr>
                     
                     {/* Expanded row nested logic */}
                     {expandedId === p.productId && (
                       <tr className="bg-gray-50/50">
-                        <td colSpan={6} className="p-4 border-b border-gray-200">
+                        <td colSpan={7} className="p-4 border-b border-gray-200">
                           <div className="bg-white shadow-sm rounded-lg overflow-x-auto border border-gray-200 max-w-3xl mx-auto">
                             <table className="min-w-full text-sm text-left">
                               <thead className="bg-gray-100 text-gray-700 text-center">
@@ -282,6 +292,14 @@ export default function StockDetails() {
                   className="w-full py-1.5 text-xs font-semibold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
                 >
                   {expandedId === p.productId ? "Hide Details" : "View Breakdown"}
+                </button>
+
+                <button 
+                  onClick={(e) => { e.stopPropagation(); navigate(`/superadmin/stocks/${p.productId}`); }}
+                  className="w-full py-1.5 mt-2 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <FaEdit className="text-[11px]" />
+                  Edit Stock
                 </button>
 
                 {expandedId === p.productId && (
