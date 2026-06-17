@@ -270,10 +270,10 @@ const ProductModal = ({ product, onClose }) => {
     }
 
     try {
-      const userId = user?.user_id || user?.id;
-      await api.post("/cart", {
+      const userId = user?.user_id || user?.id || user?.uid;
+      const payload = {
         user_id: userId,
-        product_id: product.id,
+        product_id: product.id || product.productId || product.product_id,
         product_name: product.name,
         category: product.category,
         subcategory: product.subcategory,
@@ -287,7 +287,8 @@ const ProductModal = ({ product, onClose }) => {
         quantity,
         size: selectedSize || null,
         color: selectedColor || null,
-      });
+      };
+      await api.post("/cart", payload);
       window.dispatchEvent(new Event("cartUpdated"));
       toast.success("Added to cart");
 

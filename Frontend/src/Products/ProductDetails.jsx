@@ -606,12 +606,12 @@ const ProductDetails = () => {
                       if (!validateSelection()) return;
 
                       const user = JSON.parse(localStorage.getItem("user"));
-                      const userId = user?.user_id || user?.id;
+                      const userId = user?.user_id || user?.id || user?.uid;
 
                       try {
-                        await api.post("/cart", {
+                        const payload = {
                           user_id: userId,
-                          product_id: product.id,
+                          product_id: product.id || product.productId || product.product_id,
                           product_name: product.name,
                           category: product.category,
                           subcategory: product.subcategory,
@@ -623,9 +623,11 @@ const ProductDetails = () => {
                           mrp: product.mrp ?? null,
                           sellingprice: product.sellingprice ?? null,
                           quantity,
-                          size: selectedSize,
-                          color: selectedColor,
-                        });
+                          size: selectedSize || null,
+                          color: selectedColor || null,
+                        };
+
+                        await api.post("/cart", payload);
                         window.dispatchEvent(new Event("cartUpdated"));
                         toast.success("Added to cart");
                       } catch (err) {
