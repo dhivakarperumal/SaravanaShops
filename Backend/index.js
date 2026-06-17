@@ -27,6 +27,7 @@ const categoryRouter = require('./src/routers/categoryRouter');
 const productRouter = require('./src/routers/productRouter');
 const razorpayRouter = require('./src/routers/razorpayRouter');
 const reviewRouter = require('./src/routers/reviewRoutes');
+const videoRoutes = require("./routes/videoRouter");
 
 // Initialize database
 initializeDatabase();
@@ -54,6 +55,9 @@ app.use('/api/users', userRouter);
 
 // Review routes
 app.use('/api/reviews', reviewRouter);
+
+// Video routes
+app.use("/api/videos", videoRoutes);
 
 // Other routes (to be added)
 // const productsRouter = require('./src/routers/products');

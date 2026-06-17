@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { FaEdit } from "react-icons/fa";
-import { db } from "../../firebase";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
+import api from "../../api";
 import { toast } from "react-hot-toast";
 
 export default function VideoForm() {
@@ -20,22 +12,31 @@ export default function VideoForm() {
     url: "",
     file: null,
     fileName: "",
-    docId: "",
+    dbId: null,
   });
   const [showForm, setShowForm] = useState(true);
   const [showList, setShowList] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const videosCollection = collection(db, "videos");
-
   // ✅ Fetch all videos
   const fetchVideos = async () => {
-    const snapshot = await getDocs(videosCollection);
-    const data = snapshot.docs.map((docSnap) => ({
-      ...docSnap.data(),
-      docId: docSnap.id,
-    }));
-    setVideos(data);
+    try {
+      const res = await api.get("/videos");
+
+      const formatted = res.data.map((item) => ({
+        dbId: item.id,
+        id: item.video_id,
+        name: item.name,
+        url: item.url,
+        fileName: item.file_name,
+        date: item.date,
+      }));
+
+      setVideos(formatted);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load videos");
+    }
   };
 
   useEffect(() => {
@@ -106,25 +107,31 @@ export default function VideoForm() {
         videoURL = uploadedUrl;
       }
 
-      const newVideo = {
-        id: form.id,
+      const payload = {
+        video_id: form.id,
         name: form.name,
         url: videoURL,
-        fileName: form.file ? form.file.name : form.fileName || "",
-        date: new Date().toLocaleDateString(),
-        createdAt: new Date().toISOString(),
+        file_name: form.file
+          ? form.file.name
+          : form.fileName,
       };
 
-      if (isEditing && form.docId) {
-        await updateDoc(doc(db, "videos", form.docId), newVideo);
+      if (isEditing && form.dbId) {
+        await api.put(`/videos/${form.dbId}`, payload);
         toast.success("Video updated successfully!");
       } else {
-        const docRef = await addDoc(videosCollection, newVideo);
-        newVideo.docId = docRef.id;
+        await api.post("/videos", payload);
         toast.success("Video added successfully!");
       }
 
-      setForm({ id: "", name: "", url: "", file: null, fileName: "", docId: "" });
+      setForm({
+        id: "",
+        name: "",
+        url: "",
+        file: null,
+        fileName: "",
+        dbId: null,
+      });
       setIsEditing(false);
       fetchVideos();
       setShowForm(false);
@@ -135,32 +142,37 @@ export default function VideoForm() {
     }
   };
 
-  const handleEdit = (video) => {
-    setForm({
-      id: video.id,
-      name: video.name,
-      url: video.url,
-      file: null,
-      fileName: video.fileName,
-      docId: video.docId,
-    });
-    setIsEditing(true);
-    setShowForm(true);
-    setShowList(false);
-  };
+const handleEdit = (video) => {
+  setForm({
+    id: video.id,
+    dbId: video.dbId,
+    name: video.name,
+    url: video.url,
+    file: null,
+    fileName: video.fileName,
+  });
 
-  const handleDelete = async (docId) => {
-    if (confirm("Are you sure you want to delete this video?")) {
-      try {
-        await deleteDoc(doc(db, "videos", docId));
-        setVideos((prev) => prev.filter((v) => v.docId !== docId));
-        toast.success("Video deleted successfully!");
-      } catch (err) {
-        console.error("Delete error:", err);
-        toast.error("Error deleting video.");
-      }
+  setIsEditing(true);
+  setShowForm(true);
+  setShowList(false);
+};
+
+ const handleDelete = async (id) => {
+  if (confirm("Are you sure you want to delete this video?")) {
+    try {
+      await api.delete(`/videos/${id}`);
+
+      setVideos((prev) =>
+        prev.filter((video) => video.dbId !== id)
+      );
+
+      toast.success("Video deleted successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Delete failed");
     }
-  };
+  }
+};
 
   return (
     <div className="max-w-5xl mx-auto mt-4 p-4 bg-white rounded-lg shadow-md">
@@ -176,11 +188,10 @@ export default function VideoForm() {
               setShowList(false);
               setIsEditing(false);
             }}
-            className={`px-4 py-2 rounded-full font-bold cursor-pointer ${
-              showForm
-                ? "bg-primary text-white"
-                : "bg-white text-primary border border-primary"
-            }`}
+            className={`px-4 py-2 rounded-full font-bold cursor-pointer ${showForm
+              ? "bg-primary text-white"
+              : "bg-white text-primary border border-primary"
+              }`}
           >
             Add Video
           </button>
@@ -189,11 +200,10 @@ export default function VideoForm() {
               setShowList(true);
               setShowForm(false);
             }}
-            className={`px-4 py-2 rounded-full font-bold cursor-pointer ${
-              showList
-                ? "bg-primary text-white"
-                : "bg-white text-primary border border-primary"
-            }`}
+            className={`px-4 py-2 rounded-full font-bold cursor-pointer ${showList
+              ? "bg-primary text-white"
+              : "bg-white text-primary border border-primary"
+              }`}
           >
             Show Video List
           </button>
@@ -285,7 +295,7 @@ export default function VideoForm() {
                 </thead>
                 <tbody>
                   {videos.map((video) => (
-                    <tr key={video.docId} className="text-center border-gray-200">
+                    <tr key={video.dbId} className="text-center border-gray-200">
                       <td className="px-3 py-4">{video.id}</td>
                       <td className="px-3 py-4">{video.name}</td>
                       <td className="px-3 py-4 flex items-center justify-center">
@@ -304,7 +314,7 @@ export default function VideoForm() {
                           <FaEdit />
                         </button>
                         <button
-                          onClick={() => handleDelete(video.docId)}
+                          onClick={() => handleDelete(video.dbId)}
                           className="text-gray-600 cursor-pointer border p-2 rounded-full"
                         >
                           <RiDeleteBin6Line />
@@ -324,7 +334,7 @@ export default function VideoForm() {
             ) : (
               videos.map((video) => (
                 <div
-                  key={video.docId}
+                  key={video.dbId}
                   className="bg-white shadow rounded-2xl p-4 flex flex-col gap-2"
                 >
                   <div className="flex justify-between items-center">
@@ -339,7 +349,7 @@ export default function VideoForm() {
                         <FaEdit />
                       </button>
                       <button
-                        onClick={() => handleDelete(video.docId)}
+                        onClick={() => handleDelete(video.dbId)}
                         className="text-gray-600 cursor-pointer border p-2 rounded-full"
                       >
                         <RiDeleteBin6Line />
