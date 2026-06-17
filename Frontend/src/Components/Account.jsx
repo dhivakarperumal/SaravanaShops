@@ -14,27 +14,7 @@ import {
 import { IoIosArrowForward } from "react-icons/io";
 import { Link, useLocation } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import {
-  doc,
-  setDoc,
-  getDoc,
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  orderBy,
-  onSnapshot,
-} from "firebase/firestore";
-import {
-  signOut,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-  updatePassword,
-  linkWithCredential,
-} from "firebase/auth";
-import { auth, db } from "../firebase";
+import api from "../api";
 import Head from "./Head";
 
 const tabs = [
@@ -108,8 +88,8 @@ export default function Account() {
   const [activeTab, setActiveTab] = useState(location.state?.tab || "personal");
   const [showTabs, setShowTabs] = useState(false); // 👈 for mobile dropdown toggle
 
-  const handleLogout = async () => {
-    await signOut(auth);
+  const handleLogout = () => {
+    localStorage.removeItem("token");
     toast.success("Logged out successfully");
     window.location.href = "/login";
   };
@@ -203,23 +183,17 @@ function PersonalDetails() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-      const profileRef = doc(db, "users", user.uid);
-      const snap = await getDoc(profileRef);
-      if (snap.exists()) {
-        const data = snap.data();
-        setForm({
-          fullName: data.username || "",
-          email: data.email || "",
-          phone: data.phone || "",
-        });
-      } else {
-        setForm({
-          fullName: user.displayName || "",
-          email: user.email || "",
-          phone: "",
-        });
+      try {
+        const { data } = await api.get("/auth/profile");
+        if (data.user) {
+          setForm({
+            fullName: data.user.username || "",
+            email: data.user.email || "",
+            phone: data.user.phone || "",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile", err);
       }
     };
     fetchProfile();
@@ -229,16 +203,17 @@ function PersonalDetails() {
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSave = async (e) => {
-    e.preventDefault(); // ✅ prevent reload, required for HTML5 validation
-    const user = auth.currentUser;
-    if (!user) return;
-    const profileRef = doc(db, "users", user.uid);
-    await setDoc(
-      profileRef,
-      { username: form.fullName, phone: form.phone },
-      { merge: true }
-    );
-    toast.success("Profile updated successfully!");
+    e.preventDefault();
+    try {
+      await api.put("/users/profile", {
+        username: form.fullName,
+        phone: form.phone,
+      });
+      toast.success("Profile updated successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update profile");
+    }
   };
 
   return (
@@ -301,33 +276,21 @@ function Orders() {
 
   const trackingSteps = ["Order Placed", "Packing", "Shipped", "Delivered"];
 
-  // ✅ Real-time listener for orders
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const fetchedOrders = snapshot.docs
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-          .filter((o) => o.userId === user.uid);
-        setOrders(fetchedOrders);
-        setLoading(false);
-      },
-      (error) => {
-        console.error(error);
-        toast.error("Failed to fetch orders in real time.");
+    const fetchOrders = async () => {
+      try {
+        const { data } = await api.get("/orders/my-orders");
+        if (data.success) {
+          setOrders(data.data);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to fetch orders.");
+      } finally {
         setLoading(false);
       }
-    );
-
-    return () => unsubscribe();
+    };
+    fetchOrders();
   }, []);
 
   // ✅ Open cancel popup
@@ -344,19 +307,16 @@ function Orders() {
       return;
     }
 
-    const user = auth.currentUser;
-    if (!user || !selectedOrderId) return;
+    if (!selectedOrderId) return;
 
     try {
-      const orderRef = doc(db, "orders", selectedOrderId);
-      await updateDoc(orderRef, {
+      await api.put(`/orders/${selectedOrderId}/status`, {
         status: "Cancelled",
-        trackingStatus: "Cancelled",
-        cancelReason: cancelReason,
-        // cancelledAt: new Date(),
+        cancelReasons: cancelReason,
       });
       toast.success("Order cancelled successfully!");
-      // ✅ Close popup & reset state
+      // Update local state instead of snapshot refresh
+      setOrders(orders.map(o => o.id === selectedOrderId ? { ...o, status: "Cancelled" } : o));
       setShowCancelPopup(false);
       setCancelReason("");
       setSelectedOrderId(null);
@@ -809,50 +769,25 @@ function ChangePassword() {
   const [emailForLink, setEmailForLink] = useState("");
 
   const handleChangePassword = async (e) => {
-    e.preventDefault(); // stops page refresh
-    const user = auth.currentUser;
-    if (!user) return toast.error("Please login first");
+    e.preventDefault();
 
-    // Google users: offer link flow to set email+password
-    const isGoogle = user.providerData[0]?.providerId === "google.com";
-
-    if (isGoogle) {
-      if (!emailForLink || !newPassword) return toast.error("Provide email and password to link");
-      if (newPassword !== confirmPassword) return toast.error("Passwords do not match");
-
-      try {
-        setLoading(true);
-        const credential = EmailAuthProvider.credential(emailForLink, newPassword);
-        await linkWithCredential(user, credential);
-        toast.success("Email/password linked to your account. You can now login with email and password.");
-        setEmailForLink("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } catch (err) {
-        console.error("Link credential error:", err);
-        toast.error("Failed to link email/password. Make sure the email isn't already in use.");
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
-    // Non-google users: standard change password flow
-    if (newPassword !== confirmPassword)
+    if (newPassword !== confirmPassword) {
       return toast.error("Passwords do not match");
+    }
 
     try {
       setLoading(true);
-      const cred = EmailAuthProvider.credential(user.email, currentPassword);
-      await reauthenticateWithCredential(user, cred);
-      await updatePassword(user, newPassword);
+      await api.put("/users/change-password", {
+        currentPassword,
+        newPassword
+      });
       toast.success("Password updated successfully!");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
       console.error(err);
-      toast.error("Error updating password");
+      toast.error(err.response?.data?.message || "Error updating password");
     } finally {
       setLoading(false);
     }
@@ -866,48 +801,6 @@ function ChangePassword() {
       {/* ✅ Wrap inputs in a <form> so required validation works */}
       <form onSubmit={handleChangePassword} className="space-y-4">
         {(() => {
-          const user = auth.currentUser;
-          const isGoogle = user && user.providerData[0]?.providerId === "google.com";
-          if (isGoogle) {
-            return (
-              <>
-                <p className="text-sm text-gray-600">Your account is currently signed in with Google. Set an email and password to enable email sign-in.</p>
-                <input
-                  type="email"
-                  required
-                  placeholder="Email to link"
-                  value={emailForLink}
-                  onChange={(e) => setEmailForLink(e.target.value)}
-                  className="w-full border-b border-gray-400 px-4 py-3"
-                />
-                <input
-                  type="password"
-                  required
-                  placeholder="New Password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  minLength={6}
-                  className="w-full border-b border-gray-400 px-4 py-3"
-                />
-                <input
-                  type="password"
-                  required
-                  placeholder="Confirm Password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full border-b border-gray-400 px-4 py-3"
-                />
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-primary text-white w-full py-3 rounded-lg cursor-pointer"
-                >
-                  {loading ? "Linking..." : "Set Email & Password"}
-                </button>
-              </>
-            );
-          }
-
           return (
             <>
               <input
@@ -972,12 +865,13 @@ function UpdateAddress() {
   });
 
   const [errors, setErrors] = useState({});
-  const user = auth.currentUser;
-
   const fetchAddresses = async () => {
-    if (!user) return;
-    const snap = await getDocs(collection(db, "users", user.uid, "addresses"));
-    setAddresses(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    try {
+      const { data } = await api.get("/addresses");
+      setAddresses(data);
+    } catch (err) {
+      console.error("Failed to fetch addresses:", err);
+    }
   };
 
   useEffect(() => {
@@ -1038,7 +932,6 @@ function UpdateAddress() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
 
     if (!validateForm()) {
       toast.error("Please fill all required fields correctly");
@@ -1073,24 +966,14 @@ function UpdateAddress() {
         landmark: form.landmark.trim(),
         city: form.city.trim(),
         state: form.state.trim(),
-        pin: form.pin,
-        updatedAt: new Date()
+        pin: form.pin
       };
 
       if (form.id) {
-        await updateDoc(
-          doc(db, "users", user.uid, "addresses", form.id),
-          addressData
-        );
+        await api.put(`/addresses/${form.id}`, addressData);
         toast.success("Address updated successfully!");
       } else {
-        await addDoc(
-          collection(db, "users", user.uid, "addresses"),
-          {
-            ...addressData,
-            createdAt: new Date()
-          }
-        );
+        await api.post("/addresses", addressData);
         toast.success("Address added successfully!");
       }
 
@@ -1121,7 +1004,7 @@ function UpdateAddress() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this address?")) return;
     try {
-      await deleteDoc(doc(db, "users", user.uid, "addresses", id));
+      await api.delete(`/addresses/${id}`);
       toast.success("Address deleted!");
       setAddresses((prev) => prev.filter((a) => a.id !== id));
 

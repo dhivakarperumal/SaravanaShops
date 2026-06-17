@@ -10,7 +10,7 @@ async function generateOrderId(connection) {
 exports.createOrder = async (req, res) => {
   let connection;
   try {
-    const { items, subtotal, shippingCost, total, status, ordertype, shipping, clientCreatedAt } = req.body;
+    const { items, subtotal, shippingCost, total, status, ordertype, shipping, clientCreatedAt, user_id } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ success: false, message: 'No items in order' });
@@ -75,12 +75,12 @@ exports.createOrder = async (req, res) => {
     // Insert order
     const [orderResult] = await connection.query(`
       INSERT INTO orders (
-        orderId, subtotal, shippingCost, total, status, ordertype,
+        orderId, user_id, subtotal, shippingCost, total, status, ordertype,
         shipping_name, shipping_email, shipping_phone, shipping_address,
         shipping_city, shipping_state, shipping_zip, shipping_country, clientCreatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-      orderIdStr, subtotal, shippingCost, total, status || 'Pending', ordertype || 'Shop',
+      orderIdStr, user_id || null, subtotal, shippingCost, total, status || 'Pending', ordertype || 'Shop',
       shipping?.name || null, shipping?.email || null, shipping?.phone || null,
       shipping?.address || null, shipping?.city || null, shipping?.state || null,
       shipping?.zip || null, shipping?.country || 'India', clientCreatedAt ? new Date(clientCreatedAt) : null
@@ -163,6 +163,62 @@ exports.getOrders = async (req, res) => {
   } catch (error) {
     console.error('getOrders error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch orders' });
+  }
+};
+
+exports.getUserOrders = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const [orders] = await pool.query('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC', [user_id]);
+    
+    // Fetch items for each order
+    const orderIds = orders.map(o => o.id);
+    let itemsMap = {};
+    if (orderIds.length > 0) {
+      const [items] = await pool.query('SELECT * FROM order_items WHERE order_id IN (?)', [orderIds]);
+      items.forEach(item => {
+        if (!itemsMap[item.order_id]) {
+          itemsMap[item.order_id] = [];
+        }
+        itemsMap[item.order_id].push({
+          ...item,
+          name: item.product_name,
+          image: item.image,
+          size: item.size,
+          color: item.color,
+          price: parseFloat(item.price) || 0,
+          quantity: parseInt(item.quantity) || 0,
+        });
+      });
+    }
+
+    const mappedOrders = orders.map(o => {
+      // Structure the shipping object
+      const shipping = {
+        name: o.shipping_name,
+        email: o.shipping_email,
+        phone: o.shipping_phone,
+        address: o.shipping_address,
+        city: o.shipping_city,
+        state: o.shipping_state,
+        zip: o.shipping_zip,
+        country: o.shipping_country
+      };
+
+      return {
+        ...o,
+        docId: o.id.toString(), // For backward compatibility with frontend
+        items: itemsMap[o.id] || [],
+        shipping: shipping,
+        createdAt: o.created_at,
+        date: o.created_at
+      };
+    });
+
+    res.status(200).json({ success: true, data: mappedOrders });
+  } catch (error) {
+    console.error('getUserOrders error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch user orders' });
   }
 };
 

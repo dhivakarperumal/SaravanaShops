@@ -96,6 +96,7 @@ async function initializeDatabase() {
       CREATE TABLE IF NOT EXISTS orders (
         id INT AUTO_INCREMENT PRIMARY KEY,
         orderId VARCHAR(50) NOT NULL UNIQUE,
+        user_id VARCHAR(255),
         subtotal DECIMAL(10,2) DEFAULT 0.0,
         shippingCost DECIMAL(10,2) DEFAULT 0.0,
         total DECIMAL(10,2) DEFAULT 0.0,
@@ -114,6 +115,17 @@ async function initializeDatabase() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `);
+
+    // Safely add user_id to existing orders table if it doesn't exist
+    try {
+      await connection.query(`
+        SELECT user_id FROM orders LIMIT 1;
+      `);
+    } catch (e) {
+      if (e.code === 'ER_BAD_FIELD_ERROR') {
+        await connection.query(`ALTER TABLE orders ADD COLUMN user_id VARCHAR(255) AFTER orderId`);
+      }
+    }
 
     // ── Order Items table ─────────────────────────────────
     await connection.query(`
@@ -162,6 +174,26 @@ async function initializeDatabase() {
         email VARCHAR(255),
         address TEXT,
         invoiceNumber VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // ── Addresses table ─────────────────────────────────────
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS addresses (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        firstname VARCHAR(100),
+        lastname VARCHAR(100),
+        contact VARCHAR(20),
+        doorNumber VARCHAR(50),
+        streetName VARCHAR(255),
+        address TEXT,
+        landmark VARCHAR(255),
+        city VARCHAR(100),
+        state VARCHAR(100),
+        pin VARCHAR(20),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )

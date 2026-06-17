@@ -1,7 +1,11 @@
 const express = require('express');
-const { getAllUsers, deleteUser, updateUserStatus, updateUser } = require('../controllers/userController');
+const { getAllUsers, deleteUser, updateUserStatus, updateUser, updateProfile, changePassword } = require('../controllers/userController');
+const { verifyToken } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+router.put('/profile', verifyToken, updateProfile);
+router.put('/change-password', verifyToken, changePassword);
 
 router.get('/', getAllUsers);
 router.delete('/:id', deleteUser);
