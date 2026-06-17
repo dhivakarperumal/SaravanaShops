@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import api from "../../api";
 import toast from "react-hot-toast";
 import { FaSearch, FaTimes } from "react-icons/fa";
+import { MdOutlineArrowBackIosNew } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function AddStock() {
@@ -137,7 +138,15 @@ export default function AddStock() {
 
   return (
     <div className="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-lg border border-gray-200">
-      <h2 className="text-2xl font-semibold mb-4">Add / Update Stock</h2>
+      <div className="flex items-center gap-3 mb-4">
+        <button
+          onClick={() => navigate("/superadmin/stockDetails")}
+          className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-primary/10 text-gray-600 hover:text-primary border border-gray-200 hover:border-primary/30 transition-all cursor-pointer"
+        >
+          <MdOutlineArrowBackIosNew className="text-sm" />
+        </button>
+        <h2 className="text-2xl font-semibold">Add / Update Stock</h2>
+      </div>
 
       {/* Product Selector — Searchable Dropdown */}
       <div className="mb-6" ref={dropdownRef}>
