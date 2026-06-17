@@ -225,10 +225,11 @@ const ProductDetails = () => {
     }
 
     try {
+      const userId = user?.user_id || user?.id;
       await api.post("/reviews/add", {
         product_id: product.id,
-        user_id: user.id,
-        user_name: user.name,
+        user_id: userId,
+        user_name: user.username || user.name,
         rating,
         review: reviewText.trim(),
       });
@@ -597,14 +598,11 @@ const ProductDetails = () => {
                       if (!validateSelection()) return;
 
                       const user = JSON.parse(localStorage.getItem("user"));
-
-
-
-
+                      const userId = user?.user_id || user?.id;
 
                       try {
-                        await api.post("/cart/add", {
-                          user_id: user.id,
+                        await api.post("/cart", {
+                          user_id: userId,
                           product_id: product.id,
                           product_name: product.name,
                           category: product.category,
@@ -614,7 +612,8 @@ const ProductDetails = () => {
                             product.image ||
                             product.images?.[0] ||
                             "",
-                          price: product.sellingprice,
+                          mrp: product.mrp ?? null,
+                          sellingprice: product.sellingprice ?? null,
                           quantity,
                           size: selectedSize,
                           color: selectedColor,
