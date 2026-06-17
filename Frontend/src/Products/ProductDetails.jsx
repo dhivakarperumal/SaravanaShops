@@ -69,6 +69,19 @@ const ProductDetails = () => {
     fetchProduct();
   }, [id]);
 
+  // Initialise selectedImage whenever the product (or its images) changes
+  useEffect(() => {
+    if (!product) return;
+    const firstImg =
+      (Array.isArray(product.images) && product.images.length > 0
+        ? product.images[0]
+        : null) ||
+      (Array.isArray(product.image) ? product.image[0] : product.image) ||
+      product.colors?.[0]?.image ||
+      null;
+    if (firstImg) setSelectedImage(firstImg);
+  }, [product]);
+
   const fetchRelatedProducts = async (category, currentId) => {
     try {
       const res = await api.get(
@@ -83,12 +96,24 @@ const ProductDetails = () => {
     }
   };
 
-  const images =
-    product?.images ||
-    product?.image ||
-    (product?.colors && Object.values(product.colors)?.map((c) => c.image)) || [
-      "/placeholder.jpg",
-    ];
+  // images: skip empty arrays — fall back to color images when product.images is []
+  const images = (
+    Array.isArray(product?.images) && product.images.length > 0
+      ? product.images
+      : null
+  ) ||
+  (Array.isArray(product?.image) && product.image.length > 0
+    ? product.image
+    : typeof product?.image === "string" && product.image
+      ? [product.image]
+      : null
+  ) ||
+  (product?.colors?.length > 0
+    ? product.colors
+        .map((c) => (Array.isArray(c.image) ? c.image[0] : c.image))
+        .filter(Boolean)
+    : null
+  ) || ["/placeholder.jpg"];
 
   const handleMouseMove = (e) => {
     const { left, top, width, height } =
@@ -99,7 +124,8 @@ const ProductDetails = () => {
   };
 
   const isBangleSingleColor =
-    product?.category?.toLowerCase() === "bangle" &&
+    // DB stores "Bangles" (plural) — match both "bangle" and "bangles"
+    product?.category?.toLowerCase().includes("bangle") &&
     product?.count?.toLowerCase() === "singlecolor";
 
   // Map specific bangle sizes to centimeter equivalents
@@ -338,7 +364,8 @@ const ProductDetails = () => {
                     <div
                       className="absolute hidden md:block top-0 left-full ml-4 w-[450px] h-[400px] border rounded-2xl overflow-hidden shadow-lg bg-white z-[999]"
                       style={{
-                        backgroundImage: `url('${selectedImage}')`,
+                        // always fall back to images[0] so zoom is never blank
+                        backgroundImage: `url('${selectedImage || images[0]}')`,
                         backgroundRepeat: "no-repeat",
                         backgroundSize: `${zoomLevel * 100}%`,
                         backgroundPosition: backgroundPosition,

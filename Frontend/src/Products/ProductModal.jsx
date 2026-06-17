@@ -26,6 +26,10 @@ const ProductModal = ({ product, onClose }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // favourite / wishlist states
+  const [isFavourited, setIsFavourited] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
   // Map specific bangle sizes to centimeter equivalents
   const sizeCmMap = {
     "2.2": "5.4",
@@ -63,10 +67,12 @@ const ProductModal = ({ product, onClose }) => {
   const hasHalfStar = (product?.rating || 0) % 1 >= 0.5;
 
   useEffect(() => {
+    // images can be an empty array [] — must skip it
     const img =
-      product?.images?.[0] ||
-      product?.image?.[0] ||
-      product?.image ||
+      (Array.isArray(product?.images) && product.images.length > 0
+        ? product.images[0]
+        : null) ||
+      (Array.isArray(product?.image) ? product.image[0] : product?.image) ||
       product?.colors?.[0]?.image ||
       "/placeholder.jpg";
     setSelectedImage(img);
@@ -74,10 +80,121 @@ const ProductModal = ({ product, onClose }) => {
 
 
 
+  // ── Wishlist helpers ──────────────────────────────────────────────────────
+  const getLocalUserId = () => {
+    try {
+      const str = localStorage.getItem("user");
+      if (!str) return null;
+      const parsed = JSON.parse(str);
+      return (
+        parsed.user_id ||
+        parsed.id ||
+        parsed.uid ||
+        (parsed.user &&
+          (parsed.user.user_id || parsed.user.id || parsed.user.uid)) ||
+        null
+      );
+    } catch {
+      return null;
+    }
+  };
+
+  // Check whether this product is already in the user's wishlist on open
+  useEffect(() => {
+    const checkFavourited = async () => {
+      const userId = getLocalUserId();
+      if (!userId || !product?.id) return;
+      try {
+        const res = await api.get(`/wishlist/${userId}`);
+        if (res.data.success) {
+          const already = (res.data.data || []).some(
+            (item) => String(item.product_id) === String(product.id)
+          );
+          setIsFavourited(already);
+        }
+      } catch {
+        // silently ignore — don't break the modal
+      }
+    };
+    checkFavourited();
+  }, [product?.id]);
+
+  // Toggle wishlist: add if not favourited, remove if already favourited
+  const handleWishlist = async () => {
+    if (wishlistLoading) return;
+    const userId = getLocalUserId();
+
+    if (!userId) {
+      toast.error("Please login to add to wishlist");
+      navigate("/login", { state: { from: location?.pathname || "/" } });
+      return;
+    }
+
+    setWishlistLoading(true);
+    try {
+      if (isFavourited) {
+        // Find the wishlist item id for this product and remove it
+        const listRes = await api.get(`/wishlist/${userId}`);
+        if (listRes.data.success) {
+          const item = (listRes.data.data || []).find(
+            (i) => String(i.product_id) === String(product.id)
+          );
+          if (item) {
+            const delRes = await api.delete(`/wishlist/${item.id}`);
+            if (delRes.data.success) {
+              setIsFavourited(false);
+              toast.success(`${product.name} removed from wishlist`);
+              window.dispatchEvent(new Event("wishlistUpdated"));
+            } else {
+              toast.error("Failed to remove from wishlist");
+            }
+          }
+        }
+      } else {
+        const payload = {
+          user_id: userId,
+          product_id: product.id,
+          product_name: product.name,
+          mrp: product.mrp || "",
+          sellingprice: product.sellingprice || "",
+          image:
+            selectedImage ||
+            product?.images?.[0] ||
+            product?.image?.[0] ||
+            product?.image ||
+            "/placeholder.jpg",
+        };
+        const res = await api.post("/wishlist", payload);
+        if (res.data.success) {
+          setIsFavourited(true);
+          toast.success(`${product.name} added to wishlist`);
+          window.dispatchEvent(new Event("wishlistUpdated"));
+        } else {
+          toast.error(res.data.message || "Failed to add to wishlist");
+        }
+      }
+    } catch (error) {
+      if (
+        error.response?.status === 400 &&
+        error.response?.data?.message === "Product already in wishlist"
+      ) {
+        setIsFavourited(true);
+        toast.info(`${product.name} is already in your wishlist`);
+      } else {
+        console.error("Wishlist error:", error);
+        toast.error("Something went wrong. Please try again.");
+      }
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+  // ─────────────────────────────────────────────────────────────────────────
+
   const isBangleSingleColor = useMemo(() => {
+    // DB stores "Bangles" (plural) — match both "bangle" and "bangles"
     const cat = (product?.category || "").toLowerCase();
     const count = (product?.count || "").toLowerCase();
-    return cat === "bangle" && count === "singlecolor";
+    return cat.includes("bangle") && count === "singlecolor";
   }, [product]);
 
   const allSizes = useMemo(() => {
@@ -344,13 +461,15 @@ const ProductModal = ({ product, onClose }) => {
                 style={{ maxHeight: "100%", maxWidth: "100%" }}
               />
             </div>
-            {/* Favorite Button */}
+            {/* Favourite Button */}
             <div className="absolute top-6 left-6 opacity-100 transition-opacity duration-300 group-hover:opacity-100">
               <button
-                onClick={async () => {
-                  // ...existing wishlist logic...
-                }}
-                className="bg-white p-2 rounded-full shadow text-primary hover:scale-110 transition-all cursor-pointer"
+                onClick={handleWishlist}
+                disabled={wishlistLoading}
+                title={isFavourited ? "Remove from wishlist" : "Add to wishlist"}
+                className={`bg-white p-2 rounded-full shadow hover:scale-110 transition-all cursor-pointer ${
+                  wishlistLoading ? "opacity-50 cursor-not-allowed" : ""
+                } ${isFavourited ? "text-red-500" : "text-primary hover:text-red-500"}`}
               >
                 <FaHeart />
               </button>
