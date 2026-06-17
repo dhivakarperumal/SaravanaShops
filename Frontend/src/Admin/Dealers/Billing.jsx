@@ -1282,7 +1282,7 @@
 // }
 
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaPlus,
@@ -1302,6 +1302,26 @@ const Billing = () => {
   const billingData = [];
   const displayed = billingData;
   const activeFilterCount = 0;
+
+  // Fetch delivered orders
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get("/orders");
+        if (!res.data?.success) throw new Error();
+        const delivered = res.data.data
+          .filter(o => o.status === "Delivered")
+          .sort((a, b) => {
+            const idA = parseInt((a.orderId || "").replace(/\D/g, "")) || 0;
+            const idB = parseInt((b.orderId || "").replace(/\D/g, "")) || 0;
+            return idB - idA;
+          });
+        setOrders(delivered);
+      } catch {
+        toast.error("Failed to load delivered orders");
+      }
+    })();
+  }, []);
 
   return (
     <div className="p-5">
