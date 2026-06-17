@@ -30,6 +30,7 @@ const reviewRouter = require('./src/routers/reviewRoutes');
 const userRouter = require('./src/routers/userRouter');
 const ordersRouter = require('./src/routers/orderRouter');
 const invoiceRouter = require('./src/routers/invoiceRouter');
+const dealerRouter = require('./src/routers/dealerRouter');
 
 
 initializeDatabase();
@@ -48,6 +49,7 @@ app.use('/api/users', userRouter);
 app.use('/api/reviews', reviewRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/invoices', invoiceRouter);
+app.use('/api/dealers', dealerRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

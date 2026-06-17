@@ -13,6 +13,7 @@ import {
   FaFilter,
   FaTh,
   FaList,
+  FaEye,
 } from "react-icons/fa";
 import { MdDownload } from "react-icons/md";
 
@@ -199,6 +200,20 @@ const Invoice = () => {
     } catch (err) {
       console.error("handleDelete error:", err);
       toast.error("Failed to delete invoice.");
+    }
+  };
+
+  // ── View PDF ───────────────────────────────────────────────────────────────
+  const handleViewPdf = (base64) => {
+    if (!base64) {
+      toast.error("No PDF uploaded for this invoice.");
+      return;
+    }
+    const win = window.open();
+    if (win) {
+      win.document.write(`<iframe src="${base64}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+    } else {
+      toast.error("Popup blocked. Please allow popups for this site.");
     }
   };
 
@@ -451,6 +466,15 @@ const Invoice = () => {
                       <td className="px-5 py-3.5 font-bold text-green-700">₹{item.invoiceTotalValue}</td>
                       <td className="px-5 py-3.5">
                         <div className="flex gap-2">
+                          {item.billPdfBase64 && (
+                            <button
+                              onClick={() => handleViewPdf(item.billPdfBase64)}
+                              className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-400 transition-all cursor-pointer"
+                              title="View PDF"
+                            >
+                              <FaEye className="text-xs" />
+                            </button>
+                          )}
                           <button
                             onClick={() => openEditModal(item)}
                             className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-primary hover:border-primary transition-all cursor-pointer"
@@ -505,6 +529,14 @@ const Invoice = () => {
                     ))}
                   </div>
                   <div className="flex gap-2">
+                    {item.billPdfBase64 && (
+                      <button
+                        onClick={() => handleViewPdf(item.billPdfBase64)}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-gray-200 text-gray-600 text-xs font-medium hover:bg-blue-50 hover:border-blue-400 hover:text-blue-500 transition-all cursor-pointer"
+                      >
+                        <FaEye className="text-xs" /> View
+                      </button>
+                    )}
                     <button
                       onClick={() => openEditModal(item)}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50 hover:border-primary hover:text-primary transition-all cursor-pointer"

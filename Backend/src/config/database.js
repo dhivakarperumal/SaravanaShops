@@ -151,7 +151,23 @@ async function initializeDatabase() {
       )
     `);
 
-    console.log('✅ Database initialized: users, categories, products, razorpay_keys, orders & invoices tables created/verified');
+    // ── Dealers table ─────────────────────────────────────
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS dealers (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        dealerId VARCHAR(50) NOT NULL,
+        dealerName VARCHAR(255) NOT NULL,
+        gstNumber VARCHAR(100),
+        phone VARCHAR(50),
+        email VARCHAR(255),
+        address TEXT,
+        invoiceNumber VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    console.log('✅ Database initialized: users, categories, products, razorpay_keys, orders, invoices & dealers tables created/verified');
   } catch (error) {
     console.error('Database initialization error:', error.message);
   } finally {
