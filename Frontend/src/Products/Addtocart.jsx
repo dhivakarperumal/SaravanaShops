@@ -1,23 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { FaTimes, FaTrash, FaShoppingCart } from "react-icons/fa";
-import { auth, db } from "../firebase";
-import {
-  collection,
-  onSnapshot,
-  doc,
-  deleteDoc,
-  updateDoc,
-  getDoc,
-} from "firebase/firestore";
+import api from "../api";
 import { toast } from "react-hot-toast";
-import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
 const Addtocart = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const [itemStocks, setItemStocks] = useState({});
   const sidebarRef = useRef(null);
 
@@ -36,46 +26,47 @@ const Addtocart = ({ isOpen, onClose }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
-  // Firebase auth
-  useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribeAuth();
-  }, []);
+  const user = JSON.parse(localStorage.getItem("user"));
 
   // Fetch cart items
   useEffect(() => {
-    if (!user) {
-      setCartItems([]);
-      setLoading(false);
-      return;
-    }
-    const cartRef = collection(db, "users", user.uid, "cart");
-    const unsubscribe = onSnapshot(
-      cartRef,
-      (snapshot) => {
-        const items = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setCartItems(items);
+    const fetchCart = async () => {
+      if (!user) {
+        setCartItems([]);
         setLoading(false);
-      },
-      (error) => {
-        console.error("Error fetching cart:", error);
-        toast.error("Failed to load cart.");
+        return;
+      }
+
+      const userId = user?.user_id || user?.id;
+      if (!userId) {
+        setCartItems([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await api.get(`/cart/${userId}`);
+        setCartItems(res.data || []);
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load cart");
+      } finally {
         setLoading(false);
       }
-    );
-    return () => unsubscribe();
-  }, [user]);
+    };
+
+    if (isOpen) {
+      fetchCart();
+    }
+  }, [user, isOpen]);
 
   // Remove item
   const handleRemove = async (itemId) => {
     if (!user) return;
     try {
-      await deleteDoc(doc(db, "users", user.uid, "cart", itemId));
+      await api.delete(`/cart/${itemId}`);
+      // Remove from local state immediately
+      setCartItems((prev) => prev.filter((item) => item.id !== itemId));
       toast.success("Item removed from cart");
     } catch (err) {
       console.error("Error removing item:", err);
@@ -85,30 +76,18 @@ const Addtocart = ({ isOpen, onClose }) => {
 
   // Get live stock for cart item
   const getStockForCartItem = async (item) => {
-    if (
-      item.category?.toLowerCase() === "bangle" &&
-      item.size &&
-      item.color
-    ) {
-      const prodRef = doc(db, "products", item.productId || item.id);
-      const prodSnap = await getDoc(prodRef);
-      if (!prodSnap.exists()) return 0;
-      const prodData = prodSnap.data();
-      const colorObj = prodData.colors?.find(
-        (c) =>
-          String(c.color).toLowerCase() === String(item.color).toLowerCase()
-      );
-      if (!colorObj) return 0;
-      const stockMap = colorObj.stock || {};
-      const stock =
-        stockMap?.[item.size] ?? stockMap?.[String(item.size)] ?? 0;
-      return Number(stock) || 0;
+    try {
+      const productId = item.product_id || item.productId;
+      if (!productId) {
+        console.warn("No product ID found for cart item", item);
+        return 99; // Default high stock if no ID
+      }
+      const res = await api.get(`/products/${productId}`);
+      return Number(res.data.stock || 0);
+    } catch (error) {
+      console.error(error);
+      return 99; // Return high stock on error to prevent blocking purchases
     }
-    const prodRef = doc(db, "products", item.productId || item.id);
-    const prodSnap = await getDoc(prodRef);
-    if (!prodSnap.exists()) return 99;
-    const prodData = prodSnap.data();
-    return Number(prodData.stock) || 99;
   };
 
   // Fetch stock for all cart items when cart changes
@@ -128,15 +107,21 @@ const Addtocart = ({ isOpen, onClose }) => {
     if (!user) return;
     const newQty = type === "increase" ? item.quantity + 1 : item.quantity - 1;
     if (newQty < 1) return;
-    const currentStock = itemStocks[item.id] ?? 99;
-    if (newQty > currentStock) {
+    const currentStock = itemStocks[item.id] ?? item.stock ?? 99;
+    if (newQty > currentStock && currentStock !== 99) {
       toast.error(`Only ${currentStock} item(s) available in stock.`);
       return;
     }
     try {
-      await updateDoc(doc(db, "users", user.uid, "cart", item.id), {
+      await api.put(`/cart/${item.id}`, {
         quantity: newQty,
       });
+      setCartItems((prev) =>
+        prev.map((cartItem) =>
+          cartItem.id === item.id ? { ...cartItem, quantity: newQty } : cartItem
+        )
+      );
+      toast.success("Quantity updated");
     } catch (err) {
       console.error("Error updating quantity:", err);
       toast.error("Failed to update quantity");
@@ -160,7 +145,7 @@ const Addtocart = ({ isOpen, onClose }) => {
       {/* Sidebar */}
       <div
         ref={sidebarRef}
-       className={`fixed top-0 right-0 h-[100vh] w-80 bg-white shadow-lg z-[100] transition-transform duration-300 overflow-y-auto`}
+        className={`fixed top-0 right-0 h-[100vh] w-80 bg-white shadow-lg z-[100] transition-transform duration-300 overflow-y-auto`}
       >
         {/* Header */}
         <div className="relative flex justify-between items-center bg-primary rounded-tl-2xl p-4">
@@ -220,15 +205,15 @@ const Addtocart = ({ isOpen, onClose }) => {
                 >
                   <img
                     src={item.image || "/placeholder.jpg"}
-                    alt={item.productName || item.name}
+                    alt={item.product_name || item.name}
                     className="w-20 h-20 object-cover rounded-md flex-shrink-0"
                   />
                   <div className="flex-1 flex flex-col justify-between h-full">
                     <h3
                       className="text-sm font-semibold text-primary overflow-hidden text-ellipsis line-clamp-1"
-                      title={item.productName || item.name}
+                      title={item.product_name || item.name}
                     >
-                      {item.productName || "N/A"}
+                      {item.product_name || "N/A"}
                     </h3>
 
                     <span className="text-gray-400 text-sm">

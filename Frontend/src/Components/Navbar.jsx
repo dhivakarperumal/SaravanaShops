@@ -56,6 +56,36 @@ function Navbar() {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
 
+  // Fetch cart count when cart opens or user changes
+  useEffect(() => {
+    const updateCartCount = async () => {
+      if (!user) {
+        setCartCount(0);
+        return;
+      }
+      try {
+        const userId = user?.user_id || user?.id;
+        if (!userId) {
+          setCartCount(0);
+          return;
+        }
+        const res = await api.get(`/cart/${userId}`);
+        const items = Array.isArray(res.data) ? res.data : [];
+        const totalCount = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        setCartCount(totalCount);
+      } catch (error) {
+        console.error("Error fetching cart count:", error);
+        setCartCount(0);
+      }
+    };
+    updateCartCount();
+    // Update cart count every 2 seconds when cart is open
+    const interval = cartOpen ? setInterval(updateCartCount, 2000) : null;
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [user, cartOpen]);
+
   // Close all sidebars except the one clicked
   const closeAllExcept = (except) => {
     if (except !== "cart") setCartOpen(false);

@@ -225,6 +225,36 @@ async function initializeDatabase() {
       )
     `);
 
+    // ── Cart table ─────────────────────────────────────
+    await connection.query(`
+  CREATE TABLE IF NOT EXISTS cart (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id VARCHAR(36) NOT NULL,
+    product_id VARCHAR(50) NOT NULL,
+
+    product_name VARCHAR(255),
+    image LONGTEXT,
+
+    mrp DECIMAL(10,2) DEFAULT 0,
+    sellingprice DECIMAL(10,2) DEFAULT 0,
+
+    quantity INT DEFAULT 1,
+
+    category VARCHAR(100),
+    subcategory VARCHAR(100),
+
+    size VARCHAR(50),
+    color VARCHAR(50),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_user_id (user_id),
+    INDEX idx_product_id (product_id)
+  )
+`);
+
     console.log('✅ Database initialized: users, categories, products, razorpay_keys, orders, invoices & dealers tables created/verified');
   } catch (error) {
     console.error('Database initialization error:', error.message);

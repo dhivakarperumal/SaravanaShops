@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { db } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import api from "../api";
 import ProductCard from "./ProductCard";
 import { FaFilter, FaThLarge, FaTh } from "react-icons/fa";
 import {
@@ -50,27 +49,47 @@ const AllProducts = ({ onOpenModal }) => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      setLoading(true);
-      const snapshot = await getDocs(collection(db, "products"));
-      const data = snapshot.docs.map((doc) => ({
-        ...doc.data(),
-        docId: doc.id,
-        id: doc.id,
-        sellingprice: Number(doc.data().sellingprice) || 0,
-      }));
+      try {
+        setLoading(true);
 
-      setProducts(data);
-      if (data.length > 0) {
-        const minPrice = Math.min(...data.map((p) => p.sellingprice));
-        const maxPrice = Math.max(...data.map((p) => p.sellingprice));
-        setFilters((prev) => ({ ...prev, price: [minPrice, maxPrice] }));
+        const res = await api.get("/products");
+
+        if (res.data.success) {
+          const data = res.data.data.map((item) => ({
+            ...item,
+            id: item.id,
+            sellingprice: Number(item.sellingprice || item.price || 0),
+          }));
+
+          setProducts(data);
+          setFilteredProducts(data);
+
+          const cats = [
+            ...new Set(data.map((p) => p.category)),
+          ].filter(Boolean);
+
+          setCategories(cats);
+
+          if (data.length > 0) {
+            const minPrice = Math.min(
+              ...data.map((p) => p.sellingprice)
+            );
+
+            const maxPrice = Math.max(
+              ...data.map((p) => p.sellingprice)
+            );
+
+            setFilters((prev) => ({
+              ...prev,
+              price: [minPrice, maxPrice],
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
       }
-
-      setFilteredProducts(data);
-
-      const cats = Array.from(new Set(data.map((p) => p.category))).sort();
-      setCategories(cats);
-      setLoading(false);
     };
 
     fetchProducts();
@@ -355,9 +374,8 @@ const AllProducts = ({ onOpenModal }) => {
                     <div
                       key={c}
                       onClick={() => handleMultiSelect("color", c)}
-                      className={`w-6 h-6 rounded-full cursor-pointer border-2 ${
-                        filters.color.includes(c) ? "border-black" : "border-gray-300"
-                      }`}
+                      className={`w-6 h-6 rounded-full cursor-pointer border-2 ${filters.color.includes(c) ? "border-black" : "border-gray-300"
+                        }`}
                       style={{ backgroundColor: c }}
                       title={c}
                     />
@@ -559,17 +577,15 @@ const AllProducts = ({ onOpenModal }) => {
             <div className="hidden md:flex gap-2">
               <button
                 onClick={() => setGridCols(3)}
-                className={`cursor-pointer ${
-                  gridCols === 3 ? "bg-primary text-white" : "bg-white"
-                } p-2 border rounded`}
+                className={`cursor-pointer ${gridCols === 3 ? "bg-primary text-white" : "bg-white"
+                  } p-2 border rounded`}
               >
                 <FaThLarge />
               </button>
               <button
                 onClick={() => setGridCols(4)}
-                className={`cursor-pointer ${
-                  gridCols === 4 ? "bg-primary text-white" : "bg-white"
-                } p-2 border rounded`}
+                className={`cursor-pointer ${gridCols === 4 ? "bg-primary text-white" : "bg-white"
+                  } p-2 border rounded`}
               >
                 <FaTh />
               </button>
@@ -587,14 +603,17 @@ const AllProducts = ({ onOpenModal }) => {
               <p className="text-center mt-10 text-gray-500">No products found.</p>
             ) : (
               <div
-                className={`grid gap-4 ${
-                  gridCols === 3
-                    ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
-                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
-                }`}
+                className={`grid gap-4 ${gridCols === 3
+                  ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+                  : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
+                  }`}
               >
                 {currentProducts.map((p) => (
-                  <ProductCard key={p.docId} product={{ ...p, id: p.docId }} onOpenModal={() => setSelectedProduct(p)} />
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    onOpenModal={() => setSelectedProduct(p)}
+                  />
                 ))}
               </div>
             )}
@@ -614,11 +633,10 @@ const AllProducts = ({ onOpenModal }) => {
                 <button
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`cursor-pointer px-3 py-1 border rounded-full ${
-                    currentPage === i + 1
-                      ? "bg-primary text-white"
-                      : "bg-white text-primary"
-                  }`}
+                  className={`cursor-pointer px-3 py-1 border rounded-full ${currentPage === i + 1
+                    ? "bg-primary text-white"
+                    : "bg-white text-primary"
+                    }`}
                 >
                   {i + 1}
                 </button>

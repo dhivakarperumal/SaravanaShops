@@ -556,9 +556,9 @@ function Orders() {
                         
                         <div>
                           <p className="text-primary font-semibold line-clamp-1">
-                            {item.productName || "N/A"}
+                            {item.product_name || item.productName || "N/A"}
                           </p>
-                          {item.name && item.name !== item.productName && (
+                          {item.name && item.name !== (item.product_name || item.productName) && (
                             <p className="text-xs text-gray-500">({item.name})</p>
                           )}
                           <p>

@@ -7,19 +7,13 @@ import {
   FaRegStar,
   FaShoppingCart,
 } from "react-icons/fa";
-import { auth, db } from "../firebase";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-import{toast} from "react-hot-toast"
+import api from "../api";
+import { toast } from "react-hot-toast"
 import { useNavigate, useLocation } from "react-router-dom";
 
 const ProductModal = ({ product, onClose }) => {
 
-  
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -78,7 +72,7 @@ const ProductModal = ({ product, onClose }) => {
     setSelectedImage(img);
   }, [product]);
 
-  
+
 
   const isBangleSingleColor = useMemo(() => {
     const cat = (product?.category || "").toLowerCase();
@@ -140,34 +134,28 @@ const ProductModal = ({ product, onClose }) => {
   }, [selectedSize, selectedColor]);
 
 
-// Inside your component:
-useEffect(() => {
-  if (product?.colors && product.colors.length > 0) {
-    if (!selectedSize && allSizes.length > 0) {
-      setSelectedSize(allSizes[0]);
+  // Inside your component:
+  useEffect(() => {
+    if (product?.colors && product.colors.length > 0) {
+      if (!selectedSize && allSizes.length > 0) {
+        setSelectedSize(allSizes[0]);
+      }
+      if (!selectedColor) {
+        setSelectedColor(product.colors[0].color);
+      }
     }
-    if (!selectedColor) {
-      setSelectedColor(product.colors[0].color);
-    }
-  }
-}, [product, allSizes, selectedSize, selectedColor]); 
+  }, [product, allSizes, selectedSize, selectedColor]);
 
   // --- Buy Now ---
   const handleBuyNow = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
 
-    const user = auth.currentUser;
+    const user = JSON.parse(localStorage.getItem("user"));
+
     if (!user) {
-      toast.error("Please login to continue");
-      // navigate and preserve current location so user can return after login
-      try {
-        setTimeout(() => navigate("/login", { state: { from: location?.pathname || "/" } }), 200);
-      } catch {
-        // fallback to hard redirect
-        window.location.href = "/login";
-      }
-      setIsProcessing(false);
+      toast.error("Please login to add to cart");
+      navigate("/login");
       return;
     }
 
@@ -235,7 +223,7 @@ useEffect(() => {
     if (loading) return;
     setLoading(true);
 
-    const user = auth.currentUser;
+    const user = JSON.parse(localStorage.getItem("user"));
     if (!user) {
       toast.error("Please login to add to cart");
       try {
@@ -281,83 +269,32 @@ useEffect(() => {
       }
     }
 
-    const cartItem = {
-      productId: product.id || product?.id || product?.productId || null,
-      name: product.name || "",
-      category: product.category || "",
-      subcategory: product.subcategory || "",
-      mrp: product.mrp ?? null,
-      sellingprice: product.sellingprice ?? 0,
-      image: selectedImage || product.images?.[0] || product.image || "",
-      quantity,
-      createdAt: serverTimestamp(),
-      ...(selectedSize && { size: selectedSize }),
-      ...(selectedColor && { color: selectedColor }),
-    };
-
-    const safe = (s) =>
-      String(s ?? "NA")
-        .replace(/\s+/g, "_")
-        .replace(/[^a-zA-Z0-9_\-.]/g, "");
-    const docId = `${cartItem.productId ?? "prod"}_${safe(
-      cartItem.color
-    )}_${safe(cartItem.size)}`;
-
-    const userCartDocRef = doc(db, "users", user.uid, "cart", docId);
-
     try {
-      // If a cart doc for this product+variant exists, increment quantity
-      const existingSnap = await getDoc(userCartDocRef);
-      if (existingSnap.exists()) {
-        const existing = existingSnap.data();
-        const existingQty = Number(existing.quantity || 0);
-        const desiredQty = existingQty + Number(quantity || 0);
-
-        // For variant products (bangles singlecolor), validate against per-variant stock
-        if (isBangleSingleColor && selectedColor && selectedSize) {
-          const stock = getStockFor(selectedColor, selectedSize);
-          if (desiredQty > stock) {
-            toast.error(`Only ${stock} item(s) available for the selected size/color.`);
-            setLoading(false);
-            return;
-          }
-        } else if (!isBangleSingleColor && product.stock !== undefined) {
-          const stock = Number(product.stock || 0);
-          if (desiredQty > stock) {
-            toast.error(`Only ${stock} item(s) available.`);
-            setLoading(false);
-            return;
-          }
-        }
-
-        await setDoc(
-          userCartDocRef,
-          {
-            ...cartItem,
-            quantity: desiredQty,
-            productRef: product.id || null,
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true }
-        );
-      } else {
-        await setDoc(
-          userCartDocRef,
-          {
-            ...cartItem,
-            quantity,
-            productRef: product.id || null,
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true }
-        );
-      }
+      const userId = user?.user_id || user?.id;
+      await api.post("/cart", {
+        user_id: userId,
+        product_id: product.id,
+        product_name: product.name,
+        category: product.category,
+        subcategory: product.subcategory,
+        image:
+          selectedImage ||
+          product.images?.[0] ||
+          product.image ||
+          "",
+        mrp: product.mrp ?? null,
+        sellingprice: product.sellingprice ?? null,
+        quantity,
+        size: selectedSize || null,
+        color: selectedColor || null,
+      });
 
       toast.success("Added to cart");
+
       if (onClose) onClose();
-    } catch (err) {
-      console.error("Add to cart error:", err);
-      toast.error("Failed to add to cart. Try again.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to add cart");
     } finally {
       setLoading(false);
     }
@@ -377,13 +314,12 @@ useEffect(() => {
   };
 
   const getFirstAvailableColorForSize = (sizeVal) => {
-  if (!product?.colors) return null;
-  for (let c of product.colors) {
-    if (colorAvailableForSize(c, sizeVal)) return c.color;
-  }
-  return null;
-};
-
+    if (!product?.colors) return null;
+    for (let c of product.colors) {
+      if (colorAvailableForSize(c, sizeVal)) return c.color;
+    }
+    return null;
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm p-3">
@@ -440,7 +376,7 @@ useEffect(() => {
                   </span>
                 )}
                 <span className="text-primary font-bold text-lg sm:text-xl">
-                   ₹{Math.floor(product.sellingprice).toFixed(2)}
+                  ₹{Math.floor(product.sellingprice).toFixed(2)}
                 </span>
               </div>
 
@@ -491,27 +427,26 @@ useEffect(() => {
                         return (
                           <button
                             key={sz}
-                           onClick={() => {
-  const newSize = selectedSize === sz ? null : sz;
-  setSelectedSize(newSize);
+                            onClick={() => {
+                              const newSize = selectedSize === sz ? null : sz;
+                              setSelectedSize(newSize);
 
-  // Auto-switch color if current color is not available
-  if (newSize) {
-    const chosenColorObj = product.colors?.find(
-      (c) => String(c.color).toLowerCase() === String(selectedColor)?.toLowerCase()
-    );
-    if (!chosenColorObj || !colorAvailableForSize(chosenColorObj, newSize)) {
-      const firstAvailable = getFirstAvailableColorForSize(newSize);
-      setSelectedColor(firstAvailable);
-    }
-  }
-}}
+                              // Auto-switch color if current color is not available
+                              if (newSize) {
+                                const chosenColorObj = product.colors?.find(
+                                  (c) => String(c.color).toLowerCase() === String(selectedColor)?.toLowerCase()
+                                );
+                                if (!chosenColorObj || !colorAvailableForSize(chosenColorObj, newSize)) {
+                                  const firstAvailable = getFirstAvailableColorForSize(newSize);
+                                  setSelectedColor(firstAvailable);
+                                }
+                              }
+                            }}
 
-                            className={`px-3 py-1 border rounded-full text-sm cursor-pointer ${
-                              isSelected
-                                ? "bg-gray-800 text-white border-gray-800"
-                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                            }`}
+                            className={`px-3 py-1 border rounded-full text-sm cursor-pointer ${isSelected
+                              ? "bg-gray-800 text-white border-gray-800"
+                              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                              }`}
                             disabled={loading}
                           >
                             {getSizeLabel(sz)}
@@ -541,31 +476,28 @@ useEffect(() => {
                               }
                               setSelectedColor(c.color);
                             }}
-                            title={`${c.color}${
-                              selectedSize
-                                ? ` — stock: ${getStockFor(c.color, selectedSize)}`
-                                : ""
-                            }`}
-                            className={`flex items-center justify-center w-12 h-12 rounded-full border-2 overflow-hidden transition-transform ${
-                              isSelected ? "scale-110 border-gray-800 p-0.5" : "border-gray-300 "
-                            } ${
-                              !available ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:scale-105"
-                            }`}
+                            title={`${c.color}${selectedSize
+                              ? ` — stock: ${getStockFor(c.color, selectedSize)}`
+                              : ""
+                              }`}
+                            className={`flex items-center justify-center w-12 h-12 rounded-full border-2 overflow-hidden transition-transform ${isSelected ? "scale-110 border-gray-800 p-0.5" : "border-gray-300 "
+                              } ${!available ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:scale-105"
+                              }`}
                             style={
                               thumb ? {} : { backgroundColor: String(c.color || "#ddd") }
                             }
                             disabled={loading}
                           >
                             <div className={`w-full h-full rounded-full overflow-hidden`}>
-                            {thumb ? (
-                              <img
-                                src={thumb}
-                                alt={c.color}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <span className="sr-only">{c.color}</span>
-                            )}
+                              {thumb ? (
+                                <img
+                                  src={thumb}
+                                  alt={c.color}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="sr-only">{c.color}</span>
+                              )}
                             </div>
                           </button>
                         );
@@ -611,19 +543,19 @@ useEffect(() => {
                   product.count?.toLowerCase() === "singlecolor") ||
                 product.category?.toLowerCase() === "jewelset"
               ) && (
-                <>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-3">
-                    <strong className="text-primary">Description: </strong>
-                    {product.description || "No description available."}
-                  </p>
-
-                  {product.notes && (
-                    <p className="text-gray-500 text-sm">
-                      <strong className="text-primary">Notes:</strong> {product.notes}
+                  <>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-3">
+                      <strong className="text-primary">Description: </strong>
+                      {product.description || "No description available."}
                     </p>
-                  )}
-                </>
-              )}
+
+                    {product.notes && (
+                      <p className="text-gray-500 text-sm">
+                        <strong className="text-primary">Notes:</strong> {product.notes}
+                      </p>
+                    )}
+                  </>
+                )}
 
               {product.list_of_items && (
                 <div className="text-gray-500 text-sm mb-3">
@@ -631,11 +563,11 @@ useEffect(() => {
                   <ul className="list-disc list-inside space-y-1">
                     {Array.isArray(product.list_of_items)
                       ? product.list_of_items.map((item, idx) => (
-                          <li key={idx}>{item}</li>
-                        ))
+                        <li key={idx}>{item}</li>
+                      ))
                       : product.list_of_items
-                          .split(",")
-                          .map((item, idx) => <li key={idx}>{item.trim()}</li>)}
+                        .split(",")
+                        .map((item, idx) => <li key={idx}>{item.trim()}</li>)}
                   </ul>
                 </div>
               )}

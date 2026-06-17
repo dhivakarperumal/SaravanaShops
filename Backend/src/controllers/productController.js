@@ -29,6 +29,62 @@ exports.getProducts = async (req, res) => {
   }
 };
 
+// ── GET single product by numeric id or productId ─────────────
+exports.getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const isNumeric = /^\d+$/.test(id);
+    const whereClause = isNumeric ? 'WHERE id = ?' : 'WHERE productId = ?';
+    const [rows] = await pool.query(`SELECT * FROM products ${whereClause} LIMIT 1`, [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
+    }
+
+    const row = rows[0];
+    const product = {
+      ...row,
+      sellingpriceManually: !!row.sellingpriceManually,
+      colors: safeParseJSON(row.colors, []),
+      images: safeParseJSON(row.images, []),
+      fabricdetails: safeParseJSON(row.fabricdetails, []),
+      list_of_items: safeParseJSON(row.list_of_items, []),
+    };
+
+    res.json({ success: true, product });
+  } catch (err) {
+    console.error('getProductById error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch product.' });
+  }
+};
+
+// ── GET related products by category excluding current product ──
+exports.getRelatedProducts = async (req, res) => {
+  try {
+    const { category, currentId } = req.params;
+    const isNumeric = /^\d+$/.test(currentId);
+    const whereClause = isNumeric ? 'id != ?' : 'productId != ?';
+    const [rows] = await pool.query(
+      `SELECT * FROM products WHERE category = ? AND ${whereClause} ORDER BY created_at DESC LIMIT 10`,
+      [category, currentId]
+    );
+
+    const products = rows.map((row) => ({
+      ...row,
+      sellingpriceManually: !!row.sellingpriceManually,
+      colors: safeParseJSON(row.colors, []),
+      images: safeParseJSON(row.images, []),
+      fabricdetails: safeParseJSON(row.fabricdetails, []),
+      list_of_items: safeParseJSON(row.list_of_items, []),
+    }));
+
+    res.json({ success: true, products });
+  } catch (err) {
+    console.error('getRelatedProducts error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch related products.' });
+  }
+};
+
 // ── POST create product ────────────────────────────────────
 exports.createProduct = async (req, res) => {
   try {

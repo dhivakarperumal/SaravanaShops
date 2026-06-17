@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { db } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import api from "../api";
 
 const CategoryItems = () => {
   const [categories, setCategories] = useState([]);
@@ -10,38 +9,46 @@ const CategoryItems = () => {
 
   const fetchCategories = async () => {
     try {
-      const snapshot = await getDocs(collection(db, "categories"));
-      const catList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setCategories(catList);
+      const res = await api.get("/categories");
+
+      if (res.data.success) {
+        setCategories(res.data.data);
+      }
     } catch (err) {
       console.error("Error fetching categories:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  if (loading) {
-    return <p className="text-center mt-10 text-gray-500">Loading categories...</p>;
-  }
-
   const handleCategoryClick = (categoryName) => {
-    navigate("/category", { state: { selectedCategory: categoryName } });
+    navigate("/category", {
+      state: { selectedCategory: categoryName },
+    });
   };
 
+  if (loading) {
+    return (
+      <p className="text-center mt-10 text-gray-500">
+        Loading categories...
+      </p>
+    );
+  }
+
   return (
-    <div className=" py-7 px-6">
-      <h2 className="text-2xl md:text-4xl font-extrabold text-black text-center bg-gradient-to-r from-secondary to-primary bg-clip-text  mb-10 pb-5 tracking-wide">
+    <div className="py-7 px-6">
+      <h2 className="text-2xl md:text-4xl font-extrabold text-black text-center bg-gradient-to-r from-secondary to-primary bg-clip-text mb-10 pb-5 tracking-wide">
         Explore Our Categories
       </h2>
 
       {categories.length === 0 ? (
-        <p className="text-gray-500 text-center text-lg">No categories available.</p>
+        <p className="text-gray-500 text-center text-lg">
+          No categories available.
+        </p>
       ) : (
         <div className="flex flex-wrap justify-center gap-10">
           {categories.map((cat) => (
@@ -50,18 +57,15 @@ const CategoryItems = () => {
               onClick={() => handleCategoryClick(cat.cname)}
               className="group relative cursor-pointer flex flex-col items-center transition-transform hover:scale-105"
             >
-
               <div className="relative w-45 h-45 md:w-50 md:h-50 rounded-full border-[6px] border-secondary group-hover:border-primary overflow-hidden shadow-lg hover:shadow-secondary transition-all duration-500">
-                  <img
-                    src={cat.cimgs[0]}
-                    alt={cat.cname}
-                    className="w-full h-full  p-2 object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
-                  />
+                <img
+                  src={cat.cimgs?.[0]}
+                  alt={cat.cname}
+                  className="w-full h-full p-2 object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
+                />
               </div>
 
-              <p 
-              onClick={() => handleCategoryClick(cat.cname)}    
-              className="mt-4 text-lg md:text-xl font-semibold text-gray-800 group-hover:text-primary transition-colors duration-300">
+              <p className="mt-4 text-lg md:text-xl font-semibold text-gray-800 group-hover:text-primary transition-colors duration-300">
                 {cat.cname}
               </p>
 
