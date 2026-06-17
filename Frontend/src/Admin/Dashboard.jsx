@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot, getDocs, query, where } from "firebase/firestore";
-import { db } from "../firebase";
+import api from "../api";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -18,21 +17,15 @@ import {
   FaBoxOpen,
   FaTruck,
   FaTimesCircle,
-  FaUndoAlt,
   FaDollarSign,
   FaShoppingCart,
   FaClipboardList,
   FaPlusCircle,
-  FaTags,
-  FaUserPlus,
-  FaKey,
   FaReceipt,
-  FaStar,
   FaHandshake,
-  FaLayerGroup,
 } from "react-icons/fa";
-import CustomerReviews from "./Reviews/Customer";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 ChartJS.register(
   ArcElement,
@@ -71,14 +64,18 @@ const DashboardStats = ({ stats }) => (
 );
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  
   const [stats, setStats] = useState({
     users: 0,
     products: 0,
-
     revenue: 0,
+    deliveryOrders: 0,
+    cancelledOrders: 0,
+    lowStockCount: 0
   });
 
-  const [productsData, setProductsData] = useState([]);
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
   const [monthlyOrders, setMonthlyOrders] = useState([]);
   const [productCategories, setProductCategories] = useState([]);
@@ -86,256 +83,72 @@ const Dashboard = () => {
   const [liveStocks, setLiveStocks] = useState([]);
   const [todayOrders, setTodayOrders] = useState([]);
 
-
-  const [deliveryOrders, setDeliveryOrders] = useState(0);
-  const [cancelledOrders, setCancelledOrders] = useState(0);
-
-  const navigate = useNavigate()
-
-
   useEffect(() => {
-    const fetchOrderCounts = async () => {
-      const ordersRef = collection(db, "orders");
-
-      // Delivered orders count
-      const deliveredSnap = await getDocs(query(ordersRef, where("status", "==", "Delivered")));
-      setDeliveryOrders(deliveredSnap.size);
-
-      // Cancelled orders count
-      const cancelledSnap = await getDocs(query(ordersRef, where("status", "==", "Cancelled")));
-      setCancelledOrders(cancelledSnap.size);
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get('/dashboard/stats');
+        const data = res.data.data;
+        
+        setStats(data.stats);
+        setMonthlyRevenue(data.monthlyRevenue);
+        setMonthlyOrders(data.monthlyOrders);
+        setTopProducts(data.topProducts);
+        setProductCategories(data.productCategories);
+        setLiveStocks(data.liveStocks);
+        setTodayOrders(data.todayOrders);
+      } catch (err) {
+        console.error('Failed to load dashboard stats:', err);
+        toast.error('Failed to load dashboard statistics.');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchOrderCounts();
+    fetchDashboardData();
   }, []);
 
-  useEffect(() => {
-    const todayDate = new Date().toISOString().split("T")[0];
-
-    // Subscribe to users and orders separately
-    const unsubscribeUsers = onSnapshot(collection(db, "users"), (usersSnap) => {
-      const usersCount = usersSnap.size;
-      setStats((prev) => ({ ...prev, users: usersCount }));
-    });
-
-    const unsubscribeOrders = onSnapshot(collection(db, "orders"), (ordersSnap) => {
-      let revenue = 0;
-      const revenueByMonth = {};
-      const ordersByMonth = {};
-      const topProductOrdersMap = {};
-      const todayOrdersList = [];
-
-      ordersSnap.forEach((orderDoc) => {
-        const data = orderDoc.data();
-        const total = data.total || 0;
-        const orderDate = new Date(data.date || Date.now());
-        const month = orderDate.toLocaleString("default", { month: "short" });
-        const orderDateStr = orderDate.toISOString().split("T")[0];
-
-        revenue += total;
-        revenueByMonth[month] = (revenueByMonth[month] || 0) + total;
-        ordersByMonth[month] = (ordersByMonth[month] || 0) + 1;
-
-        (data.cartItems || []).forEach((item) => {
-          const key = item.name;
-          if (!topProductOrdersMap[key]) topProductOrdersMap[key] = {};
-          topProductOrdersMap[key][month] =
-            (topProductOrdersMap[key][month] || 0) + (item.qty || 1);
-        });
-
-        if (orderDateStr === todayDate) {
-          todayOrdersList.push({ id: orderDoc.id, ...data });
-        }
-      });
-
-      const months = Object.keys(revenueByMonth);
-      const topProductChartData = Object.entries(topProductOrdersMap)
-        .map(([name, monthlyData]) => ({
-          label: name,
-          data: months.map((m) => monthlyData[m] || 0),
-        }))
-        .slice(0, 3);
-
-      setStats((prev) => ({ ...prev, revenue }));
-      setMonthlyRevenue(months.map((m) => ({ month: m, amount: revenueByMonth[m] })));
-      setMonthlyOrders(months.map((m) => ({ month: m, count: ordersByMonth[m] })));
-      setTopProducts(topProductChartData);
-      setTodayOrders(todayOrdersList);
-    });
-
-
-
-
-      const unsubscribeProducts = onSnapshot(collection(db, "products"), (productsSnap) => {
-        const cats = {};
-        const sorted = productsSnap.docs
-          .map((doc) => {
-            const data = doc.data();
-            cats[data.category || "Other"] = (cats[data.category || "Other"] || 0) + 1;
-            return { id: doc.id, ...data };
-          })
-          .sort((a, b) =>
-            (a.productId || "").localeCompare(b.productId || "", "en", { numeric: true })
-          );
-
-        setStats((prev) => ({ ...prev, products: productsSnap.size }));
-        setProductCategories(Object.entries(cats).map(([name, value]) => ({ name, value })));
-        setLiveStocks(sorted);
-        setProductsData(sorted);
-      });
-
-      return () => {
-        unsubscribeUsers();
-        unsubscribeProducts();
-      };
-    }, []);
-
-  useEffect(() => {
-    const todayDate = new Date().toISOString().split("T")[0];
-
-    const unsubscribeOrders = onSnapshot(collection(db, "orders"), (ordersSnap) => {
-      let revenue = 0;
-      const revenueByMonth = {};
-      const ordersByMonth = {};
-      const topProductOrdersMap = {};
-      const todayOrdersList = [];
-
-      ordersSnap.forEach((orderDoc) => {
-        const data = orderDoc.data();
-        const total = data.total || 0;
-
-        // Use createdAt timestamp instead of 'date' if available
-        const orderTimestamp = data.createdAt ? data.createdAt.toDate() : new Date();
-        const orderDateStr = orderTimestamp.toISOString().split("T")[0];
-        const month = orderTimestamp.toLocaleString("default", { month: "short" });
-
-        revenue += total;
-        revenueByMonth[month] = (revenueByMonth[month] || 0) + total;
-        ordersByMonth[month] = (ordersByMonth[month] || 0) + 1;
-
-        (data.cartItems || []).forEach((item) => {
-          const key = item.name;
-          if (!topProductOrdersMap[key]) topProductOrdersMap[key] = {};
-          topProductOrdersMap[key][month] =
-            (topProductOrdersMap[key][month] || 0) + (item.qty || 1);
-        });
-
-        if (orderDateStr === todayDate) {
-          todayOrdersList.push({ id: orderDoc.id, ...data });
-        }
-      });
-
-      const months = Object.keys(revenueByMonth);
-      const topProductChartData = Object.entries(topProductOrdersMap)
-        .map(([name, monthlyData]) => ({
-          label: name,
-          data: months.map((m) => monthlyData[m] || 0),
-        }))
-        .slice(0, 3);
-
-      setStats((prev) => ({ ...prev, revenue }));
-      setMonthlyRevenue(months.map((m) => ({ month: m, amount: revenueByMonth[m] })));
-      setMonthlyOrders(months.map((m) => ({ month: m, count: ordersByMonth[m] })));
-      setTopProducts(topProductChartData);
-      setTodayOrders(todayOrdersList);
-    });
-
-    return () => {
-      unsubscribeOrders();
-    };
-  }, []);
-
-
- const [chartData, setChartData] = useState(null);
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "orders"), (snapshot) => {
-      const monthlyOrders = {}; // { 'Jan': { 'Product A': 10, ... }, ... }
-      const monthsSet = new Set();
-
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (!data.createdAt || !data.items) return;
-
-        const date = data.createdAt.toDate();
-        const month = date.toLocaleString("default", { month: "short" }); // e.g., "Jan"
-        monthsSet.add(month);
-
-        data.items.forEach((item) => {
-          const productName = item.name;
-          if (!monthlyOrders[month]) monthlyOrders[month] = {};
-          if (!monthlyOrders[month][productName]) monthlyOrders[month][productName] = 0;
-          monthlyOrders[month][productName] += item.quantity;
-        });
-      });
-
-      const months = Array.from(monthsSet).sort(
-        (a, b) => new Date(`${a} 1, 2000`) - new Date(`${b} 1, 2000`)
-      );
-
-      // Get top 5 products overall
-      const productTotals = {};
-      Object.values(monthlyOrders).forEach((monthData) => {
-        Object.entries(monthData).forEach(([name, qty]) => {
-          productTotals[name] = (productTotals[name] || 0) + qty;
-        });
-      });
-      const topProducts = Object.entries(productTotals)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([name]) => name);
-
-      const datasets = topProducts.map((product, idx) => ({
-        label: product,
-        data: months.map((month) => monthlyOrders[month]?.[product] || 0),
-        borderColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`,
-        backgroundColor: `hsl(${(idx * 60) % 360}, 70%, 50%, 0.5)`,
-        tension: 0.3,
-      }));
-
-      setChartData({ labels: months, datasets });
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-
-  const lowStockCount = productsData.filter(item => (item.stock || 0) < 3).length;
+  const formatToK = (num) => {
+    if (!num) return "0";
+    if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return num.toLocaleString();
+  };
 
   const statsData = [
     {
       title: "Users",
-      value: stats?.users || 0,
+      value: formatToK(stats.users),
       icon: <FaUsers />,
       bgGradient: "bg-gradient-to-br from-blue-500 to-blue-700",
     },
     {
       title: "Products",
-      value: stats?.products || 0,
+      value: formatToK(stats.products),
       icon: <FaBoxOpen />,
       bgGradient: "bg-gradient-to-br from-emerald-400 to-emerald-600",
     },
     {
       title: "Delivery Orders",
-      value: deliveryOrders,
+      value: formatToK(stats.deliveryOrders),
       icon: <FaTruck />,
       bgGradient: "bg-gradient-to-br from-purple-500 to-purple-700",
     },
     {
       title: "Cancelled Orders",
-      value: cancelledOrders,
+      value: formatToK(stats.cancelledOrders),
       icon: <FaTimesCircle />,
       bgGradient: "bg-gradient-to-br from-red-500 to-rose-700",
     },
     {
       title: "Revenue",
-      value: `₹ ${stats?.revenue?.toLocaleString() || 0}`,
+      value: `₹ ${formatToK(stats.revenue)}`,
       icon: <FaDollarSign />,
       bgGradient: "bg-gradient-to-br from-pink-500 to-pink-700",
     },
     {
       title: "Low Stock",
-      value: lowStockCount || 0,
+      value: formatToK(stats.lowStockCount),
       icon: <FaBoxOpen />,
       bgGradient: "bg-gradient-to-br from-orange-400 to-orange-600",
     },
@@ -367,61 +180,28 @@ const Dashboard = () => {
     ],
   };
 
+  const colors = [
+    "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#6366f1",
+    "#8b5cf6", "#14b8a6", "#f43f5e", "#facc15", "#6b7280"
+  ];
 
-  const [categoryChart, setCategoryChart] = useState(null);
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "products"), (snapshot) => {
-      const categoryCounts = {};
-
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data();
-        const cat = data.category || "Other";
-        categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-      });
-
-      const categoriesArray = Object.entries(categoryCounts).map(([name, value]) => ({
-        name,
-        value,
-      }));
-
-      setProductCategories(categoriesArray);
-
-      // Prepare chart
-      const colors = [
-        "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#6366f1",
-        "#8b5cf6", "#14b8a6", "#f43f5e", "#facc15", "#6b7280"
-      ];
-
-      setCategoryChart({
-        labels: categoriesArray.map((d) => d.name),
-        datasets: [
-          {
-            data: categoriesArray.map((d) => d.value),
-            backgroundColor: categoriesArray.map((_, i) => colors[i % colors.length]),
-            borderWidth: 2,
-          },
-        ],
-      });
-    });
-
-    return () => unsubscribe();
-  }, []);
-
- 
+  const categoryChart = {
+    labels: productCategories.map((d) => d.name),
+    datasets: [
+      {
+        data: productCategories.map((d) => d.value),
+        backgroundColor: productCategories.map((_, i) => colors[i % colors.length]),
+        borderWidth: 2,
+      },
+    ],
+  };
 
   const stockChart = {
     labels: liveStocks.map((p) => p.name),
     datasets: [
       {
         label: "Stock ",
-        data: liveStocks.map((p) => {
-          if (p.combos?.length > 0) {
-            return p.combos.reduce((total, combo) => total + (combo.quantity || 0), 0);
-          } else {
-            return p.stock || 0;
-          }
-        }),
+        data: liveStocks.map((p) => p.stock || 0),
         backgroundColor: liveStocks.map(
           () =>
             `rgba(${Math.floor(Math.random() * 150 + 50)}, ${Math.floor(
@@ -436,57 +216,24 @@ const Dashboard = () => {
     ],
   };
 
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        display: true,
-        position: "top",
-        labels: {
-          font: {
-            size: 14,
-
-          },
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: function (context) {
-            return `${context.dataset.label}: ${context.raw}`;
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: "Stock ",
-          font: {
-            size: 14,
-            weight: "600",
-          },
-        },
-      },
-      x: {
-        title: {
-          display: true,
-          text: "Products",
-          font: {
-            size: 14,
-            weight: "600",
-          },
-        },
-        ticks: {
-          autoSkip: false,
-          maxRotation: 45,
-          minRotation: 30,
-        },
-      },
-    },
+  const topProductsChart = {
+    labels: monthlyRevenue.map((d) => d.month),
+    datasets: topProducts.map((product, idx) => ({
+      label: product.label,
+      data: product.data,
+      borderColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`,
+      backgroundColor: `hsl(${(idx * 60) % 360}, 70%, 50%, 0.5)`,
+      tension: 0.3,
+    }))
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="px-6 py-2">
@@ -540,7 +287,7 @@ const Dashboard = () => {
             Product Category Distribution
           </h2>
           <div className="w-full h-64">
-            {categoryChart ? (
+            {productCategories.length > 0 ? (
               <Pie
                 data={categoryChart}
                 options={{
@@ -552,7 +299,7 @@ const Dashboard = () => {
                 }}
               />
             ) : (
-              <p className="text-gray-500 text-center mt-24">Loading chart...</p>
+              <p className="text-gray-500 text-center mt-24">No category data...</p>
             )}
           </div>
         </div>
@@ -572,25 +319,25 @@ const Dashboard = () => {
         </div>
 
        <div className="bg-gradient-to-br from-white to-gray-50/90 p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-[0_15px_40px_rgb(0,0,0,0.1)] transition-all duration-400 backdrop-blur-xl">
-      <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">
-        Top Product Orders Over Months
-      </h2>
-      <div className="w-full h-64">
-        {chartData ? (
-          <Line
-            data={chartData}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { position: "bottom" } },
-              scales: { y: { beginAtZero: true } },
-            }}
-          />
-        ) : (
-          <p className="text-gray-500 text-center mt-24">Loading chart...</p>
-        )}
-      </div>
-    </div>
+          <h2 className="text-lg font-bold text-gray-800 mb-4 tracking-tight">
+            Top Product Orders Over Months
+          </h2>
+          <div className="w-full h-64">
+            {topProducts.length > 0 ? (
+              <Line
+                data={topProductsChart}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: { legend: { position: "bottom" } },
+                  scales: { y: { beginAtZero: true } },
+                }}
+              />
+            ) : (
+              <p className="text-gray-500 text-center mt-24">No product order data...</p>
+            )}
+          </div>
+        </div>
       </div>
 
      
@@ -617,7 +364,7 @@ const Dashboard = () => {
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     <td className="px-5 py-3.5 font-semibold text-gray-800">{order.orderId}</td>
-                    <td className="px-5 py-3.5 text-gray-700">{order.shipping?.name}</td>
+                    <td className="px-5 py-3.5 text-gray-700">{order.shipping_name}</td>
                     <td className="px-5 py-3.5 text-gray-700 font-medium">₹ {order.total}</td>
                     <td className="px-5 py-3.5">
                       <span
@@ -669,7 +416,7 @@ const Dashboard = () => {
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="bg-gray-50 rounded-xl p-3">
                     <p className="text-gray-400 mb-0.5">User</p>
-                    <p className="font-semibold text-gray-700 truncate">{order.shipping?.name || "-"}</p>
+                    <p className="font-semibold text-gray-700 truncate">{order.shipping_name || "-"}</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-3">
                     <p className="text-gray-400 mb-0.5">Amount</p>
@@ -685,12 +432,8 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-
-
-      {/* <CustomerReviews/> */}
     </div>
   );
 };
 
 export default Dashboard;
-
