@@ -86,6 +86,35 @@ function Navbar() {
     };
   }, [user, cartOpen]);
 
+  // Fetch wishlist count when wishlist opens or user changes
+  useEffect(() => {
+    const updateWishlistCount = async () => {
+      if (!user) {
+        setWishlistCount(0);
+        return;
+      }
+      try {
+        const userId = user?.user_id || user?.id || user?.uid;
+        if (!userId) {
+          setWishlistCount(0);
+          return;
+        }
+        const res = await api.get(`/wishlist/${userId}`);
+        const items = Array.isArray(res.data?.data) ? res.data.data : [];
+        setWishlistCount(items.length);
+      } catch (error) {
+        console.error("Error fetching wishlist count:", error);
+        setWishlistCount(0);
+      }
+    };
+    updateWishlistCount();
+    // Update wishlist count every 2 seconds when wishlist is open
+    const interval = wishlistOpen ? setInterval(updateWishlistCount, 2000) : null;
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [user, wishlistOpen]);
+
   // Close all sidebars except the one clicked
   const closeAllExcept = (except) => {
     if (except !== "cart") setCartOpen(false);

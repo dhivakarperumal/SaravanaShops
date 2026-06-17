@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { FaTimes, FaHeart, FaTrash } from "react-icons/fa";
-import { auth, db } from "../firebase";
-import { collection, onSnapshot, doc, deleteDoc } from "firebase/firestore";
 import { toast } from "react-hot-toast";
-import { onAuthStateChanged } from "firebase/auth";
 import { Link } from "react-router-dom";
+import api from "../api";
 
 const Wishlist = ({ isOpen, onClose }) => {
   const [wishlist, setWishlist] = useState([]);
@@ -28,50 +26,57 @@ const Wishlist = ({ isOpen, onClose }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
-  // 🔹 Firebase Auth
-  useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribeAuth();
-  }, []);
-
   // 🔹 Fetch Wishlist
   useEffect(() => {
-    if (!user) {
-      setWishlist([]);
-      setLoading(false);
-      return;
-    }
+    const fetchWishlist = async () => {
+      let localUserId = null;
+      try {
+        const localUserStr = localStorage.getItem("user");
+        if (localUserStr) {
+          const parsed = JSON.parse(localUserStr);
+          localUserId = parsed.user_id || parsed.id || parsed.uid || (parsed.user && (parsed.user.user_id || parsed.user.id || parsed.user.uid));
+        }
+      } catch (e) { }
 
-    const wishlistRef = collection(db, "users", user.uid, "wishlist");
-
-    const unsubscribe = onSnapshot(
-      wishlistRef,
-      (snapshot) => {
-        const items = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setWishlist(items);
+      if (!localUserId) {
+        setWishlist([]);
         setLoading(false);
-      },
-      (error) => {
+        return;
+      }
+
+      setUser({ uid: localUserId });
+
+      try {
+        const res = await api.get(`/wishlist/${localUserId}`);
+        if (res.data.success) {
+          setWishlist(res.data.data);
+        } else {
+          setWishlist([]);
+        }
+      } catch (error) {
         console.error("Error fetching wishlist:", error);
         toast.error("Failed to load wishlist");
+        setWishlist([]);
+      } finally {
         setLoading(false);
       }
-    );
+    };
 
-    return () => unsubscribe();
-  }, [user]);
+    if (isOpen) {
+      setLoading(true);
+      fetchWishlist();
+    }
+  }, [isOpen]);
 
   // 🔹 Remove item
   const handleRemove = async (itemId) => {
     if (!user) return;
     try {
-      await deleteDoc(doc(db, "users", user.uid, "wishlist", itemId));
-      toast.success("Item removed from wishlist");
+      const res = await api.delete(`/wishlist/${itemId}`);
+      if (res.data.success) {
+        setWishlist(wishlist.filter(item => item.id !== itemId));
+        toast.success("Item removed from wishlist");
+      }
     } catch (err) {
       console.error("Error removing item:", err);
       toast.error("Failed to remove item");
@@ -135,7 +140,7 @@ const Wishlist = ({ isOpen, onClose }) => {
                 className="relative flex items-center gap-3 p-3 rounded-lg shadow-md hover:shadow-secondary transition-all"
               >
                 {/* ✅ Close sidebar when clicking product image */}
-                <Link to={`/allproducts/${item.id}`} onClick={onClose}>
+                <Link to={`/allproducts/${item.product_id}`} onClick={onClose}>
                   <img
                     src={item.image || "/placeholder.jpg"}
                     alt={item.name}
@@ -146,9 +151,9 @@ const Wishlist = ({ isOpen, onClose }) => {
                 <div className="flex-1 flex flex-col justify-between h-full">
                   <h3
                     className="text-sm font-semibold text-primary overflow-hidden text-ellipsis line-clamp-1"
-                    title={item.name}
+                    title={item.product_name}
                   >
-                    {item.name}
+                    {item.product_name}
                   </h3>
 
                   <span className="text-gray-400 text-sm">

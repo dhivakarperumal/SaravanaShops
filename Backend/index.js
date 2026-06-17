@@ -35,6 +35,7 @@ const dealerRouter = require('./src/routers/dealerRouter');
 const dashboardRouter = require('./src/routers/dashboardRouter');
 const addressRouter = require('./src/routers/addressRouter');
 const cartRoutes = require("./src/routers/cartRoutes");
+const wishlistRouter = require("./src/routers/wishlistRouter");
 
 initializeDatabase();
 
@@ -59,6 +60,7 @@ app.use('/api/dealers', dealerRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/addresses', addressRouter);
 app.use("/api/cart", cartRoutes);
+app.use("/api/wishlist", wishlistRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

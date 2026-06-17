@@ -11,33 +11,33 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-import{toast} from "react-hot-toast"
-
-import { auth, db } from "../firebase";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { toast } from "react-hot-toast";
+import api from "../api";
 
 const ProductCard = ({ product, onOpenModal }) => {
   const fullStars = Math.floor(product.rating);
   const hasHalfStar = product.rating % 1 >= 0.5;
 
   const handleWishlist = async () => {
-    const user = auth.currentUser;
-    if (!user) {
+    let localUserId = null;
+    try {
+      const localUserStr = localStorage.getItem("user");
+      if (localUserStr) {
+        const parsed = JSON.parse(localUserStr);
+        localUserId = parsed.user_id || parsed.id || parsed.uid || (parsed.user && (parsed.user.user_id || parsed.user.id || parsed.user.uid));
+      }
+    } catch (e) { }
+
+    if (!localUserId) {
       toast.error("Please login to add to wishlist");
       return;
     }
 
     try {
-      const wishlistRef = doc(db, "users", user.uid, "wishlist", product.id);
-      const existing = await getDoc(wishlistRef);
-
-      if (existing.exists()) {
-        toast.info(`${product.name} is already in your wishlist`);
-        return;
-      }
-
-      await setDoc(wishlistRef, {
-        name: product.name,
+      const payload = {
+        user_id: localUserId,
+        product_id: product.id,
+        product_name: product.name,
         mrp: product.mrp || "",
         sellingprice: product.sellingprice || "",
         image:
@@ -45,14 +45,22 @@ const ProductCard = ({ product, onOpenModal }) => {
           product?.image?.[0] ||
           product?.image ||
           (product?.colors && Object.values(product.colors)?.[0]?.image) ||
-          "/placeholder.jpg",
-        createdAt: serverTimestamp(),
-      });
+          "/placeholder.jpg"
+      };
 
-      toast.success(`${product.name} added to wishlist`);
+      const res = await api.post("/wishlist", payload);
+      if (res.data.success) {
+        toast.success(`${product.name} added to wishlist`);
+      } else {
+        toast.error(res.data.message || `Failed to add ${product.name} to wishlist`);
+      }
     } catch (error) {
-      console.error("Error adding to wishlist:", error);
-      toast.error(`Failed to add ${product.name} to wishlist`);
+      if (error.response && error.response.status === 400 && error.response.data.message === 'Product already in wishlist') {
+        toast.info(`${product.name} is already in your wishlist`);
+      } else {
+        console.error("Error adding to wishlist:", error);
+        toast.error(`Failed to add ${product.name} to wishlist`);
+      }
     }
   };
 
