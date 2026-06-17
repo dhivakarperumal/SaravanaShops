@@ -25,7 +25,7 @@ export default function VideoForm() {
   const [showList, setShowList] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState("card");
+  const [viewMode, setViewMode] = useState("table");
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -214,7 +214,7 @@ export default function VideoForm() {
   );
 
   return (
-    <div className="max-w-5xl mx-auto mt-4">
+    <div className="max-w-6xl mx-auto mt-8">
       {/* Header */}
       <div className="flex flex-wrap items-center gap-3 mb-6 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100">
 
@@ -374,36 +374,31 @@ export default function VideoForm() {
       <div className="mt-4">
         {viewMode === "table" && (
           <div className="bg-white shadow rounded-2xl overflow-x-auto">
-            {videos.length === 0 ? (
-              <p className="p-4 text-center">No videos added yet.</p>
-            ) : (
               <table className="min-w-full text-sm rounded-lg overflow-hidden">
                 <thead>
                   <tr className="bg-gradient-to-r from-primary to-secondary text-white">
-
-                    <th className="px-4 py-3">
-                      S.no.
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Name
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Videos
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Actions
-                    </th>
-
+                    <th className="px-4 py-3">S.No.</th>
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Videos</th>
+                    <th className="px-4 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {videos.map((video, index) => (
-                    <tr key={video.dbId} className="text-center border-gray-200">
+                  {filteredVideos.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="px-4 py-12 text-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="text-4xl">🎬</span>
+                          <p className="text-gray-500 font-medium">No videos added yet.</p>
+                          <p className="text-gray-400 text-xs">Click "Add Video" to upload your first video.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                  filteredVideos.map((video, index) => (
+                    <tr key={video.dbId} className="text-center border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="px-3 py-4">{index + 1}.</td>
-                      <td className="px-3 py-4">{video.name}</td>
+                      <td className="px-3 py-4 font-medium text-gray-800">{video.name}</td>
                       <td className="px-3 py-4 flex items-center justify-center">
                         {video.url &&
                           (getYoutubeEmbedUrl(video.url) ? (
@@ -424,87 +419,77 @@ export default function VideoForm() {
                       <td className="px-3 py-4 space-x-2">
                         <button
                           onClick={() => handleEdit(video)}
-                          className="text-gray-600 cursor-pointer border p-2 rounded-full"
+                          className="text-gray-600 cursor-pointer border p-2 rounded-full hover:bg-green-50 hover:text-green-600 transition-colors"
                         >
                           <FaEdit />
                         </button>
                         <button
                           onClick={() => handleDelete(video.dbId)}
-                          className="text-gray-600 cursor-pointer border p-2 rounded-full"
+                          className="text-gray-600 cursor-pointer border p-2 rounded-full hover:bg-red-50 hover:text-red-600 transition-colors"
                         >
                           <RiDeleteBin6Line />
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  ))
+                  )}
                 </tbody>
               </table>
-            )}
           </div>
         )}
 
         {/* Mobile Cards */}
         {viewMode === "card" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-
-            {filteredVideos.map((video, index) => (
-
-              <div
-                key={video.dbId}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4"
-              >
-
-                <div className="aspect-video rounded-xl overflow-hidden mb-3">
-
-                  {getYoutubeEmbedUrl(video.url) ? (
-                    <iframe
-                      src={getYoutubeEmbedUrl(video.url)}
-                      className="w-full h-full"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <video
-                      controls
-                      className="w-full h-full object-cover"
-                    >
-                      <source src={video.url} />
-                    </video>
-                  )}
-
+          <div>
+            {filteredVideos.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-4xl">🎬</span>
+                  <p className="text-gray-500 font-medium">No videos added yet.</p>
+                  <p className="text-gray-400 text-xs">Click "Add Video" to upload your first video.</p>
                 </div>
-
-                <h3 className="font-semibold text-lg">
-                  {video.name}
-                </h3>
-
-                {/* <p className="text-sm text-gray-500">
-                  {index + 1}.
-                </p> */}
-
-                <div className="flex justify-end gap-2 mt-4">
-
-                  <button
-                    onClick={() => handleEdit(video)}
-                    className="w-10 h-10 rounded-xl bg-green-50 text-green-600 cursor-pointer"
-                  >
-                    <FaEdit />
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      handleDelete(video.dbId)
-                    }
-                    className="w-10 h-10 rounded-xl bg-red-50 text-red-600 cursor-pointer"
-                  >
-                    <FaTrash />
-                  </button>
-
-                </div>
-
               </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                {filteredVideos.map((video, index) => (
+                  <div
+                    key={video.dbId}
+                    className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4"
+                  >
+                    <div className="aspect-video rounded-xl overflow-hidden mb-3">
+                      {getYoutubeEmbedUrl(video.url) ? (
+                        <iframe
+                          src={getYoutubeEmbedUrl(video.url)}
+                          className="w-full h-full"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video controls className="w-full h-full object-cover">
+                          <source src={video.url} />
+                        </video>
+                      )}
+                    </div>
 
-            ))}
+                    <h3 className="font-semibold text-lg">{video.name}</h3>
 
+                    <div className="flex justify-end gap-2 mt-4">
+                      <button
+                        onClick={() => handleEdit(video)}
+                        className="w-10 h-10 rounded-xl bg-green-50 text-green-600 cursor-pointer"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(video.dbId)}
+                        className="w-10 h-10 rounded-xl bg-red-50 text-red-600 cursor-pointer"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
