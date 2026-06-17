@@ -67,10 +67,12 @@ const ProductModal = ({ product, onClose }) => {
   const hasHalfStar = (product?.rating || 0) % 1 >= 0.5;
 
   useEffect(() => {
+    // images can be an empty array [] — must skip it
     const img =
-      product?.images?.[0] ||
-      product?.image?.[0] ||
-      product?.image ||
+      (Array.isArray(product?.images) && product.images.length > 0
+        ? product.images[0]
+        : null) ||
+      (Array.isArray(product?.image) ? product.image[0] : product?.image) ||
       product?.colors?.[0]?.image ||
       "/placeholder.jpg";
     setSelectedImage(img);
@@ -189,9 +191,10 @@ const ProductModal = ({ product, onClose }) => {
   // ─────────────────────────────────────────────────────────────────────────
 
   const isBangleSingleColor = useMemo(() => {
+    // DB stores "Bangles" (plural) — match both "bangle" and "bangles"
     const cat = (product?.category || "").toLowerCase();
     const count = (product?.count || "").toLowerCase();
-    return cat === "bangle" && count === "singlecolor";
+    return cat.includes("bangle") && count === "singlecolor";
   }, [product]);
 
   const allSizes = useMemo(() => {
