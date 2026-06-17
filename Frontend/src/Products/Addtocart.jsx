@@ -26,18 +26,19 @@ const Addtocart = ({ isOpen, onClose }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const getUserId = () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      return user?.user_id || user?.id || null;
+    } catch {
+      return null;
+    }
+  };
 
-  // Fetch cart items
+  // Fetch cart items when the sidebar is opened
   useEffect(() => {
     const fetchCart = async () => {
-      if (!user) {
-        setCartItems([]);
-        setLoading(false);
-        return;
-      }
-
-      const userId = user?.user_id || user?.id;
+      const userId = getUserId();
       if (!userId) {
         setCartItems([]);
         setLoading(false);
@@ -58,7 +59,7 @@ const Addtocart = ({ isOpen, onClose }) => {
     if (isOpen) {
       fetchCart();
     }
-  }, [user, isOpen]);
+  }, [isOpen]);
 
   // Remove item
   const handleRemove = async (itemId) => {
