@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
+import api from "../api/";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 
@@ -14,14 +13,12 @@ const Video = () => {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "videos"));
-        const videoData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setVideos(videoData);
+        const response = await api.get("/videos");
+
+        setVideos(response.data || []);
       } catch (error) {
         console.error("Error fetching videos:", error);
+        setVideos([]);
       } finally {
         setLoading(false);
       }
