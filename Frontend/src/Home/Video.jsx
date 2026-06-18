@@ -43,6 +43,31 @@ const Video = () => {
     );
   }
 
+  const getYoutubeEmbedUrl = (url) => {
+    if (!url) return null;
+
+    try {
+      if (url.includes("/shorts/")) {
+        const id = url.split("/shorts/")[1].split("?")[0];
+        return `https://www.youtube.com/embed/${id}`;
+      }
+
+      if (url.includes("watch?v=")) {
+        const id = new URL(url).searchParams.get("v");
+        return `https://www.youtube.com/embed/${id}`;
+      }
+
+      if (url.includes("youtu.be/")) {
+        const id = url.split("youtu.be/")[1].split("?")[0];
+        return `https://www.youtube.com/embed/${id}`;
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   return (
     <div className="w-full max-w-6xl px-6 mx-auto py-10">
       <h2 className="relative text-2xl font-bold mb-8 text-left inline-block">
@@ -69,15 +94,24 @@ const Video = () => {
         {videos.map((video) => (
           <SwiperSlide key={video.id}>
             <div className="rounded-xl overflow-hidden shadow-lg bg-gray-100">
-              <video
-                className="w-full h-[400px] object-cover"
-                src={video.url}
-                muted
-                loop
-                playsInline
-                autoPlay
-                preload="metadata"
-              />
+              {getYoutubeEmbedUrl(video.url) ? (
+                <iframe
+                  src={getYoutubeEmbedUrl(video.url)}
+                  className="w-full h-[400px]"
+                  allowFullScreen
+                  title={video.name}
+                />
+              ) : (
+                <video
+                  className="w-full h-[400px] object-cover"
+                  src={video.url}
+                  muted
+                  loop
+                  playsInline
+                  autoPlay
+                  preload="metadata"
+                />
+              )}
             </div>
           </SwiperSlide>
         ))}
