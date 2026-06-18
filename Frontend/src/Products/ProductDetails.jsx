@@ -507,31 +507,26 @@ const ProductDetails = () => {
                               if (!isDisabled) {
                                 setSelectedColor(c.color);
                                 setStockForSelection(stock);
-                                if (c.image) setSelectedImage(thumb);
+
+                                if (thumb) {
+                                  setSelectedImage(thumb);
+                                }
                               }
                             }}
                             disabled={isDisabled}
-                            className={`w-12 h-12 rounded-full border-1 overflow-hidden transition
-                              ${selectedColor === c.color
-                                ? "border-gray-800 w-12.2 h-12.2 ring-3 p-0.5 ring-gray-700"
-                                : "border-gray-300 "
+                            className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition
+    ${selectedColor === c.color
+                                ? "border-primary ring-2 ring-primary"
+                                : "border-gray-300"
                               }
-                              ${isDisabled
-                                ? "border-primary/30 cursor-not-allowed"
-                                : "border-primary/80"
-                              }
-                            `}
-                            style={thumb ? {} : { backgroundColor: c.color }}
+    ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+  `}
                           >
-                            <div className={`w-full cursor-pointer h-full rounded-full overflow-hidden`}>
-                              {thumb && (
-                                <img
-                                  src={thumb}
-                                  alt={c.color}
-                                  className="w-full h-full object-cover"
-                                />
-                              )}
-                            </div>
+                            <img
+                              src={thumb}
+                              alt={c.color}
+                              className="w-full h-full object-cover"
+                            />
                           </button>
 
                         );
