@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { IoIosSearch } from "react-icons/io";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
+import api from "../api";
 import { useNavigate } from "react-router-dom";
 
 const Search = ({ isOpen, onOpen, onClose }) => {
@@ -14,12 +13,11 @@ const Search = ({ isOpen, onOpen, onClose }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "products"));
-        const productList = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setAllProducts(productList);
+        const res = await api.get("/products");
+
+        const products = res.data?.data || res.data || [];
+
+        setAllProducts(products);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
@@ -35,13 +33,23 @@ const Search = ({ isOpen, onOpen, onClose }) => {
 
     const safeSearch = (searchTerm || "").toLowerCase();
     const filtered = allProducts.filter((p) => {
-      const name = (p?.name || "").toLowerCase();
+      const name = (
+        p?.productname ||
+        p?.name ||
+        ""
+      ).toLowerCase();
+
+      const description = (
+        p?.description ||
+        ""
+      ).toLowerCase();
       const category = (p?.category || "").toLowerCase();
       const subcategory = String(p?.subcategory || "").toLowerCase();
       return (
         name.includes(safeSearch) ||
         category.includes(safeSearch) ||
-        subcategory.includes(safeSearch)
+        subcategory.includes(safeSearch) ||
+        description.includes(safeSearch)
       );
     });
 
@@ -60,17 +68,17 @@ const Search = ({ isOpen, onOpen, onClose }) => {
       {/* 🔍 Search Icon */}
       <IoIosSearch
         className="text-primary text-2xl md:text-2xl hover:scale-110 transition-transform cursor-pointer hover:text-primary/80"
-       onClick={() => {
-  if (!isOpen) onOpen();
-  else onClose();
-}}
+        onClick={() => {
+          if (!isOpen) onOpen();
+          else onClose();
+        }}
 
       />
 
       {/* 🔎 Search Bar Dropdown */}
-      {isOpen  && (
-<div
-  className="
+      {isOpen && (
+        <div
+          className="
     absolute 
     top-12
     -left-24       /* 📱 default — 320px */
@@ -82,7 +90,7 @@ const Search = ({ isOpen, onOpen, onClose }) => {
 -translate-x-0 md:-translate-x-1/3 md:-translate-2.5/4 
 
   "
->
+        >
 
           <input
             type="text"
@@ -102,18 +110,15 @@ const Search = ({ isOpen, onOpen, onClose }) => {
                 >
                   <img
                     src={
-                      prod?.images?.[0] ||
-                      prod?.image?.[0] ||
                       prod?.image ||
-                      (prod?.colors &&
-                        Object.values(prod.colors)?.[0]?.image) ||
+                      (Array.isArray(prod?.images) ? prod.images[0] : null) ||
                       "/placeholder.jpg"
                     }
                     alt={prod.name || "Product"}
                     className="h-8 w-8 rounded object-cover border border-white"
                   />
                   <span className="text-primary text-sm truncate">
-                    {prod?.name || "Unnamed Product"}
+                    {prod?.productname || prod?.name || "Unnamed Product"}
                   </span>
                 </div>
               ))}
