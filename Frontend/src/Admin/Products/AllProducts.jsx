@@ -134,9 +134,24 @@ export default function ProductList() {
   };
 
   // ── Image helper ───────────────────────────────────
+  const resolveImage = (img) => {
+    if (Array.isArray(img) && img.length > 0) return img[0];
+    if (typeof img === "string" && img.trim() !== "") return img;
+    return null;
+  };
+
+  const resolveColorImage = (colors) => {
+    if (!colors) return null;
+    const entries = Array.isArray(colors) ? colors : Object.values(colors);
+    for (const color of entries) {
+      const image = resolveImage(color?.images) || resolveImage(color?.image);
+      if (image) return image;
+    }
+    return null;
+  };
+
   const getImg = (p) =>
-    p?.images?.[0] || p?.image?.[0] || p?.image ||
-    (p?.colors && Object.values(p.colors)?.[0]?.image) || "/placeholder.jpg";
+    resolveImage(p?.images) || resolveImage(p?.image) || resolveColorImage(p?.colors) || "/placeholder.jpg";
 
   // ── Filter Panel (shared between drawer & sidebar) ─
   const FilterPanel = () => (
