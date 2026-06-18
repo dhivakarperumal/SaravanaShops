@@ -129,9 +129,8 @@ export default function Account() {
 
           {/* Tabs List (hidden on mobile when dropdown closed) */}
           <ul
-            className={`space-y-2 p-4 transition-all duration-300 ${
-              showTabs ? "block" : "hidden lg:block"
-            }`}
+            className={`space-y-2 p-4 transition-all duration-300 ${showTabs ? "block" : "hidden lg:block"
+              }`}
           >
             {tabs.map((tab) => (
               <li key={tab.key}>
@@ -140,11 +139,10 @@ export default function Account() {
                     setActiveTab(tab.key);
                     setShowTabs(false);
                   }}
-                  className={`flex cursor-pointer items-center gap-3 w-full px-5 py-3 rounded-lg transition-all ${
-                    activeTab === tab.key
+                  className={`flex cursor-pointer items-center gap-3 w-full px-5 py-3 rounded-lg transition-all ${activeTab === tab.key
                       ? "bg-primary text-white shadow-md"
                       : "text-gray-700 hover:bg-secondary/30 hover:text-primary"
-                  }`}
+                    }`}
                 >
                   <span className="text-lg">{tab.icon}</span>
                   <span className="font-medium">{tab.label}</span>
@@ -280,9 +278,8 @@ function Orders() {
     const fetchOrders = async () => {
       try {
         const { data } = await api.get("/orders/my-orders");
-        if (data.success) {
-          setOrders(data.data);
-        }
+
+        setOrders(Array.isArray(data) ? data : data.orders || data.data || []);
       } catch (err) {
         console.error(err);
         toast.error("Failed to fetch orders.");
@@ -333,23 +330,21 @@ function Orders() {
       .map(
         (i, index) => `
       <tr>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">${
-          index + 1
-        }</td>
+        <td style="border:1px solid #ddd;padding:10px;text-align:center;">${index + 1
+          }</td>
         <td style="border:1px solid #ddd;padding:10px;display:flex;align-items:center;gap:10px;">
           <img src="${i.image}" alt="${i.name}" 
             style="width:50px;height:50px;object-fit:cover;border-radius:5px;border:1px solid #ddd;" />
           <span>${i.name}</span>
         </td>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">${
-          i.quantity
-        }</td>
+        <td style="border:1px solid #ddd;padding:10px;text-align:center;">${i.quantity
+          }</td>
         <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${i.price.toFixed(
-          2
-        )}</td>
+            2
+          )}</td>
         <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${(
-          i.quantity * i.price
-        ).toFixed(2)}</td>
+            i.quantity * i.price
+          ).toFixed(2)}</td>
       </tr>`
       )
       .join("");
@@ -367,9 +362,8 @@ function Orders() {
           <p><strong>Name:</strong> ${order.shipping?.name || "N/A"}</p>
           <p><strong>Email:</strong> ${order.shipping?.email || "N/A"}</p>
           <p><strong>Phone:</strong> ${order.shipping?.phone || "N/A"}</p>
-          <p><strong>Address:</strong> ${order.shipping?.address || ""}, ${
-      order.shipping?.city || ""
-    }, ${order.shipping?.state || ""}, ${order.shipping?.zip || ""}</p>
+          <p><strong>Address:</strong> ${order.shipping?.address || ""}, ${order.shipping?.city || ""
+      }, ${order.shipping?.state || ""}, ${order.shipping?.zip || ""}</p>
           <p><strong>Country:</strong> ${order.shipping?.country || ""}</p>
         </div>
 
@@ -381,11 +375,10 @@ function Orders() {
                     Ph: 7010575375</p>
           <p><strong>Status:</strong> ${order.status}</p>
           <p><strong>Payment:</strong> ${order.paymentMethod || "Online"}</p>
-          <p><strong>Date:</strong> ${
-            order.createdAt?.toDate
-              ? order.createdAt.toDate().toLocaleString()
-              : "N/A"
-          }</p>
+          <p><strong>Date:</strong> ${order.created_at
+        ? new Date(order.created_at).toLocaleString()
+        : "N/A"
+      }</p>
         </div>
       </div>
 
@@ -493,7 +486,7 @@ function Orders() {
           try { document.body.removeChild(iframe); } catch { /* ignored */ }
         }
       } catch {
-  try { document.body.removeChild(iframe); } catch { /* ignored */ }
+        try { document.body.removeChild(iframe); } catch { /* ignored */ }
       }
     }
   };
@@ -508,12 +501,12 @@ function Orders() {
 
       <div className="space-y-4">
         {orders.map((order) => {
-            const safeIndex = (arr, val) => (Array.isArray(arr) ? arr.indexOf(val) : -1);
-            const currentIndex = Array.isArray(trackingSteps)
-              ? safeIndex(trackingSteps, order.status || trackingSteps[0])
-              : -1;
-            const denom = (Array.isArray(trackingSteps) && trackingSteps.length > 1) ? (trackingSteps.length - 1) : 1;
-            const progressPercent = denom > 0 ? (currentIndex / denom) * 100 : 0;
+          const safeIndex = (arr, val) => (Array.isArray(arr) ? arr.indexOf(val) : -1);
+          const currentIndex = Array.isArray(trackingSteps)
+            ? safeIndex(trackingSteps, order.status || trackingSteps[0])
+            : -1;
+          const denom = (Array.isArray(trackingSteps) && trackingSteps.length > 1) ? (trackingSteps.length - 1) : 1;
+          const progressPercent = denom > 0 ? (currentIndex / denom) * 100 : 0;
 
           return (
             <div
@@ -529,7 +522,9 @@ function Orders() {
               >
                 <span className="flex flex-row">
                   <span className="text-primary font-semibold">Order ID:</span>
-                  <p className="pl-1">{order.orderId}</p>
+                  <p className="pl-1">
+                    {order.order_id || order.orderId}
+                  </p>
                 </span>
                 <span className="flex flex-row">
                   <span className="text-primary font-semibold">Status:</span>
@@ -537,7 +532,9 @@ function Orders() {
                 </span>
                 <span className="flex flex-row">
                   <span className="text-primary font-semibold">Payment:</span>
-                  <p className="pl-1">{order.paymentMethod || "Online"}</p>
+                  <p className="pl-1">
+                    {order.payment_method || order.paymentMethod || "Online"}
+                  </p>
                 </span>
               </div>
 
@@ -546,14 +543,14 @@ function Orders() {
                 <div className="mt-4 border-t border-gray-300 pt-3 space-y-3">
                   {/* Items */}
                   <div className="space-y-2">
-                    {order.items.map((item, i) => (
+                    {(order.items || []).map((item, i) => (
                       <div key={i} className="flex items-center gap-3">
                         <img
                           src={item.image}
                           className="w-16 h-16 object-cover rounded"
                           alt={item.name}
                         />
-                        
+
                         <div>
                           <p className="text-primary font-semibold line-clamp-1">
                             {item.product_name || item.productName || "N/A"}
@@ -564,8 +561,8 @@ function Orders() {
                           <p>
                             {item.quantity} × ₹{item.price} = ₹
                             {(item.quantity * item.price).toFixed(2)}
-                            <br/>
-                              Size:  {item.size}
+                            <br />
+                            Size:  {item.size}
                           </p>
                         </div>
                       </div>
@@ -576,16 +573,16 @@ function Orders() {
                   <div className="border-t border-gray-200 pt-2 space-y-1">
                     <div className="flex justify-between font-semibold">
                       <span>Subtotal:</span>
-                      <span>₹{order.subtotal?.toFixed(2) || "0.00"}</span>
+                      <span>₹{Number(order.subtotal || 0).toFixed(2)}</span>
                     </div>
 
                     <div className="flex justify-between pb-5 font-semibold">
                       <span>Shipping:</span>
-                      <span>₹{order.shippingCost?.toFixed(2) || "0.00"}</span>
+                      <span>₹{Number(order.shipping_cost || order.shippingCost || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between font-bold text-primary border-t pt-2 text-lg">
                       <span>Total:</span>
-                      <span>₹{order.total?.toFixed(2) || "0.00"}</span>
+                      <span>₹{Number(order.total_amount || order.total || 0).toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -612,82 +609,78 @@ function Orders() {
                         Order Tracking
                       </h4>
 
-                     
-                      
-                        <>
-                          {/* Desktop Horizontal Progress */}
-                          <div className="relative hidden md:flex items-center justify-between w-full">
-                            <div className="absolute top-[10px] left-0 w-full h-[3px] bg-gray-300 z-0"></div>
-                            <div
-                              className="absolute top-[10px] left-0 h-[3px] bg-primary z-0 transition-[width] duration-700 ease-in-out"
-                              style={{ width: `${progressPercent}%` }}
-                            ></div>
 
-                            {trackingSteps.map((step, index) => {
-                              const isActive = index <= currentIndex;
-                              return (
+
+                      <>
+                        {/* Desktop Horizontal Progress */}
+                        <div className="relative hidden md:flex items-center justify-between w-full">
+                          <div className="absolute top-[10px] left-0 w-full h-[3px] bg-gray-300 z-0"></div>
+                          <div
+                            className="absolute top-[10px] left-0 h-[3px] bg-primary z-0 transition-[width] duration-700 ease-in-out"
+                            style={{ width: `${progressPercent}%` }}
+                          ></div>
+
+                          {trackingSteps.map((step, index) => {
+                            const isActive = index <= currentIndex;
+                            return (
+                              <div
+                                key={index}
+                                className="relative z-10 flex flex-col items-center text-center flex-1"
+                              >
                                 <div
-                                  key={index}
-                                  className="relative z-10 flex flex-col items-center text-center flex-1"
+                                  className={`w-5 h-5 rounded-full border-2 transition-all duration-500 ${isActive
+                                      ? "bg-primary border-primary scale-110 shadow-md"
+                                      : "bg-white border-gray-300 scale-100"
+                                    }`}
+                                ></div>
+                                <p
+                                  className={`text-xs mt-2 ${isActive
+                                      ? "text-primary font-medium"
+                                      : "text-gray-400"
+                                    }`}
                                 >
-                                  <div
-                                    className={`w-5 h-5 rounded-full border-2 transition-all duration-500 ${
-                                      isActive
-                                        ? "bg-primary border-primary scale-110 shadow-md"
-                                        : "bg-white border-gray-300 scale-100"
-                                    }`}
-                                  ></div>
-                                  <p
-                                    className={`text-xs mt-2 ${
-                                      isActive
-                                        ? "text-primary font-medium"
-                                        : "text-gray-400"
-                                    }`}
-                                  >
-                                    {step}
-                                  </p>
-                                </div>
-                              );
-                            })}
-                          </div>
+                                  {step}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
 
-                          {/* Mobile Vertical Progress */}
-                          <div className="relative flex flex-col gap-5 md:hidden items-start pl-4">
-                            <div className="absolute left-[25px] top-0 h-full w-[3px] bg-gray-300 z-0"></div>
-                            <div
-                              className="absolute left-[25px] top-0 w-[3px] bg-primary z-0 transition-[height] duration-700 ease-in-out"
-                              style={{ height: `${progressPercent}%` }}
-                            ></div>
+                        {/* Mobile Vertical Progress */}
+                        <div className="relative flex flex-col gap-5 md:hidden items-start pl-4">
+                          <div className="absolute left-[25px] top-0 h-full w-[3px] bg-gray-300 z-0"></div>
+                          <div
+                            className="absolute left-[25px] top-0 w-[3px] bg-primary z-0 transition-[height] duration-700 ease-in-out"
+                            style={{ height: `${progressPercent}%` }}
+                          ></div>
 
-                            {trackingSteps.map((step, index) => {
-                              const isActive = index <= currentIndex;
-                              return (
+                          {trackingSteps.map((step, index) => {
+                            const isActive = index <= currentIndex;
+                            return (
+                              <div
+                                key={index}
+                                className="relative z-10 flex items-center mb-5 last:mb-0"
+                              >
                                 <div
-                                  key={index}
-                                  className="relative z-10 flex items-center mb-5 last:mb-0"
+                                  className={`w-5 h-5 rounded-full border-2 transition-all duration-500 ${isActive
+                                      ? "bg-primary border-primary scale-110 shadow-md"
+                                      : "bg-white border-gray-300 scale-100"
+                                    }`}
+                                ></div>
+                                <p
+                                  className={`text-sm ml-3 ${isActive
+                                      ? "text-primary font-medium"
+                                      : "text-gray-400"
+                                    }`}
                                 >
-                                  <div
-                                    className={`w-5 h-5 rounded-full border-2 transition-all duration-500 ${
-                                      isActive
-                                        ? "bg-primary border-primary scale-110 shadow-md"
-                                        : "bg-white border-gray-300 scale-100"
-                                    }`}
-                                  ></div>
-                                  <p
-                                    className={`text-sm ml-3 ${
-                                      isActive
-                                        ? "text-primary font-medium"
-                                        : "text-gray-400"
-                                    }`}
-                                  >
-                                    {step}
-                                  </p>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </>
-                      
+                                  {step}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+
                     </div>
 
                     {/* Buttons */}
@@ -880,7 +873,7 @@ function UpdateAddress() {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     // Name validation
     if (!form.firstname.trim()) newErrors.firstname = "First name required";
     if (!form.lastname.trim()) newErrors.lastname = "Last name required";
