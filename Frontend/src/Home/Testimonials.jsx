@@ -1,25 +1,23 @@
-
-
-
 import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
+import api from "../api";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 
 export default function Testimonials() {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "reviews"));
-        const data = querySnapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .filter((t) => t.tick === true);
+        const res = await api.get("/reviews");
+
+        const data = res.data.filter(
+          (item) => Number(item.tick) === 1 || item.tick === true
+        );
+
         setTestimonials(data);
       } catch (error) {
         console.error("Error fetching testimonials:", error);
