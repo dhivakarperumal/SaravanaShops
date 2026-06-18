@@ -82,7 +82,19 @@ const ProductDetails = () => {
     if (firstImg) setSelectedImage(firstImg);
   }, [product]);
 
+  const fetchRelatedProducts = async (category, currentId) => {
+    try {
+      const res = await api.get(
+        `/products/related/${category}/${currentId}`
+      );
 
+      setRelatedProducts(res.data.products || []);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoadingRelated(false);
+    }
+  };
 
   // images: skip empty arrays — fall back to color images when product.images is []
   const images = (
@@ -90,18 +102,18 @@ const ProductDetails = () => {
       ? product.images
       : null
   ) ||
-  (Array.isArray(product?.image) && product.image.length > 0
-    ? product.image
-    : typeof product?.image === "string" && product.image
-      ? [product.image]
-      : null
-  ) ||
-  (product?.colors?.length > 0
-    ? product.colors
+    (Array.isArray(product?.image) && product.image.length > 0
+      ? product.image
+      : typeof product?.image === "string" && product.image
+        ? [product.image]
+        : null
+    ) ||
+    (product?.colors?.length > 0
+      ? product.colors
         .map((c) => (Array.isArray(c.image) ? c.image[0] : c.image))
         .filter(Boolean)
-    : null
-  ) || ["/placeholder.jpg"];
+      : null
+    ) || ["/placeholder.jpg"];
 
   const handleMouseMove = (e) => {
     const { left, top, width, height } =
