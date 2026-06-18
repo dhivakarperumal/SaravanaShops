@@ -82,19 +82,7 @@ const ProductDetails = () => {
     if (firstImg) setSelectedImage(firstImg);
   }, [product]);
 
-  const fetchRelatedProducts = async (category, currentId) => {
-    try {
-      const res = await api.get(
-        `/products/related/${category}/${currentId}`
-      );
 
-      setRelatedProducts(res.data.products || []);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoadingRelated(false);
-    }
-  };
 
   // images: skip empty arrays — fall back to color images when product.images is []
   const images = (
