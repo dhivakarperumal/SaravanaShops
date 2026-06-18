@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { collection, getDocs, query } from "firebase/firestore";
-import { db } from "../firebase";
+import api from "../api";
 import ProductCard from "../Products/ProductCard";
 import ProductModal from "../Products/ProductModal";
 
@@ -17,33 +16,38 @@ const Offer = () => {
   useEffect(() => {
     const fetchOfferProducts = async () => {
       try {
-        const q = query(collection(db, "products"));
-        const querySnapshot = await getDocs(q);
+        setLoading(true);
 
-        // Filter products with discount, calculate offer percentage
-        const offerProducts = querySnapshot.docs
-          .map((doc) => {
-            const data = doc.data();
-            const mrp = data.mrp || 0;
-            const sellingprice = data.sellingprice || 0;
-            const offerPercentage =
-              mrp && sellingprice && sellingprice < mrp
-                ? Math.round(((mrp - sellingprice) / mrp) * 100)
-                : 0;
+        const res = await api.get("/products");
 
-            return {
-              id: doc.id,
-              ...data,
-              createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(0),
-              offerPercentage,
-              offerBadge: offerPercentage > 0,
-            };
-          })
-          .filter((p) => p.offerBadge) // Only products with discount
-          .sort((a, b) => b.offerPercentage - a.offerPercentage) // Highest discount first
-          .slice(0, 12); // Limit to 12 products
+        if (res.data.success) {
+          const offerProducts = res.data.data
+            .map((item) => {
+              const mrp = Number(item.mrp || item.originalprice || 0);
+              const sellingprice = Number(
+                item.sellingprice || item.price || 0
+              );
 
-        setProducts(offerProducts);
+              const offerPercentage =
+                mrp > sellingprice && mrp > 0
+                  ? Math.round(((mrp - sellingprice) / mrp) * 100)
+                  : 0;
+
+              return {
+                ...item,
+                id: item.id,
+                mrp,
+                sellingprice,
+                offerPercentage,
+                offerBadge: offerPercentage > 0,
+              };
+            })
+            .filter((p) => p.offerBadge)
+            .sort((a, b) => b.offerPercentage - a.offerPercentage)
+            .slice(0, 12);
+
+          setProducts(offerProducts);
+        }
       } catch (error) {
         console.error("Error fetching offer products:", error);
       } finally {
