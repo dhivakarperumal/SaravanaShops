@@ -394,17 +394,25 @@ const Checkout = () => {
             }
 
             // Save order globally and under user orders
-            await api.post("/orders", {
+            await api.post("/orders/create", {
               user_id: userId,
-              order_id: orderId,
-              address_id: finalAddressId,
+              items: cartItems,
               subtotal,
-              shipping_cost: shippingCost,
-              total_amount: totalAmount,
-              payment_id: response.razorpay_payment_id,
-              payment_method: "Online",
+              shippingCost,
+              total: totalAmount,
               status: "Order Placed",
-              items: cartItems
+              ordertype: "Shop",
+              shipping: {
+                name: shipping.name,
+                email: shipping.email,
+                phone: shipping.phone,
+                address: `${shipping.doorNumber ? shipping.doorNumber + ", " : ""}${shipping.streetName ? shipping.streetName + ", " : ""}${shipping.address}`,
+                city: shipping.city,
+                state: shipping.state,
+                zip: shipping.zip,
+                country: shipping.country,
+              },
+              clientCreatedAt: new Date().toISOString(),
             });
 
             // Send EmailJS confirmation (ensure you use your own service/template/ID)
