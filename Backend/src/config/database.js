@@ -128,6 +128,10 @@ async function initializeDatabase() {
         total DECIMAL(10,2) DEFAULT 0.0,
         status VARCHAR(50) DEFAULT 'Pending',
         ordertype VARCHAR(50) DEFAULT 'Shop',
+        docketNumber VARCHAR(255),
+        qname VARCHAR(255),
+        cancelReasons TEXT,
+        cancelledAt DATETIME,
         shipping_name VARCHAR(255),
         shipping_email VARCHAR(255),
         shipping_phone VARCHAR(20),
@@ -150,6 +154,24 @@ async function initializeDatabase() {
     } catch (e) {
       if (e.code === 'ER_BAD_FIELD_ERROR') {
         await connection.query(`ALTER TABLE orders ADD COLUMN user_id VARCHAR(255) AFTER orderId`);
+      }
+    }
+
+    // Safely add courier and cancellation fields to existing orders table if they don't exist
+    const safeAlterColumns = [
+      { name: 'docketNumber', definition: 'VARCHAR(255)' },
+      { name: 'qname', definition: 'VARCHAR(255)' },
+      { name: 'cancelReasons', definition: 'TEXT' },
+      { name: 'cancelledAt', definition: 'DATETIME' }
+    ];
+
+    for (const column of safeAlterColumns) {
+      try {
+        await connection.query(`SELECT ${column.name} FROM orders LIMIT 1`);
+      } catch (e) {
+        if (e.code === 'ER_BAD_FIELD_ERROR') {
+          await connection.query(`ALTER TABLE orders ADD COLUMN ${column.name} ${column.definition}`);
+        }
       }
     }
 
