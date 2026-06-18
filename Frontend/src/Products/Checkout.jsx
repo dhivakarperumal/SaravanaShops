@@ -1,44 +1,21 @@
 // Checkout.jsx
 import React, { useEffect, useState } from "react";
-import { auth, db } from "../firebase";
-import {
-  collection,
-  getDocs,
-  doc,
-  addDoc,
-  setDoc,
-  writeBatch,
-  Timestamp,
-  runTransaction,
-  onSnapshot,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import api from "../api";
 import { toast } from "react-hot-toast";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import Head from "../Components/Head";
 import { IoIosArrowForward } from "react-icons/io";
 import emailjs from "@emailjs/browser";
 
-/**
- * Checkout component
- * - Supports 'Buy Now' and normal cart checkout
- * - Loads Razorpay key from Firestore collection 'razorpayKeys'
- * - Generates order number using a transaction document at metadata/ordersCounter
- * - Updates product stock using transactions
- * - Saves order in global orders collection + users/{uid}/orders
- * - Sends confirmation email via EmailJS
- */
-
 /* ----------------------------- Static lists ------------------------------ */
 const indianStates = [
-  "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa",
-  "Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala",
-  "Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland",
-  "Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura",
-  "Uttar Pradesh","Uttarakhand","West Bengal","Andaman and Nicobar Islands",
-  "Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Delhi",
-  "Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry",
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa",
+  "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala",
+  "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland",
+  "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
+  "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands",
+  "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi",
+  "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry",
 ];
 
 const countryList = ["India", "Malaysia", "Singapore", "UAE"];
@@ -80,38 +57,31 @@ const Checkout = () => {
   const [placing, setPlacing] = useState(false);
 
   // Shipping address form
- const [shipping, setShipping] = useState({
-  name: "",
-  email: "",
-  phone: "",
-  doorNumber: "",
-  streetName: "",
-  address: "",
-  landmark: "", // new field
-  city: "",
-  state: "",
-  zip: "",
-  country: "India",
-});
+  const [shipping, setShipping] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    doorNumber: "",
+    streetName: "",
+    address: "",
+    landmark: "", // new field
+    city: "",
+    state: "",
+    zip: "",
+    country: "India",
+  });
 
 
   const [errors, setErrors] = useState({});
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
 
-  /* ------------------------- Fetch Razorpay key & pre-load SDK -------------- */
   useEffect(() => {
     const initPayment = async () => {
       try {
         // Fetch Razorpay key
-        const snaps = await getDocs(collection(db, "razorpayKeys"));
-        if (!snaps.empty) {
-          // expecting first doc contains { key: "rzp_live_..." }
-          const keyData = snaps.docs[0].data()?.key;
-          setRazorpayKey(keyData || null);
-        } else {
-          console.warn("No razorpayKeys document found in Firestore.");
-        }
+        const res = await api.get("/settings/razorpay");
+        setRazorpayKey(res.data.key);
 
         // Pre-load Razorpay SDK on mount for instant payment opening
         await loadScript("https://checkout.razorpay.com/v1/checkout.js");
@@ -125,14 +95,19 @@ const Checkout = () => {
 
   /* ---------------------- Load saved addresses (if any) ------------------ */
   useEffect(() => {
-    const user = auth.currentUser;
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user?.user_id || user?.id;
     if (!user) return;
 
     const fetchAddresses = async () => {
       try {
-        const snap = await getDocs(collection(db, "users", user.uid, "addresses"));
-        const addrs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const res = await api.get(`/addresses/${userId}`);
+
+        setSavedAddresses(res.data || []);
+        const addrs = res.data || [];
+
         setSavedAddresses(addrs);
+
         if (addrs.length > 0 && !selectedAddressId) {
           setSelectedAddressId(addrs[0].id);
         }
@@ -142,28 +117,33 @@ const Checkout = () => {
     };
 
     fetchAddresses();
-  }, [auth.currentUser, selectedAddressId]);
+  }, [selectedAddressId]);
 
   /* ------------------------- Pre-fill user email ------------------------ */
   useEffect(() => {
-    const user = auth.currentUser;
+    const user = JSON.parse(localStorage.getItem("user"));
+
     if (user && !shipping.email) {
-      setShipping((prev) => ({ ...prev, email: user.email || "" }));
+      setShipping((prev) => ({
+        ...prev,
+        email: user.email || "",
+      }));
     }
-  }, [auth.currentUser]); // eslint-disable-line
+  }, []);
 
   /* ---------------------- Load cart or buy-now item --------------------- */
   useEffect(() => {
-    const user = auth.currentUser;
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user?.user_id || user?.id;
     const buyNowOrder = location.state?.order;
 
-      if (buyNowOrder) {
+    if (buyNowOrder) {
       setIsBuyNow(true);
       const item = {
         id: buyNowOrder.productId || "temp_buy_now",
         productId: buyNowOrder.productId || "temp_buy_now",
         name: buyNowOrder.name,
-          productName: buyNowOrder.product_name || buyNowOrder.productName || "",
+        productName: buyNowOrder.product_name || buyNowOrder.productName || "",
         sellingprice: Number(buyNowOrder.sellingprice || 0),
         quantity: Number(buyNowOrder.quantity || 1),
         size: buyNowOrder.size || "",
@@ -189,30 +169,40 @@ const Checkout = () => {
 
     setLoading(true);
     // Realtime snapshot of user cart
-    const cartCol = collection(db, "users", user.uid, "cart");
-    const unsubscribe = onSnapshot(
-      cartCol,
-      (snapshot) => {
-        const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const fetchCart = async () => {
+      try {
+        const res = await api.get(`/cart/${userId}`);
+
+        const items = res.data || [];
+
         setCartItems(items);
+
         const total = items.reduce(
-          (acc, it) => acc + (parseFloat(it.sellingprice) || 0) * (it.quantity || 1),
+          (acc, it) =>
+            acc +
+            (parseFloat(it.sellingprice) || 0) *
+            (it.quantity || 1),
           0
         );
-        const qty = items.reduce((a, b) => a + (b.quantity || 1), 0);
+
+        const qty = items.reduce(
+          (a, b) => a + (b.quantity || 1),
+          0
+        );
+
         setSubtotal(total);
         setTotalQuantity(qty);
-        setLoading(false);
-      },
-      (err) => {
-        console.error("Cart listener error:", err);
-        toast.error("Failed to load cart.");
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load cart");
+      } finally {
         setLoading(false);
       }
-    );
+    };
 
-    return () => unsubscribe();
-  }, [location.state, auth.currentUser]); // eslint-disable-line
+    fetchCart();
+
+  }, [location.state]); // eslint-disable-line
 
   /* ------------------------- Shipping calculation ----------------------- */
   useEffect(() => {
@@ -253,7 +243,7 @@ const Checkout = () => {
 
   const validate = () => {
     const err = {};
-    
+
     // Name validation
     if (!shipping.name) {
       err.name = "Customer name is required";
@@ -307,112 +297,24 @@ const Checkout = () => {
   };
 
   const generateOrderNumber = async () => {
-    // Order number format requested: ORD + MM + DD + NN
-    // Uses a per-day counter stored in Firestore metadata/ordersCounter_MMDD
-    // Transaction increments atomically so IDs are unique for the day.
-    const now = new Date();
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
-    const dayKey = `${mm}${dd}`; // e.g. '0224'
-    const counterRef = doc(db, "metadata", `ordersCounter_${dayKey}`);
-
-    const maxRetries = 5;
-    let lastErr = null;
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        const orderNum = await runTransaction(db, async (tx) => {
-          const docSnap = await tx.get(counterRef);
-          const current = docSnap.exists() ? (docSnap.data().count || 0) : 0;
-          const next = current + 1;
-
-          // Persist the new counter with server timestamp
-          tx.set(counterRef, { count: next, updatedAt: Timestamp.now() }, { merge: true });
-
-          // Pad sequence to at least 2 digits (01..09,10..99). If >99, sequence will grow to 3+ digits
-          const seq = String(next).padStart(2, "0");
-          return `ORD${mm}${dd}${seq}`;
-        });
-        return orderNum;
-      } catch (err) {
-        lastErr = err;
-        console.warn(`generateOrderNumber attempt ${attempt + 1} failed:`, err);
-        // small backoff before retry
-        await new Promise((r) => setTimeout(r, 150 * (attempt + 1)));
-      }
-    }
-
-    console.error("generateOrderNumber failed after", maxRetries, "attempts:", lastErr);
-    // Fallback: use MMDD + random 2-digit to reduce collision chance
-    const fallbackSeq = String(Math.floor(Math.random() * 90 + 10));
-    return `ORD${mm}${dd}${fallbackSeq}`;
+    const res = await api.get("/orders/generate-order-id");
+    return res.data.orderId;
   };
 
   /* ---------------------- Reduce product stock ------------------------- */
   const reduceProductStock = async (items) => {
-    // For each item, run transaction on product doc
-    for (const item of items) {
-      const prodRef = doc(db, "products", item.productId || item.id);
-      try {
-        await runTransaction(db, async (tx) => {
-          const prodSnap = await tx.get(prodRef);
-          if (!prodSnap.exists()) return;
-          const prodData = prodSnap.data();
-
-          // bangle singlecolor with size/color stock map
-          if (
-            prodData.colors &&
-            item.color &&
-            item.size &&
-            prodData.category?.toLowerCase() === "bangle" &&
-            prodData.count?.toLowerCase() === "singlecolor"
-          ) {
-            const colorsArr = (prodData.colors || []).map((c) => {
-              if (String(c.color).toLowerCase() === String(item.color).toLowerCase()) {
-                const prevStock = (c.stock && c.stock[item.size] !== undefined) ? c.stock[item.size] : (c.stock ? c.stock[String(item.size)] : undefined);
-                const newStockVal = Math.max(0, (Number(prevStock) || 0) - Number(item.quantity || 0));
-                return {
-                  ...c,
-                  stock: {
-                    ...c.stock,
-                    [item.size]: newStockVal,
-                  },
-                };
-              }
-              return c;
-            });
-            tx.update(prodRef, { colors: colorsArr });
-          } else if (prodData.stock !== undefined) {
-            const newStock = Math.max(0, (Number(prodData.stock) || 0) - Number(item.quantity || 0));
-            tx.update(prodRef, { stock: newStock });
-          } else {
-            // product has no tracked stock - skip
-            return;
-          }
-        });
-      } catch (err) {
-        console.error("reduceProductStock transaction error for item", item, err);
-        // continue to next item
-      }
-    }
+    await api.post("/orders/update-stock", { items });
   };
 
   /* ------------------------ Clear user cart ---------------------------- */
-  const clearUserCart = async (uid) => {
-    try {
-      const cartCol = collection(db, "users", uid, "cart");
-      const snap = await getDocs(cartCol);
-      const batch = writeBatch(db);
-      snap.docs.forEach((d) => batch.delete(d.ref));
-      await batch.commit();
-    } catch (err) {
-      console.error("clearUserCart error:", err);
-    }
+  const clearUserCart = async (userId) => {
+    await api.delete(`/cart/user/${userId}`);
   };
 
   /* ------------------------ Place Order / Pay -------------------------- */
   const handlePlaceOrder = async () => {
-    const user = auth.currentUser;
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user?.user_id || user?.id;
     if (!user) return toast.error("Please login first");
 
     if (cartItems.length === 0) {
@@ -470,9 +372,10 @@ const Checkout = () => {
 
             let finalAddressId = addressId;
             if (!isExisting) {
-              const adRef = await addDoc(collection(db, "users", user.uid, "addresses"), {
-                firstname: shipping.name.split(" ")[0] || shipping.name,
-                lastname: shipping.name.split(" ").slice(1).join(" ") || "",
+              const addressRes = await api.post("/addresses", {
+                user_id: userId,
+                firstname: shipping.name.split(" ")[0],
+                lastname: shipping.name.split(" ").slice(1).join(" "),
                 contact: shipping.phone,
                 doorNumber: shipping.doorNumber,
                 streetName: shipping.streetName,
@@ -480,52 +383,26 @@ const Checkout = () => {
                 landmark: shipping.landmark,
                 city: shipping.city,
                 state: shipping.state,
-                pin: shipping.zip,
-                createdAt: Timestamp.now()
+                pin: shipping.zip
               });
-              finalAddressId = adRef.id;
-              setSelectedAddressId(adRef.id);
+
+              finalAddressId = addressRes.data.addressId;
+              setSelectedAddressId(finalAddressId);
             }
 
-            // Create order doc reference
-            const orderRef = doc(collection(db, "orders"));
-            const docId = orderRef.id;
-
-            const orderPayload = {
-              id: docId,
-              orderId,
-              userId: user.uid,
-              shipping: {
-                ...shipping,
-                savedAddressId: finalAddressId || null,
-              },
-              ordertype: "Online",
-                items: cartItems.map((it) => ({
-                id: it.id,
-                productId: it.product_id || it.id,
-                name: it.product_name,
-                productName: it.product_name || "",
-                price: Number(it.sellingprice) || 0,
-                quantity: Number(it.quantity) || 1,
-                color: it.color || "",
-                size: it.size || "",
-                image: it.image || "",
-                category: it.category || "",
-                count: it.count || "",
-              })),
-              subtotal,
-              shippingCost,
-              total: totalAmount,
-              paymentMethod: "Online",
-              status: "Order Placed",
-              createdAt: Timestamp.now(),
-              paidAt: Timestamp.now(),
-              paymentId: response?.razorpay_payment_id || null,
-            };
-
             // Save order globally and under user orders
-            await setDoc(orderRef, orderPayload);
-            await setDoc(doc(db, "users", user.uid, "orders", docId), orderPayload);
+            await api.post("/orders", {
+              user_id: userId,
+              order_id: orderId,
+              address_id: finalAddressId,
+              subtotal,
+              shipping_cost: shippingCost,
+              total_amount: totalAmount,
+              payment_id: response.razorpay_payment_id,
+              payment_method: "Online",
+              status: "Order Placed",
+              items: cartItems
+            });
 
             // Send EmailJS confirmation (ensure you use your own service/template/ID)
             try {
@@ -557,7 +434,7 @@ const Checkout = () => {
 
             // Clear user cart unless it's buy now
             if (!isBuyNow) {
-              await clearUserCart(user.uid);
+              await clearUserCart(userId);
             }
 
             toast.success(`Payment successful — order ${orderId} placed`);
@@ -794,9 +671,9 @@ const Checkout = () => {
               {/* State and Country */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                <select 
-                  name="state" 
-                  value={shipping.state} 
+                <select
+                  name="state"
+                  value={shipping.state}
                   onChange={handleChange}
                   className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 >
@@ -810,9 +687,9 @@ const Checkout = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                <select 
-                  name="country" 
-                  value={shipping.country} 
+                <select
+                  name="country"
+                  value={shipping.country}
                   onChange={handleChange}
                   className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 >
@@ -831,9 +708,9 @@ const Checkout = () => {
             <div className="flex flex-col gap-4 mb-4 max-h-64 overflow-y-auto">
               {cartItems.map((it) => (
                 <div key={it.id} className="flex items-center gap-3">
-                    <img src={it.image || "/placeholder.jpg"} className="w-14 h-14 object-cover rounded" alt={it.product_name || it.name} />
-                    <div className="flex-1 flex flex-col">
-                      <span className="font-medium">{it.product_name || "N/A"}</span>
+                  <img src={it.image || "/placeholder.jpg"} className="w-14 h-14 object-cover rounded" alt={it.product_name || it.name} />
+                  <div className="flex-1 flex flex-col">
+                    <span className="font-medium">{it.product_name || "N/A"}</span>
                     <span className="text-xs text-gray-500">Qty: {it.quantity || 1}</span>
                     {it.size && <span className="text-xs text-gray-400">Size: {it.size} {it.color && `| Color: ${it.color}`}</span>}
                   </div>
@@ -850,9 +727,8 @@ const Checkout = () => {
             <button
               onClick={handlePlaceOrder}
               disabled={placing}
-              className={`w-full py-2 rounded transition font-medium ${
-                placing ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/80 cursor-pointer"
-              }`}
+              className={`w-full py-2 rounded transition font-medium ${placing ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/80 cursor-pointer"
+                }`}
             >
               {placing ? "Placing Order..." : "Pay Online"}
             </button>
