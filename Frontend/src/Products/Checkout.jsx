@@ -25,9 +25,12 @@ const countryList = ["India", "Malaysia", "Singapore", "UAE"];
 
 const loadScript = (src) => {
   return new Promise((resolve) => {
-    if (document.querySelector(`script[src="${src}"]`)) return resolve(true);
-    const script = document.createElement("script");
-    script.src = src;
+    const existingScript = document.querySelector(`script[src="${src}"]`);
+    if (existingScript) {
+      if (window.Razorpay) return resolve(true);
+      existingScript.remove();
+    }
+
     script.async = true;
     script.onload = () => resolve(true);
     script.onerror = () => resolve(false);
@@ -101,8 +104,8 @@ const Checkout = () => {
 
         // Pre-load Razorpay SDK on mount for instant payment opening
         const loaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
-        if (!loaded) {
-          console.error("Razorpay SDK failed to load");
+        if (!loaded || !window.Razorpay) {
+          console.error("Razorpay SDK failed to load", { loaded, hasRazorpay: !!window.Razorpay });
           toast.error("Failed to load payment SDK. Please refresh and try again.");
         } else {
           console.log("Razorpay SDK pre-loaded");
@@ -325,7 +328,7 @@ const Checkout = () => {
 
   /* ------------------------ Clear user cart ---------------------------- */
   const clearUserCart = async (userId) => {
-    await api.delete(`/cart/user/${userId}`);
+    await api.delete(`/cart/clear/${userId}`);
   };
 
   /* ------------------------ Place Order / Pay -------------------------- */
