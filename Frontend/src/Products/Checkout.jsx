@@ -26,16 +26,44 @@ const countryList = ["India", "Malaysia", "Singapore", "UAE"];
 const loadScript = (src) => {
   return new Promise((resolve) => {
     const existingScript = document.querySelector(`script[src="${src}"]`);
+    const hasRazorpay = typeof window !== "undefined" && !!window.Razorpay;
+
     if (existingScript) {
-      if (window.Razorpay) return resolve(true);
+      if (hasRazorpay) return resolve(true);
       existingScript.remove();
     }
 
+    const script = document.createElement("script");
+    script.src = src;
     script.async = true;
-    script.onload = () => resolve(true);
+    script.onload = () => {
+      resolve(typeof window !== "undefined" && !!window.Razorpay);
+    };
     script.onerror = () => resolve(false);
     document.body.appendChild(script);
   });
+};
+
+const ensureRazorpay = async () => {
+  if (typeof window !== "undefined" && window.Razorpay) {
+    return true;
+  }
+
+  const url = "https://checkout.razorpay.com/v1/checkout.js";
+  const maxAttempts = 2;
+  let attempt = 0;
+
+  while (attempt < maxAttempts) {
+    attempt += 1;
+    const loaded = await loadScript(url);
+    if (loaded && typeof window !== "undefined" && window.Razorpay) {
+      return true;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
+  return false;
 };
 
 /* ----------------------------- Component -------------------------------- */
@@ -359,8 +387,9 @@ const Checkout = () => {
       const totalAmount = subtotal + shippingCost;
       const addressId = selectedAddressId; // Use existing address; will save new one after payment
 
-      // Verify Razorpay SDK is ready (pre-loaded on mount)
-      if (!window.Razorpay) {
+      // Verify Razorpay SDK is ready (pre-loaded on mount or retry now)
+      const razorpayReady = await ensureRazorpay();
+      if (!razorpayReady) {
         toast.error("Payment SDK not ready. Please refresh page and try again.");
         setPlacing(false);
         return;
