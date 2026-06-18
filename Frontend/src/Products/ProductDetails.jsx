@@ -265,7 +265,7 @@ const ProductDetails = () => {
 
     try {
       const userId = user?.user_id || user?.id;
-      await api.post("/reviews/add", {
+      await api.post("/reviews", {
         product_id: product.id,
         user_id: userId,
         user_name: user.username || user.name,
