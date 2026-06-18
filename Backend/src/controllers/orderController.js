@@ -21,6 +21,21 @@ async function generateOrderId(connection) {
   return `ORD${mm}${dd}${seq}`;
 }
 
+// Public route handler to return a generated order id
+exports.generateOrderId = async (req, res) => {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    const id = await generateOrderId(connection);
+    connection.release();
+    res.status(200).json({ success: true, orderId: id });
+  } catch (error) {
+    if (connection) connection.release();
+    console.error('generateOrderId error:', error);
+    res.status(500).json({ success: false, message: 'Failed to generate order id' });
+  }
+};
+
 exports.createOrder = async (req, res) => {
   let connection;
   try {
