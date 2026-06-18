@@ -588,7 +588,7 @@ const ProductModal = ({ product, onClose }) => {
                       {product.colors.map((c, idx) => {
                         const isSelected = selectedColor === c.color;
                         const available = colorAvailableForSize(c, selectedSize);
-                        const thumb = Array.isArray(c.image) ? c.image[0] : c.image;
+                        const thumb = resolveImage(c?.images) || resolveImage(c?.image);
                         return (
                           <button
                             key={idx}

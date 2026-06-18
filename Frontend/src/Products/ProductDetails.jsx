@@ -464,9 +464,7 @@ const ProductDetails = () => {
                               setStockForSelection(stock);
 
                               // Update image
-                              const img = Array.isArray(firstColor.image)
-                                ? firstColor.image[0]
-                                : firstColor.image;
+                              const img = resolveImage(firstColor?.images) || resolveImage(firstColor?.image);
                               if (img) setSelectedImage(img);
                             } else {
                               // No available color for this size
@@ -493,7 +491,7 @@ const ProductDetails = () => {
                     <p className="text-gray-500 font-medium mb-1">Color</p>
                     <div className="flex flex-wrap gap-2">
                       {product.colors.map((c, idx) => {
-                        const thumb = Array.isArray(c.image) ? c.image[0] : c.image;
+                        const thumb = resolveImage(c?.images) || resolveImage(c?.image);
                         const sizeKey = selectedSize;
                         const stockMap = c.stock || {};
                         const stock = sizeKey
@@ -501,7 +499,6 @@ const ProductDetails = () => {
                           : 1;
                         const isDisabled = sizeKey && stock <= 0;
                         return (
-                          <button
                             key={idx}
                             onClick={() => {
                               if (!isDisabled) {
