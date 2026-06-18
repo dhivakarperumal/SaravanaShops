@@ -63,6 +63,38 @@ const Search = ({ isOpen, onOpen, onClose }) => {
     navigate(`/allproducts/${productId}`);
   };
 
+  const getSearchImage = (prod) => {
+    if (Array.isArray(prod?.images) && prod.images.length > 0) {
+      return prod.images[0];
+    }
+
+    if (Array.isArray(prod?.image) && prod.image.length > 0) {
+      return prod.image[0];
+    }
+
+    if (typeof prod?.image === "string" && prod.image.trim() !== "") {
+      return prod.image;
+    }
+
+    const colors = Array.isArray(prod?.colors)
+      ? prod.colors
+      : prod?.colors
+      ? Object.values(prod.colors)
+      : [];
+
+    if (colors.length > 0) {
+      const firstColor = colors[0];
+      if (Array.isArray(firstColor?.images) && firstColor.images.length > 0) {
+        return firstColor.images[0];
+      }
+      if (typeof firstColor?.image === "string" && firstColor.image.trim() !== "") {
+        return firstColor.image;
+      }
+    }
+
+    return "/placeholder.jpg";
+  };
+
   return (
     <div className="relative">
       {/* 🔍 Search Icon */}
@@ -109,19 +141,7 @@ const Search = ({ isOpen, onOpen, onClose }) => {
                   className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-white/10 rounded transition-colors"
                 >
                   <img
-                    src={
-                      prod?.image ||
-                      (Array.isArray(prod?.images) && prod.images.length > 0
-                        ? prod.images[0]
-                        : null) ||
-                      (Array.isArray(prod?.colors) &&
-                        prod.colors.length > 0 &&
-                        Array.isArray(prod.colors[0]?.images) &&
-                        prod.colors[0].images.length > 0
-                        ? prod.colors[0].images[0]
-                        : null) ||
-                      "/placeholder.jpg"
-                    }
+                    src={getSearchImage(prod)}
                     alt={prod?.productname || prod?.name || "Product"}
                     className="h-8 w-8 rounded object-cover border border-white"
                   />
