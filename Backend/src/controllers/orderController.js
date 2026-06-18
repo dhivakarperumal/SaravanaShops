@@ -50,11 +50,20 @@ exports.createOrder = async (req, res) => {
 
     // Verify and update stock for each item
     for (const item of items) {
-      // item.id here refers to the auto-increment 'id' of products table
-      const [productRows] = await connection.query('SELECT * FROM products WHERE id = ? FOR UPDATE', [item.id]);
-      
+      const productIdentifier = item.product_id ?? item.productId ?? item.id;
+      if (!productIdentifier) {
+        throw new Error(`Invalid product identifier for order item: ${item.name || item.product_name || 'Unknown item'}`);
+      }
+
+      const rawIdentifier = String(productIdentifier).trim();
+      const isNumericId = /^[0-9]+$/.test(rawIdentifier);
+      const lookupQuery = isNumericId
+        ? 'SELECT * FROM products WHERE id = ? FOR UPDATE'
+        : 'SELECT * FROM products WHERE productId = ? FOR UPDATE';
+
+      const [productRows] = await connection.query(lookupQuery, [rawIdentifier]);
       if (productRows.length === 0) {
-        throw new Error(`Product ${item.name} not found`);
+        throw new Error(`Product ${item.name || item.product_name || item.productId || rawIdentifier} not found`);
       }
 
       const product = productRows[0];
@@ -62,13 +71,20 @@ exports.createOrder = async (req, res) => {
       const productType = product.productType ? product.productType.toLowerCase() : '';
       const isBangle = category.includes('bangle') || productType.includes('bangle');
       const countType = product.count; // e.g. SingleColor
+      const quantity = parseInt(item.quantity, 10) || 0;
+
+      if (quantity <= 0) {
+        throw new Error(`Invalid quantity for ${item.name || item.product_name || 'item'}`);
+      }
 
       // Bangle logic for specific color/size stock
       if (isBangle && countType === 'SingleColor' && item.color && item.size) {
         let colorsArray = [];
         try {
           colorsArray = product.colors ? JSON.parse(product.colors) : [];
-        } catch(e) {}
+        } catch (e) {
+          colorsArray = [];
+        }
         
         let found = false;
         let sufficientStock = false;
@@ -76,26 +92,26 @@ exports.createOrder = async (req, res) => {
         const updatedColors = colorsArray.map((c) => {
           if (String(c.color) === String(item.color) && c.stock?.[item.size] !== undefined) {
             found = true;
-            if (c.stock[item.size] >= item.quantity) {
+            if (c.stock[item.size] >= quantity) {
               sufficientStock = true;
-              c.stock[item.size] = Math.max(0, c.stock[item.size] - item.quantity);
+              c.stock[item.size] = Math.max(0, c.stock[item.size] - quantity);
             }
           }
           return c;
         });
 
         if (!found || !sufficientStock) {
-           throw new Error(`Not enough stock for ${item.name} (Color: ${item.color}, Size: ${item.size})`);
+          throw new Error(`Not enough stock for ${item.name || item.product_name} (Color: ${item.color}, Size: ${item.size})`);
         }
 
-        await connection.query('UPDATE products SET colors = ? WHERE id = ?', [JSON.stringify(updatedColors), item.id]);
+        await connection.query('UPDATE products SET colors = ? WHERE id = ?', [JSON.stringify(updatedColors), product.id]);
 
       } else if (product.stock !== null && product.stock !== undefined) {
         // Simple stock tracking
-        if (product.stock < item.quantity) {
-          throw new Error(`Not enough stock for ${item.name}`);
+        if (product.stock < quantity) {
+          throw new Error(`Not enough stock for ${item.name || item.product_name || item.productId || rawIdentifier}`);
         }
-        await connection.query('UPDATE products SET stock = stock - ? WHERE id = ?', [item.quantity, item.id]);
+        await connection.query('UPDATE products SET stock = stock - ? WHERE id = ?', [quantity, product.id]);
       }
     }
 
@@ -119,12 +135,37 @@ exports.createOrder = async (req, res) => {
 
     // Insert order items
     for (const item of items) {
+      const productIdentifier = item.product_id ?? item.productId ?? item.id;
+      const rawIdentifier = String(productIdentifier).trim();
+      const isNumericId = /^[0-9]+$/.test(rawIdentifier);
+      const lookupQuery = isNumericId
+        ? 'SELECT * FROM products WHERE id = ?'
+        : 'SELECT * FROM products WHERE productId = ?';
+
+      const [productRows] = await connection.query(lookupQuery, [rawIdentifier]);
+      const product = productRows[0];
+
+      const itemName = item.name || item.product_name || item.productName || 'Unknown product';
+      const itemQuantity = parseInt(item.quantity, 10) || 0;
+      const itemPrice = parseFloat(item.price ?? item.sellingprice ?? item.mrp ?? 0) || 0;
+      const itemMrp = parseFloat(item.mrp ?? item.price ?? item.sellingprice ?? 0) || 0;
+
       await connection.query(`
         INSERT INTO order_items (
           order_id, product_id, product_name, category, subcategory, size, color, image, mrp, price, quantity
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
-        orderDbId, item.id, item.name, item.category, item.subcategory, item.size, item.color, item.image, item.mrp, item.price, item.quantity
+        orderDbId,
+        product.id,
+        itemName,
+        item.category || null,
+        item.subcategory || null,
+        item.size || null,
+        item.color || null,
+        item.image || null,
+        itemMrp,
+        itemPrice,
+        itemQuantity
       ]);
     }
 

@@ -82,15 +82,34 @@ const Checkout = () => {
         // Fetch Razorpay key
         const res = await api.get("/razorpay");
 
-        if (res.data?.length > 0) {
-          setRazorpayKey(res.data[0].key_id);
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          const validKey = res.data.find(
+            (item) =>
+              item?.key_id &&
+              typeof item.key_id === "string" &&
+              item.key_id.trim() !== "" &&
+              item.key_id.trim().toLowerCase() !== "undefined" &&
+              item.key_id.trim().toLowerCase() !== "null"
+          );
+
+          if (validKey) {
+            setRazorpayKey(validKey.key_id.trim());
+          } else {
+            console.warn("No valid Razorpay key found:", res.data);
+          }
         }
 
         // Pre-load Razorpay SDK on mount for instant payment opening
-        await loadScript("https://checkout.razorpay.com/v1/checkout.js");
-        console.log("Razorpay SDK pre-loaded");
+        const loaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+        if (!loaded) {
+          console.error("Razorpay SDK failed to load");
+          toast.error("Failed to load payment SDK. Please refresh and try again.");
+        } else {
+          console.log("Razorpay SDK pre-loaded");
+        }
       } catch (err) {
         console.error("Error initializing payment:", err);
+        toast.error("Could not initialize payment service. Please try again later.");
       }
     };
     initPayment();
@@ -349,9 +368,16 @@ const Checkout = () => {
         return;
       }
 
+      const razorpayKeyValue = razorpayKey?.toString().trim();
+      if (!razorpayKeyValue || razorpayKeyValue === "undefined" || razorpayKeyValue === "null") {
+        toast.error("Payment key not configured or invalid. Try again later.");
+        setPlacing(false);
+        return;
+      }
+
       // Razorpay options
       const options = {
-        key: razorpayKey,
+        key: razorpayKeyValue,
         amount: Math.round(totalAmount * 100),
         currency: "INR",
         name: "Sri Saravana Shoppings",
