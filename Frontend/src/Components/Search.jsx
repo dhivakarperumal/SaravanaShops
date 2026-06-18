@@ -111,10 +111,18 @@ const Search = ({ isOpen, onOpen, onClose }) => {
                   <img
                     src={
                       prod?.image ||
-                      (Array.isArray(prod?.images) ? prod.images[0] : null) ||
+                      (Array.isArray(prod?.images) && prod.images.length > 0
+                        ? prod.images[0]
+                        : null) ||
+                      (Array.isArray(prod?.colors) &&
+                        prod.colors.length > 0 &&
+                        Array.isArray(prod.colors[0]?.images) &&
+                        prod.colors[0].images.length > 0
+                        ? prod.colors[0].images[0]
+                        : null) ||
                       "/placeholder.jpg"
                     }
-                    alt={prod.name || "Product"}
+                    alt={prod?.productname || prod?.name || "Product"}
                     className="h-8 w-8 rounded object-cover border border-white"
                   />
                   <span className="text-primary text-sm truncate">
