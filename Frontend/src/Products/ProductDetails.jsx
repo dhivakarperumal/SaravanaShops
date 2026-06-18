@@ -111,25 +111,22 @@ const ProductDetails = () => {
     }
   };
 
-  // images: skip empty arrays — fall back to color images when product.images is []
-  const images =
-    (Array.isArray(product?.images) && product.images.length > 0
-      ? product.images
-      : null) ||
-    (Array.isArray(product?.image) && product.image.length > 0
-      ? product.image
-      : typeof product?.image === "string" && product.image
-        ? [product.image]
-        : null) ||
-    (product?.colors
-      ? (
-          Array.isArray(product.colors)
-            ? product.colors
-            : Object.values(product.colors)
-        )
-          .map((c) => resolveImage(c?.images) || resolveImage(c?.image))
-          .filter(Boolean)
-      : null) || ["/placeholder.jpg"];
+  const resolveProductImages = (prod) => {
+    if (!prod) return ["/placeholder.jpg"];
+    if (Array.isArray(prod.images) && prod.images.length > 0) return prod.images;
+    if (Array.isArray(prod.image) && prod.image.length > 0) return prod.image;
+    if (typeof prod.image === "string" && prod.image.trim()) return [prod.image];
+    if (prod.colors) {
+      const entries = Array.isArray(prod.colors) ? prod.colors : Object.values(prod.colors);
+      const colorImages = entries
+        .map((c) => resolveImage(c?.images) || resolveImage(c?.image))
+        .filter(Boolean);
+      if (colorImages.length > 0) return colorImages;
+    }
+    return ["/placeholder.jpg"];
+  };
+
+  const images = resolveProductImages(product);
 
   const handleMouseMove = (e) => {
     const { left, top, width, height } =
