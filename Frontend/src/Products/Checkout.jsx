@@ -462,13 +462,6 @@ const Checkout = () => {
               console.warn("EmailJS send failed:", emailErr);
             }
 
-            // Reduce product stock
-            try {
-              await reduceProductStock(cartItems);
-            } catch (stockErr) {
-              console.warn("Stock reduction issue:", stockErr);
-            }
-
             // Clear user cart unless it's buy now
             if (!isBuyNow) {
               await clearUserCart(userId);
