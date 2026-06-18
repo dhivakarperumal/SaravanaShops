@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "../firebase";
+import api from "../api";
 import ProductCard from "../Products/ProductCard";
 import ProductModal from "../Products/ProductModal";
 
@@ -17,26 +16,31 @@ const Bangles = () => {
   useEffect(() => {
     const fetchBangles = async () => {
       try {
-        const q = query(collection(db, "products"), where("category", "==", "Bangle"));
-        const querySnapshot = await getDocs(q);
+        setLoading(true);
 
-        // Convert createdAt to JS Date
-        let bangleProducts = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(0),
-          };
-        });
+        const res = await api.get("/products");
 
-        // Sort by latest createdAt
-        bangleProducts.sort((a, b) => b.createdAt - a.createdAt);
+        if (res.data.success) {
+          const data = res.data.data.map((item) => ({
+            ...item,
+            id: item.id,
+            sellingprice: Number(item.sellingprice || item.price || 0),
+          }));
 
-        // Limit to 8 products
-        bangleProducts = bangleProducts.slice(0, 8);
+          let bangleProducts = data.filter(
+            (item) =>
+              item.category &&
+              item.category.toLowerCase().includes("bangle")
+          );
 
-        setProducts(bangleProducts);
+          // Latest first
+          bangleProducts.sort((a, b) => b.id - a.id);
+
+          // Limit 8 products
+          bangleProducts = bangleProducts.slice(0, 8);
+
+          setProducts(bangleProducts);
+        }
       } catch (error) {
         console.error("Error fetching bangle products:", error);
       } finally {
@@ -66,7 +70,7 @@ const Bangles = () => {
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
       <h2 className="relative text-2xl font-bold mb-6 text-left inline-block">
-       New Arrivals
+        New Arrivals
         <span className="absolute left-0 -bottom-2 w-20 h-1 bg-gradient-to-r from-primary to-pink-400 rounded-full"></span>
       </h2>
 
