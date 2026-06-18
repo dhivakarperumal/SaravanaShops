@@ -52,7 +52,7 @@ const addAddress = async (req, res) => {
     );
     connection.release();
 
-    res.status(201).json({ message: 'Address added successfully', id: result.insertId });
+    res.status(201).json({ message: 'Address added successfully', addressId: result.insertId });
   } catch (error) {
     console.error('Add address error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -110,4 +110,4 @@ const deleteAddress = async (req, res) => {
   }
 };
 
-module.exports = { getAddresses, addAddress, updateAddress, deleteAddress };
+module.exports = { getAddresses, getAddressesByUserId, addAddress, updateAddress, deleteAddress };
