@@ -39,7 +39,7 @@ exports.generateOrderId = async (req, res) => {
 exports.createOrder = async (req, res) => {
   let connection;
   try {
-    const { items, subtotal, shippingCost, total, status, ordertype, shipping, clientCreatedAt, user_id } = req.body;
+    const { items, subtotal, shippingCost, total, status, ordertype, shipping, clientCreatedAt, user_id, order_id } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ success: false, message: 'No items in order' });
@@ -115,7 +115,7 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    const orderIdStr = await generateOrderId(connection);
+    const orderIdStr = order_id || await generateOrderId(connection);
 
     // Insert order
     const [orderResult] = await connection.query(`

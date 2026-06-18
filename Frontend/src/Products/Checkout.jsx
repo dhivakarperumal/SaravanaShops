@@ -323,11 +323,6 @@ const Checkout = () => {
     return res.data.orderId;
   };
 
-  /* ---------------------- Reduce product stock ------------------------- */
-  const reduceProductStock = async (items) => {
-    await api.post("/orders/update-stock", { items });
-  };
-
   /* ------------------------ Clear user cart ---------------------------- */
   const clearUserCart = async (userId) => {
     await api.delete(`/cart/user/${userId}`);
@@ -422,12 +417,15 @@ const Checkout = () => {
             // Save order globally and under user orders
             await api.post("/orders/create", {
               user_id: userId,
+              order_id: orderId,
               items: cartItems,
               subtotal,
               shippingCost,
               total: totalAmount,
               status: "Order Placed",
               ordertype: "Shop",
+              payment_id: response.razorpay_payment_id,
+              payment_method: "Online",
               shipping: {
                 name: shipping.name,
                 email: shipping.email,
