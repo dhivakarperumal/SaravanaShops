@@ -499,6 +499,7 @@ const ProductDetails = () => {
                           : 1;
                         const isDisabled = sizeKey && stock <= 0;
                         return (
+                          <button
                             key={idx}
                             onClick={() => {
                               if (!isDisabled) {
@@ -511,13 +512,13 @@ const ProductDetails = () => {
                               }
                             }}
                             disabled={isDisabled}
-                            className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition
-    ${selectedColor === c.color
+                            className={`w-16 h-16 rounded-full overflow-hidden border-2 transition
+                              ${selectedColor === c.color
                                 ? "border-primary ring-2 ring-primary"
                                 : "border-gray-300"
                               }
-    ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-  `}
+                              ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+                            `}
                           >
                             <img
                               src={thumb}
