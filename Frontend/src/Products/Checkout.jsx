@@ -80,8 +80,11 @@ const Checkout = () => {
     const initPayment = async () => {
       try {
         // Fetch Razorpay key
-        const res = await api.get("/settings/razorpay");
-        setRazorpayKey(res.data.key);
+        const res = await api.get("/razorpay");
+
+        if (res.data?.length > 0) {
+          setRazorpayKey(res.data[0].key_id);
+        }
 
         // Pre-load Razorpay SDK on mount for instant payment opening
         await loadScript("https://checkout.razorpay.com/v1/checkout.js");

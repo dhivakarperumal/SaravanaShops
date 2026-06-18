@@ -19,6 +19,24 @@ const getAddresses = async (req, res) => {
   }
 };
 
+const getAddressesByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const [addresses] = await pool.query(
+      'SELECT * FROM addresses WHERE user_id = ? ORDER BY created_at DESC',
+      [userId]
+    );
+
+    res.json(addresses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Server error'
+    });
+  }
+};
+
 // Add a new address
 const addAddress = async (req, res) => {
   try {
