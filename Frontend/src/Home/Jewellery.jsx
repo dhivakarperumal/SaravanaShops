@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "../firebase";
+import api from "../api";
 import ProductCard from "../Products/ProductCard";
 import ProductModal from "../Products/ProductModal";
 
@@ -14,38 +13,43 @@ const Jewellery = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const swiperRef = useRef(null);
 
-  useEffect(() => {
-    const fetchJewellery = async () => {
-      try {
-        const q = query(collection(db, "products"), where("category", "==", "Jewelset"));
-        const querySnapshot = await getDocs(q);
+useEffect(() => {
+  const fetchJewellery = async () => {
+    try {
+      setLoading(true);
 
-        // Convert createdAt to JS Date
-        let jewelleryProducts = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(0),
-          };
-        });
+      const res = await api.get("/products");
 
-        // Sort by latest createdAt
-        jewelleryProducts.sort((a, b) => b.createdAt - a.createdAt);
+      if (res.data.success) {
+        const data = res.data.data.map((item) => ({
+          ...item,
+          id: item.id,
+          sellingprice: Number(item.sellingprice || item.price || 0),
+        }));
 
-        // Limit to 8 products
+        let jewelleryProducts = data.filter(
+          (item) =>
+            item.category &&
+            item.category.toLowerCase().includes("jewel")
+        );
+
+        // Latest products first
+        jewelleryProducts.sort((a, b) => b.id - a.id);
+
+        // Show only 8 products
         jewelleryProducts = jewelleryProducts.slice(0, 8);
 
         setProducts(jewelleryProducts);
-      } catch (error) {
-        console.error("Error fetching jewellery products:", error);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching jewellery products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchJewellery();
-  }, []);
+  fetchJewellery();
+}, []);
 
   if (loading) {
     return (
