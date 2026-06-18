@@ -7,9 +7,15 @@ const {
   updateReview,
   deleteReview,
   toggleTick,
+  getProductReviews,
+  addProductReview,
 } = require("../controllers/reviewController");
 
 router.get("/", getReviews);
+
+// product-specific reviews
+router.get('/product/:productId', getProductReviews);
+router.post('/product', addProductReview);
 
 router.post("/", addReview);
 

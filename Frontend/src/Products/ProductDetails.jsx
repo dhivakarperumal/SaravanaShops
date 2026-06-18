@@ -74,6 +74,20 @@ const ProductDetails = () => {
 
         const user = JSON.parse(localStorage.getItem("user"));
 
+        // attach product-specific reviews from backend if available
+        try {
+          const revRes = await api.get(`/reviews/product/${data.id}`);
+          const reviews = revRes.data?.reviews || [];
+          // merge into product state so existing render logic uses it
+          setProduct((p) => ({ ...(p || {}), reviews }));
+          if (user && reviews) {
+            const alreadyReviewed = reviews.some((r) => r.user_id === user.id || r.userId === user.id);
+            setUserHasReviewed(alreadyReviewed);
+          }
+        } catch (err) {
+          // ignore; no product-specific reviews present
+        }
+
         if (user && data.reviews) {
           const alreadyReviewed = data.reviews.some(
             (r) => r.userId === user.id
@@ -959,10 +973,10 @@ const ProductDetails = () => {
                             </p>
                             <p className="text-xs text-gray-400">
                               {rev.createdAt?.toDate
-                                ? new Date(
-                                  rev.createdAt.toDate()
-                                ).toLocaleDateString()
-                                : ""}
+                                ? new Date(rev.createdAt.toDate()).toLocaleDateString()
+                                : rev.created_at
+                                  ? new Date(rev.created_at).toLocaleDateString()
+                                  : ""}
                             </p>
                           </div>
                         </div>

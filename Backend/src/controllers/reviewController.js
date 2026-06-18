@@ -149,3 +149,34 @@ exports.toggleTick = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get reviews for a specific product
+exports.getProductReviews = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const [rows] = await db.query(
+      "SELECT * FROM product_reviews WHERE product_id = ? ORDER BY created_at DESC",
+      [productId]
+    );
+    res.status(200).json({ success: true, reviews: rows });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Add product-specific review
+exports.addProductReview = async (req, res) => {
+  try {
+    const { product_id, user_id, userName, rating, review } = req.body;
+    if (!product_id || !review) {
+      return res.status(400).json({ success: false, message: 'product_id and review are required.' });
+    }
+    const [result] = await db.query(
+      `INSERT INTO product_reviews (product_id, user_id, userName, rating, review) VALUES (?, ?, ?, ?, ?)`,
+      [product_id, user_id || null, userName || null, rating || 0, review]
+    );
+    res.status(201).json({ success: true, id: result.insertId });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

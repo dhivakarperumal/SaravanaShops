@@ -91,6 +91,20 @@ async function initializeDatabase() {
       )
     `);
 
+      // ── Product-specific reviews table ─────────────────────────
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS product_reviews (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          product_id VARCHAR(50) NOT NULL,
+          user_id VARCHAR(255),
+          userName VARCHAR(255),
+          rating DECIMAL(3,1) DEFAULT 0.0,
+          review TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+      `);
+
     // ── Videos table ───────────────────────────────────
     await connection.query(`
   CREATE TABLE IF NOT EXISTS videos (
