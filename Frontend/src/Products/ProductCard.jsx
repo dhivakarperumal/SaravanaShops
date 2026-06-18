@@ -18,6 +18,28 @@ const ProductCard = ({ product, onOpenModal }) => {
   const fullStars = Math.floor(product.rating);
   const hasHalfStar = product.rating % 1 >= 0.5;
 
+  const resolveImage = (img) => {
+    if (Array.isArray(img) && img.length > 0) return img.find(Boolean) || null;
+    if (typeof img === "string" && img.trim() !== "") return img;
+    return null;
+  };
+
+  const resolveColorImage = (colors) => {
+    if (!colors) return null;
+    const entries = Array.isArray(colors) ? colors : Object.values(colors);
+    for (const color of entries) {
+      const image = resolveImage(color?.images) || resolveImage(color?.image);
+      if (image) return image;
+    }
+    return null;
+  };
+
+  const getProductImage = () =>
+    resolveImage(product?.images) ||
+    resolveImage(product?.image) ||
+    resolveColorImage(product?.colors) ||
+    "/placeholder.jpg";
+
   const handleWishlist = async () => {
     let localUserId = null;
     try {
@@ -40,12 +62,7 @@ const ProductCard = ({ product, onOpenModal }) => {
         product_name: product.name,
         mrp: product.mrp || "",
         sellingprice: product.sellingprice || "",
-        image:
-          product?.images?.[0] ||
-          product?.image?.[0] ||
-          product?.image ||
-          (product?.colors && Object.values(product.colors)?.[0]?.image) ||
-          "/placeholder.jpg"
+        image: getProductImage(),
       };
 
       const res = await api.post("/wishlist", payload);
@@ -77,10 +94,9 @@ const ProductCard = ({ product, onOpenModal }) => {
         <Link to={`/allproducts/${product.id}`}>
           <img
             src={
-              product?.images?.[0] ||
-              product?.image?.[0] ||
-              product?.image ||
-              (product?.colors && Object.values(product.colors)?.[0]?.image) ||
+              resolveImage(product?.images) ||
+              resolveImage(product?.image) ||
+              resolveColorImage(product?.colors) ||
               "/placeholder.jpg"
             }
             alt={product.name}

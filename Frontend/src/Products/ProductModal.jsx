@@ -30,6 +30,28 @@ const ProductModal = ({ product, onClose }) => {
   const [isFavourited, setIsFavourited] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
+  const resolveImage = (img) => {
+    if (Array.isArray(img) && img.length > 0) return img.find(Boolean) || null;
+    if (typeof img === "string" && img.trim() !== "") return img;
+    return null;
+  };
+
+  const resolveColorImage = (colors) => {
+    if (!colors) return null;
+    const entries = Array.isArray(colors) ? colors : Object.values(colors);
+    for (const color of entries) {
+      const image = resolveImage(color?.images) || resolveImage(color?.image);
+      if (image) return image;
+    }
+    return null;
+  };
+
+  const getProductImage = (prod) =>
+    resolveImage(prod?.images) ||
+    resolveImage(prod?.image) ||
+    resolveColorImage(prod?.colors) ||
+    "/placeholder.jpg";
+
   // Map specific bangle sizes to centimeter equivalents
   const sizeCmMap = {
     "2.2": "5.4",
@@ -67,14 +89,7 @@ const ProductModal = ({ product, onClose }) => {
   const hasHalfStar = (product?.rating || 0) % 1 >= 0.5;
 
   useEffect(() => {
-    // images can be an empty array [] — must skip it
-    const img =
-      (Array.isArray(product?.images) && product.images.length > 0
-        ? product.images[0]
-        : null) ||
-      (Array.isArray(product?.image) ? product.image[0] : product?.image) ||
-      product?.colors?.[0]?.image ||
-      "/placeholder.jpg";
+    const img = getProductImage(product);
     setSelectedImage(img);
   }, [product]);
 
@@ -157,12 +172,7 @@ const ProductModal = ({ product, onClose }) => {
           product_name: product.name,
           mrp: product.mrp || "",
           sellingprice: product.sellingprice || "",
-          image:
-            selectedImage ||
-            product?.images?.[0] ||
-            product?.image?.[0] ||
-            product?.image ||
-            "/placeholder.jpg",
+          image: selectedImage || getProductImage(product),
         };
         const res = await api.post("/wishlist", payload);
         if (res.data.success) {
@@ -212,10 +222,9 @@ const ProductModal = ({ product, onClose }) => {
     );
     if (!colorObj) return;
     const img =
-      (Array.isArray(colorObj.image) ? colorObj.image[0] : colorObj.image) ||
-      product?.images?.[0] ||
-      product?.image ||
-      "/placeholder.jpg";
+      resolveImage(colorObj?.images) ||
+      resolveImage(colorObj?.image) ||
+      getProductImage(product);
     setSelectedImage(img);
   }, [selectedColor, product]);
 
@@ -321,7 +330,7 @@ const ProductModal = ({ product, onClose }) => {
       quantity,
       size: selectedSize || null,
       color: selectedColor || null,
-      image: selectedImage || product.image || "",
+      image: selectedImage || getProductImage(product),
     };
 
     try {
@@ -394,11 +403,7 @@ const ProductModal = ({ product, onClose }) => {
         product_name: product.name,
         category: product.category,
         subcategory: product.subcategory,
-        image:
-          selectedImage ||
-          product.images?.[0] ||
-          product.image ||
-          "",
+        image: selectedImage || getProductImage(product),
         mrp: product.mrp ?? null,
         sellingprice: product.sellingprice ?? null,
         quantity,

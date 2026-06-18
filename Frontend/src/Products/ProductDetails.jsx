@@ -40,6 +40,28 @@ const ProductDetails = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const swiperRef = useRef(null);
 
+  const resolveImage = (img) => {
+    if (Array.isArray(img) && img.length > 0) return img.find(Boolean) || null;
+    if (typeof img === "string" && img.trim() !== "") return img;
+    return null;
+  };
+
+  const resolveColorImage = (colors) => {
+    if (!colors) return null;
+    const entries = Array.isArray(colors) ? colors : Object.values(colors);
+    for (const color of entries) {
+      const image = resolveImage(color?.images) || resolveImage(color?.image);
+      if (image) return image;
+    }
+    return null;
+  };
+
+  const getProductImage = (prod) =>
+    resolveImage(prod?.images) ||
+    resolveImage(prod?.image) ||
+    resolveColorImage(prod?.colors) ||
+    "/placeholder.jpg";
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -72,14 +94,7 @@ const ProductDetails = () => {
   // Initialise selectedImage whenever the product (or its images) changes
   useEffect(() => {
     if (!product) return;
-    const firstImg =
-      (Array.isArray(product.images) && product.images.length > 0
-        ? product.images[0]
-        : null) ||
-      (Array.isArray(product.image) ? product.image[0] : product.image) ||
-      product.colors?.[0]?.image ||
-      null;
-    if (firstImg) setSelectedImage(firstImg);
+    setSelectedImage(getProductImage(product));
   }, [product]);
 
   const fetchRelatedProducts = async (category, currentId) => {
@@ -97,23 +112,24 @@ const ProductDetails = () => {
   };
 
   // images: skip empty arrays — fall back to color images when product.images is []
-  const images = (
-    Array.isArray(product?.images) && product.images.length > 0
+  const images =
+    (Array.isArray(product?.images) && product.images.length > 0
       ? product.images
-      : null
-  ) ||
+      : null) ||
     (Array.isArray(product?.image) && product.image.length > 0
       ? product.image
       : typeof product?.image === "string" && product.image
         ? [product.image]
-        : null
-    ) ||
-    (product?.colors?.length > 0
-      ? product.colors
-        .map((c) => (Array.isArray(c.image) ? c.image[0] : c.image))
-        .filter(Boolean)
-      : null
-    ) || ["/placeholder.jpg"];
+        : null) ||
+    (product?.colors
+      ? (
+          Array.isArray(product.colors)
+            ? product.colors
+            : Object.values(product.colors)
+        )
+          .map((c) => resolveImage(c?.images) || resolveImage(c?.image))
+          .filter(Boolean)
+      : null) || ["/placeholder.jpg"];
 
   const handleMouseMove = (e) => {
     const { left, top, width, height } =
@@ -334,11 +350,7 @@ const ProductDetails = () => {
                           mrp: product.mrp || "",
                           sellingprice: product.sellingprice || "",
                           image:
-                            selectedImage ||
-                            product.images?.[0] ||
-                            product.image ||
-                            (product.colors && Object.values(product.colors)?.[0]?.image) ||
-                            "/placeholder.jpg",
+                            selectedImage || getProductImage(product),
                         });
 
                         if (res.data.success) {
@@ -642,11 +654,7 @@ const ProductDetails = () => {
                           product_name: product.name,
                           category: product.category,
                           subcategory: product.subcategory,
-                          image:
-                            selectedImage ||
-                            product.image ||
-                            product.images?.[0] ||
-                            "",
+                          image: selectedImage || getProductImage(product),
                           mrp: product.mrp ?? null,
                           sellingprice: product.sellingprice ?? null,
                           quantity,
@@ -689,11 +697,7 @@ const ProductDetails = () => {
                         quantity,
                         size: selectedSize || null,
                         color: selectedColor || null,
-                        image:
-                          selectedImage ||
-                          product.image ||
-                          product.images?.[0] ||
-                          "",
+                        image: selectedImage || getProductImage(product),
                         userId,
                         status: "pending",
                       };
