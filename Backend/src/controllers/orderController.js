@@ -295,7 +295,7 @@ exports.getUserOrders = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, docketNumber, qname, cancelReasons, cancelledAt, statusUpdatedAt } = req.body;
+    const { status, docketNumber, qname, cancelReasons, cancelledAt } = req.body;
 
     let updateFields = [];
     let queryParams = [];
@@ -319,10 +319,6 @@ exports.updateOrderStatus = async (req, res) => {
     if (cancelledAt) {
       updateFields.push('cancelledAt = ?');
       queryParams.push(new Date(cancelledAt));
-    }
-    if (statusUpdatedAt) {
-      updateFields.push('statusUpdatedAt = ?');
-      queryParams.push(new Date(statusUpdatedAt));
     }
 
     if (updateFields.length === 0) {
