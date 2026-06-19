@@ -15,7 +15,7 @@ export default function ProductList() {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewProduct, setViewProduct] = useState(null);
-  const [productsPerPage]             = useState(12);
+  const [productsPerPage]             = useState(10);
   const navigate = useNavigate();
 
   const [filters, setFilters] = useState({
