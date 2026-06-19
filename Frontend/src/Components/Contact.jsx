@@ -1,6 +1,3 @@
-
-
-
 import React, { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -12,6 +9,7 @@ import { LuPhoneCall } from "react-icons/lu";
 import Head from "./Head";
 import Button from "./Button";
 import emailjs from "emailjs-com";
+import PageContainer from "./PageContainer";
 
 const Contact = () => {
   useEffect(() => {
@@ -110,7 +108,7 @@ const Contact = () => {
 
       <div className="w-full bg-gray-50">
         {/* Contact Info Section */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+        <PageContainer className="py-12 text-center">
           <h2 data-aos="flip-left" className="text-2xl md:text-4xl font-bold text-primary">
             Get in Touch With Us
           </h2>
@@ -154,10 +152,10 @@ const Contact = () => {
               </p>
             </div>
           </div>
-        </div>
+        </PageContainer>
 
         {/* Form Section */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <PageContainer>
           <div
             data-aos="flip-right"
             data-aos-delay="200"
@@ -233,7 +231,7 @@ const Contact = () => {
               </p>
             )}
           </div>
-        </div>
+        </PageContainer>
 
         {/* Map */}
         <div data-aos="zoom-in-up" className="w-full h-[300px] md:h-[400px] lg:h-[500px]">
