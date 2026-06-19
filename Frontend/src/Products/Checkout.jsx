@@ -6,6 +6,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import Head from "../Components/Head";
 import { IoIosArrowForward } from "react-icons/io";
 import emailjs from "@emailjs/browser";
+import { FaLocationDot } from "react-icons/fa6";
 
 /* ----------------------------- Static lists ------------------------------ */
 const indianStates = [
@@ -725,9 +726,13 @@ const Checkout = () => {
                   type="button"
                   onClick={getCurrentLocation}
                   disabled={locationLoading}
-                  className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 whitespace-nowrap"
+                  className="bg-primary text-white px-4 py-3 rounded-lg hover:bg-primary/80 cursor-pointer whitespace-nowrap flex items-center gap-2"
                 >
-                  {locationLoading ? "Fetching..." : "📍 Current Location"}
+                  <FaLocationDot />
+
+                  {locationLoading
+                    ? "Fetching..."
+                    : "Current Location"}
                 </button>
               </div>
             </div>
