@@ -107,6 +107,10 @@ const Checkout = () => {
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
 
+  const [addressSearch, setAddressSearch] = useState("");
+  const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
+
   useEffect(() => {
     const initPayment = async () => {
       try {
@@ -556,6 +560,92 @@ const Checkout = () => {
 
   const totalPayable = subtotal + shippingCost;
 
+  const filteredAddresses = savedAddresses.filter((addr) => {
+    const search = addressSearch.toLowerCase();
+
+    return (
+      `${addr.firstname || ""} ${addr.lastname || ""}`
+        .toLowerCase()
+        .includes(search) ||
+      (addr.contact || "").toLowerCase().includes(search) ||
+      (addr.address || "").toLowerCase().includes(search) ||
+      (addr.city || "").toLowerCase().includes(search) ||
+      (addr.state || "").toLowerCase().includes(search)
+    );
+  });
+  const selectAddress = (addr) => {
+    setSelectedAddressId(addr.id);
+
+    setShipping((prev) => ({
+      ...prev,
+      name: `${addr.firstname || ""} ${addr.lastname || ""}`.trim(),
+      phone: addr.contact || "",
+      doorNumber: addr.doorNumber || "",
+      streetName: addr.streetName || "",
+      address: addr.address || "",
+      landmark: addr.landmark || "",
+      city: addr.city || "",
+      state: addr.state || "",
+      zip: addr.pin || "",
+      country: "India",
+    }));
+
+    setAddressSearch(
+      `${addr.firstname || ""} ${addr.lastname || ""} - ${addr.contact || ""}`
+    );
+
+    setShowAddressDropdown(false);
+  };
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation not supported");
+      return;
+    }
+
+    setLocationLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+
+          const data = await res.json();
+
+          const address = data.address || {};
+
+          setShipping((prev) => ({
+            ...prev,
+            address: data.display_name || "",
+            city:
+              address.city ||
+              address.town ||
+              address.village ||
+              "",
+            state: address.state || "",
+            zip: address.postcode || "",
+            country: address.country || "India",
+          }));
+
+          toast.success("Location fetched successfully");
+        } catch (err) {
+          console.error(err);
+          toast.error("Failed to fetch address");
+        } finally {
+          setLocationLoading(false);
+        }
+      },
+      () => {
+        toast.error("Location permission denied");
+        setLocationLoading(false);
+      }
+    );
+  };
+
   return (
     <>
       <Head
@@ -571,41 +661,65 @@ const Checkout = () => {
 
       <div className="min-h-screen bg-gray-50 py-8 px-4">
         {/* Saved addresses */}
-        {savedAddresses.length > 0 && (
-          <div className="mb-6 max-w-7xl mx-auto px-2">
-            <h3 className="font-semibold mb-3 text-primary">Select Address</h3>
-            <div className={`grid gap-4 ${savedAddresses.length === 1 ? "grid-cols-1" : savedAddresses.length === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3"}`}>
-              {savedAddresses.map((a) => (
-                <label key={a.id} className={`p-4 border rounded hover:border-primary cursor-pointer flex flex-col gap-2 ${selectedAddressId === a.id ? "border-primary bg-primary/10" : ""}`}>
-                  <div className="flex items-start gap-2">
-                    <input
-                      type="radio"
-                      name="selectedAddress"
-                      value={a.id}
-                      checked={selectedAddressId === a.id}
-                      onChange={() => setSelectedAddressId(a.id)}
-                      className="mt-1"
-                    />
-                    <div className="flex flex-col gap-1">
-                      <div className="text-sm text-gray-700"><span className="font-semibold">Name: </span>{a.firstname} {a.lastname}</div>
-                      <div className="text-sm text-gray-700"><span className="font-semibold">Phone: </span>{a.contact}</div>
-                      <div className="text-sm text-gray-700"><span className="font-semibold">Address: </span>{a.address}</div>
-                      <div className="text-sm text-gray-700"><span className="font-semibold">Landmark: </span>{a.landmark}</div>
-                      <div className="text-sm text-gray-700"><span className="font-semibold">City: </span>{a.city}</div>
-                      <div className="text-sm text-gray-700"><span className="font-semibold">State: </span>{a.state}</div>
-                      <div className="text-sm text-gray-700"><span className="font-semibold">Pincode: </span>{a.pin}</div>
-                    </div>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
+
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Shipping form */}
           <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow">
             <h2 className="text-xl font-semibold mb-6">Shipping Details</h2>
+
+            <div className="mb-6 relative">
+              <label className="block text-sm font-medium mb-2">
+                Search Saved Address
+              </label>
+
+              <input
+                type="text"
+                placeholder="Search by name, phone, address..."
+                value={addressSearch}
+                onChange={(e) => {
+                  setAddressSearch(e.target.value);
+                  setShowAddressDropdown(true);
+                }}
+                onFocus={() => setShowAddressDropdown(true)}
+                className="w-full p-3 border rounded-lg"
+              />
+
+              {showAddressDropdown && filteredAddresses.length > 0 && (
+                <div className="absolute z-50 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {filteredAddresses.map((addr) => (
+                    <div
+                      key={addr.id}
+                      onClick={() => selectAddress(addr)}
+                      className="p-3 border-b cursor-pointer hover:bg-gray-100"
+                    >
+                      <div className="font-semibold">
+                        {addr.firstname} {addr.lastname}
+                      </div>
+
+                      <div className="text-sm text-gray-600">
+                        {addr.contact}
+                      </div>
+
+                      <div className="text-xs text-gray-500">
+                        {addr.address}, {addr.city}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={getCurrentLocation}
+              disabled={locationLoading}
+              className="mb-6 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+            >
+              {locationLoading
+                ? "Fetching Location..."
+                : "📍 Use Current Location"}
+            </button>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
               {/* Full Name - Full width */}
