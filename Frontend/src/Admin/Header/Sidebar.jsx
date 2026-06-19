@@ -30,8 +30,8 @@ import { AiFillDashboard, AiOutlineVideoCamera } from "react-icons/ai";
 import { NavLink } from "react-router-dom";
 import api from "../../api";
 import dayjs from "dayjs";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { db } from "../../firebase";
+// import { collection, query, where, onSnapshot } from "firebase/firestore";
+// import { db } from "../../firebase";
 
 // ---------------- Section Component ----------------
 const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
@@ -119,29 +119,29 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
 
   // Orders today
   useEffect(() => {
-    const todayStart = dayjs().startOf("day").toDate();
-    const todayEnd = dayjs().endOf("day").toDate();
-    const ordersRef = collection(db, "orders");
-    const q = query(ordersRef, where("createdAt", ">=", todayStart), where("createdAt", "<=", todayEnd));
-    const unsubscribe = onSnapshot(q, (snapshot) => setTodayOrdersCount(snapshot.size));
-    return () => unsubscribe();
+    // const todayStart = dayjs().startOf("day").toDate();
+    // const todayEnd = dayjs().endOf("day").toDate();
+    // const ordersRef = collection(db, "orders");
+    // const q = query(ordersRef, where("createdAt", ">=", todayStart), where("createdAt", "<=", todayEnd));
+    // const unsubscribe = onSnapshot(q, (snapshot) => setTodayOrdersCount(snapshot.size));
+    // return () => unsubscribe();
   }, []);
 
   // Approved / Non-approved products
   useEffect(() => {
-    const productsRef = collection(db, "products");
-    const unsubscribeApproved = onSnapshot(
-      query(productsRef, where("isVisiable", "==", true)),
-      (snapshot) => setApprovedUsersCount(snapshot.size)
-    );
-    const unsubscribeNonApproved = onSnapshot(
-      query(productsRef, where("isVisiable", "==", false)),
-      (snapshot) => setNonApprovedUsersCount(snapshot.size)
-    );
-    return () => {
-      unsubscribeApproved();
-      unsubscribeNonApproved();
-    };
+    // const productsRef = collection(db, "products");
+    // const unsubscribeApproved = onSnapshot(
+    //   query(productsRef, where("isVisiable", "==", true)),
+    //   (snapshot) => setApprovedUsersCount(snapshot.size)
+    // );
+    // const unsubscribeNonApproved = onSnapshot(
+    //   query(productsRef, where("isVisiable", "==", false)),
+    //   (snapshot) => setNonApprovedUsersCount(snapshot.size)
+    // );
+    // return () => {
+    //   unsubscribeApproved();
+    //   unsubscribeNonApproved();
+    // };
   }, []);
 
   // New users today

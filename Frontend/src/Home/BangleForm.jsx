@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import imageCompression from "browser-image-compression";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
+// import { collection, getDocs } from "firebase/firestore";
+// import { db } from "../firebase";
 
 export default function BanglesForm() {
 
@@ -9,16 +9,16 @@ export default function BanglesForm() {
 const [subcategories, setSubcategories] = useState([]);
 
 useEffect(() => {
-  const fetchCategories = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, "categories"));
-      const categoryData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setCategories(categoryData);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  };
-  fetchCategories();
+  // const fetchCategories = async () => {
+  //   try {
+  //     const snapshot = await getDocs(collection(db, "categories"));
+  //     const categoryData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  //     setCategories(categoryData);
+  //   } catch (error) {
+  //     console.error("Error fetching categories:", error);
+  //   }
+  // };
+  // fetchCategories();
 }, []);
 
 

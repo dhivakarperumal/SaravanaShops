@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { db } from "../firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  deleteDoc,
-  updateDoc,
-} from "firebase/firestore";
+// import { db } from "../firebase";
+// import {
+//   collection,
+//   addDoc,
+//   getDocs,
+//   doc,
+//   deleteDoc,
+//   updateDoc,
+// } from "firebase/firestore";
 import imageCompression from "browser-image-compression";
 import toast from "react-hot-toast";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -29,22 +29,23 @@ const Category = () => {
   const [activeTab, setActiveTab] = useState("add");
 
   const generateCategoryId = async () => {
-    const snapshot = await getDocs(collection(db, "categories"));
-    const count = snapshot.size + 1;
-    return `CAT${String(count).padStart(3, "0")}`;
+    // const snapshot = await getDocs(collection(db, "categories"));
+    // const count = snapshot.size + 1;
+    // return `CAT${String(count).padStart(3, "0")}`;
+    return `CAT001`;
   };
 
   const fetchCategories = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, "categories"));
-      const catList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setCategories(catList);
-    } catch (err) {
-      console.error("Error fetching categories:", err);
-    }
+    // try {
+    //   const snapshot = await getDocs(collection(db, "categories"));
+    //   const catList = snapshot.docs.map((doc) => ({
+    //     id: doc.id,
+    //     ...doc.data(),
+    //   }));
+    //   setCategories(catList);
+    // } catch (err) {
+    //   console.error("Error fetching categories:", err);
+    // }
   };
 
   useEffect(() => {
@@ -115,11 +116,11 @@ const Category = () => {
     setLoading(true);
     try {
       if (editId) {
-        await updateDoc(doc(db, "categories", editId), payload);
+        // await updateDoc(doc(db, "categories", editId), payload);
         toast.success("Category updated!");
         setEditId(null);
       } else {
-        await addDoc(collection(db, "categories"), payload);
+        // await addDoc(collection(db, "categories"), payload);
         toast.success("Category added!");
       }
 
@@ -162,7 +163,7 @@ const Category = () => {
       return;
 
     try {
-      await deleteDoc(doc(db, "categories", id));
+      // await deleteDoc(doc(db, "categories", id));
       toast.success("Category deleted.");
       await fetchCategories();
     } catch (err) {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "../firebase";
+// import { collection, getDocs, query, where } from "firebase/firestore";
+// import { db } from "../firebase";
 import ProductCard from "../Products/ProductCard";
 import ProductModal from "../Products/ProductModal";
 
@@ -15,41 +15,42 @@ const Saree = () => {
   const swiperRef = useRef(null);
 
   useEffect(() => {
-    const fetchSarees = async () => {
-      try {
-        const q = query(
-          collection(db, "products"),
-          where("category", "==", "Saree")
-        );
-        const querySnapshot = await getDocs(q);
-
-        // Convert to array with JS Dates
-        let sareeProducts = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate
-              ? data.createdAt.toDate()
-              : new Date(0),
-          };
-        });
-
-        // Sort by createdAt descending (latest first)
-        sareeProducts.sort((a, b) => b.createdAt - a.createdAt);
-
-        // Limit to 8
-        sareeProducts = sareeProducts.slice(0, 8);
-
-        setProducts(sareeProducts);
-      } catch (error) {
-        console.error("Error fetching saree products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSarees();
+    // const fetchSarees = async () => {
+    //   try {
+    //     const q = query(
+    //       collection(db, "products"),
+    //       where("category", "==", "Saree")
+    //     );
+    //     const querySnapshot = await getDocs(q);
+    //
+    //     // Convert to array with JS Dates
+    //     let sareeProducts = querySnapshot.docs.map((doc) => {
+    //       const data = doc.data();
+    //       return {
+    //         id: doc.id,
+    //         ...data,
+    //         createdAt: data.createdAt?.toDate
+    //           ? data.createdAt.toDate()
+    //           : new Date(0),
+    //       };
+    //     });
+    //
+    //     // Sort by createdAt descending (latest first)
+    //     sareeProducts.sort((a, b) => b.createdAt - a.createdAt);
+    //
+    //     // Limit to 8
+    //     sareeProducts = sareeProducts.slice(0, 8);
+    //
+    //     setProducts(sareeProducts);
+    //   } catch (error) {
+    //     console.error("Error fetching saree products:", error);
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
+    //
+    // fetchSarees();
+    setLoading(false);
   }, []);
 
   if (loading) {

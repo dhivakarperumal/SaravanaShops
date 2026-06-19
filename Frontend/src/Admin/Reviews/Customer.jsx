@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Slider from "react-slick";
-import { getDocs, collection } from "firebase/firestore";
-import { db } from "../../firebase";
+// import { getDocs, collection } from "firebase/firestore";
+// import { db } from "../../firebase";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { FaStar } from "react-icons/fa";
@@ -10,19 +10,19 @@ const CustomerReviews = () => {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const snap = await getDocs(collection(db, "reviews"));
-        const data = snap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setReviews(data);
-      } catch (error) {
-        console.error("Error fetching reviews:", error);
-      }
-    };
-    fetchReviews();
+    // const fetchReviews = async () => {
+    //   try {
+    //     const snap = await getDocs(collection(db, "reviews"));
+    //     const data = snap.docs.map((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data(),
+    //     }));
+    //     setReviews(data);
+    //   } catch (error) {
+    //     console.error("Error fetching reviews:", error);
+    //   }
+    // };
+    // fetchReviews();
   }, []);
 
   const settings = {
