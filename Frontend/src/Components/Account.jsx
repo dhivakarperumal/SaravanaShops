@@ -18,6 +18,7 @@ import { toast } from "react-hot-toast";
 import api from "../api";
 import Head from "./Head";
 import PageContainer from "../components/PageContainer";
+import { IoClose } from "react-icons/io5";
 
 const tabs = [
   { key: "personal", label: "Personal Details", icon: <FaUser /> },
@@ -739,11 +740,11 @@ function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
-        <button
+         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-xl font-bold cursor-pointer"
+          className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-100 cursor-pointer transition"
         >
-          ×
+          <IoClose size={20} />
         </button>
 
         <h3 className="text-2xl font-bold text-primary mb-4">
@@ -768,7 +769,7 @@ function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
             ).toLocaleString()}
           </div>
 
-          <hr />
+          <hr className="border-gray-300" />
 
           <h4 className="font-semibold text-lg text-primary">
             Shipping Details
@@ -814,7 +815,7 @@ function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
             {selectedOrder.shipping?.country}
           </p>
 
-          <hr />
+          <hr className="border-gray-300" />
 
           <h4 className="font-semibold text-lg text-primary">
             Products
@@ -823,7 +824,7 @@ function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
           {(selectedOrder.items || []).map((item, i) => (
             <div
               key={i}
-              className="flex items-center gap-3 border-b pb-2"
+              className="flex items-center gap-3 border-b border-gray-300 pb-2"
             >
               <img
                 src={item.image}
@@ -889,17 +890,46 @@ function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
             </div>
           </div>
 
-          <div className="border-t pt-3">
-            <p>
-              <strong>Total:</strong> ₹
-              {Number(
-                selectedOrder.total_amount ||
-                selectedOrder.total
-              ).toFixed(2)}
-            </p>
+          <div className="border-t border-gray-300 pt-4 space-y-2">
+            <div className="flex justify-between">
+              <span className="font-medium">Subtotal</span>
+              <span>
+                ₹
+                {Number(
+                  selectedOrder.subtotal ||
+                  selectedOrder.total_amount ||
+                  selectedOrder.total ||
+                  0
+                ).toFixed(2)}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span className="font-medium">Shipping</span>
+              <span>
+                ₹
+                {Number(
+                  selectedOrder.shipping_cost ||
+                  selectedOrder.shippingCost ||
+                  0
+                ).toFixed(2)}
+              </span>
+            </div>
+
+            <div className="flex justify-between border-t border-gray-300 pt-2 text-lg font-bold text-primary">
+              <span>Total</span>
+              <span>
+                ₹
+                {Number(
+                  selectedOrder.total_amount ||
+                  selectedOrder.total ||
+                  0
+                ).toFixed(2)}
+              </span>
+            </div>
           </div>
 
-          <div className="border-t mt-5 pt-4 flex justify-end">
+          <div className="border-t border-gray-300 mt-5 pt-4 flex justify-end">
             <button
               onClick={() => handlePrint(selectedOrder)}
               className="bg-primary text-white px-5 py-2 rounded-md flex items-center gap-2 hover:opacity-90"
