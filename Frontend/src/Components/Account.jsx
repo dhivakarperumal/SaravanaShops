@@ -740,7 +740,7 @@ function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
-         <button
+        <button
           onClick={onClose}
           className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-100 cursor-pointer transition"
         >
@@ -762,11 +762,25 @@ function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
             {selectedOrder.status}
           </div>
 
+          {selectedOrder.qname && (
+            <div>
+              <strong>Courier:</strong>{" "}
+              {selectedOrder.qname}
+            </div>
+          )}
+
+          {selectedOrder.docketNumber && (
+            <div>
+              <strong>LR Number:</strong>{" "}
+              <span className="text-primary font-semibold">
+                {selectedOrder.docketNumber}
+              </span>
+            </div>
+          )}
+
           <div>
             <strong>Date:</strong>{" "}
-            {new Date(
-              selectedOrder.created_at
-            ).toLocaleString()}
+            {new Date(selectedOrder.created_at).toLocaleString()}
           </div>
 
           <hr className="border-gray-300" />
