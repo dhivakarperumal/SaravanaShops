@@ -532,6 +532,14 @@ function Orders() {
                     {order.payment_method || order.paymentMethod || "Online"}
                   </p>
                 </span>
+                {order.docketNumber && (
+                  <span className="flex flex-row">
+                    <span className="text-primary font-semibold">LR No:</span>
+                    <p className="pl-1 font-medium text-green-600">
+                      {order.docketNumber}
+                    </p>
+                  </span>
+                )}
               </div>
 
               {/* Expanded Order */}
