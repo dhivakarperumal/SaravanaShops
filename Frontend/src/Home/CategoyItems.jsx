@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
+import PageContainer from "../Components/PageContainer";
 
 const CategoryItems = () => {
   const [categories, setCategories] = useState([]);
@@ -40,7 +41,7 @@ const CategoryItems = () => {
   }
 
   return (
-    <div className="py-7 px-6">
+    <PageContainer className="py-7">
       <h2 className="text-2xl md:text-4xl font-extrabold text-black text-center bg-gradient-to-r from-secondary to-primary bg-clip-text mb-10 pb-5 tracking-wide">
         Explore Our Categories
       </h2>
@@ -74,7 +75,7 @@ const CategoryItems = () => {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 };
 

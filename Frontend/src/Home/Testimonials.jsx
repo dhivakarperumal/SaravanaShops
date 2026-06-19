@@ -90,11 +90,11 @@ export default function Testimonials() {
                   </div>
 
                   <div className="flex flex-col items-center mt-auto">
-                    {/* <img
+                    <img
                       src={t.image}
                       alt={t.user}
                       className="w-16 h-16 rounded-full mb-2 object-cover"
-                    /> */}
+                    />
                     <h3 className="font-semibold text-gray-900">{t.user}</h3>
                   </div>
                 </div>
