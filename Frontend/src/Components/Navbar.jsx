@@ -8,7 +8,7 @@ import {
 } from "react-icons/fi";
 import { IoMdHeartEmpty } from "react-icons/io";
 import { FaBoxOpen } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, NavLink } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import Search from "../Components/Search";
 import Login from "./Login";
@@ -122,33 +122,33 @@ function Navbar() {
   }, [user, wishlistOpen]);
 
   useEffect(() => {
-  const updateCartCount = async () => {
-    if (!user) {
-      setCartCount(0);
-      return;
-    }
+    const updateCartCount = async () => {
+      if (!user) {
+        setCartCount(0);
+        return;
+      }
 
-    try {
-      const userId = user?.user_id || user?.id;
+      try {
+        const userId = user?.user_id || user?.id;
 
-      const res = await api.get(`/cart/${userId}`);
+        const res = await api.get(`/cart/${userId}`);
 
-      const items = Array.isArray(res.data) ? res.data : [];
+        const items = Array.isArray(res.data) ? res.data : [];
 
-      setCartCount(items.length);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+        setCartCount(items.length);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-  updateCartCount();
+    updateCartCount();
 
-  window.addEventListener("cartUpdated", updateCartCount);
+    window.addEventListener("cartUpdated", updateCartCount);
 
-  return () => {
-    window.removeEventListener("cartUpdated", updateCartCount);
-  };
-}, [user]);
+    return () => {
+      window.removeEventListener("cartUpdated", updateCartCount);
+    };
+  }, [user]);
 
   // Close all sidebars except the one clicked
   const closeAllExcept = (except) => {
@@ -184,7 +184,7 @@ function Navbar() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
-    
+
     if (token && userData) {
       try {
         setUser(JSON.parse(userData));
@@ -227,11 +227,11 @@ function Navbar() {
       // Clear all auth data
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      
+
       // Update auth context
       setUser(null);
       setUserDropdownOpen(false);
-      
+
       // Show success message and navigate
       toast.success("Logged out successfully!");
       navigate("/");
@@ -243,188 +243,211 @@ function Navbar() {
 
   return (
     <>
-    <nav className="sticky top-0 z-40 border-b border-primary/10 bg-white/90 backdrop-blur-md shadow-md">
-      <PageContainer className="py-2">
-        <div className="flex justify-between items-center">
-          {/* Logo */}
-          <Link to="/">
-            <img src="/Image/logo.png" alt="Logo" className="h-16 w-auto" />
-          </Link>
-
-          {/* Desktop Nav Links */}
-          <div className="hidden md:flex space-x-6 items-center">
-            <Link to="/" className="font-semibold text-gray-700 hover:text-primary">
-              Home
-            </Link>
-            <Link to="/allproducts" className="font-semibold text-gray-700 hover:text-primary">
-              Shopping
+      <nav className="sticky top-0 z-40 border-b border-primary/10 bg-white/90 backdrop-blur-md shadow-md">
+        <PageContainer className="py-2">
+          <div className="flex justify-between items-center">
+            {/* Logo */}
+            <Link to="/">
+              <img src="/Image/logo.png" alt="Logo" className="h-16 w-auto" />
             </Link>
 
-            {/* Category dropdown */}
-            <div
-              className="relative group"
-              onMouseEnter={() => setHoveredCat(true)}
-              onMouseLeave={() => setHoveredCat(false)}
-            >
-              <span className="flex items-center gap-1 font-semibold text-gray-700 hover:text-primary cursor-pointer">
-                Category
-                <FiChevronDown
-                  size={16}
-                  className={`transition-transform ${hoveredCat ? "rotate-180" : ""}`}
-                />
-              </span>
+            {/* Desktop Nav Links */}
+            <div className="hidden md:flex space-x-6 items-center">
+              <NavLink
+                to="/"
+                className={({ isActive }) =>
+                  `font-semibold ${isActive
+                    ? "text-primary"
+                    : "text-gray-700 hover:text-primary"
+                  }`
+                }
+              >
+                Home
+              </NavLink>
+              <NavLink
+                to="/allproducts"
+                className={({ isActive }) =>
+                  `font-semibold ${isActive
+                    ? "text-primary"
+                    : "text-gray-700 hover:text-primary"
+                  }`
+                }
+              >
+                Shopping
+              </NavLink>
 
+              {/* Category dropdown */}
               <div
-                className={`absolute left-0 mt-2 w-48 bg-white border border-primary/30 rounded-xl shadow-md transition-all ${
-                  hoveredCat
+                className="relative group"
+                onMouseEnter={() => setHoveredCat(true)}
+                onMouseLeave={() => setHoveredCat(false)}
+              >
+                <span className="flex items-center gap-1 font-semibold text-gray-700 hover:text-primary cursor-pointer">
+                  Category
+                  <FiChevronDown
+                    size={16}
+                    className={`transition-transform ${hoveredCat ? "rotate-180" : ""}`}
+                  />
+                </span>
+
+                <div
+                  className={`absolute left-0 mt-2 w-48 bg-white border border-primary/30 rounded-xl shadow-md transition-all ${hoveredCat
                     ? "opacity-100 visible scale-100"
                     : "opacity-0 invisible scale-95"
-                }`}
-              >
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id || cat.cname}
-                    onClick={() => handleCategoryClick(cat)}
-                    className="block w-full px-4 py-2 text-left text-primary hover:bg-primary hover:text-white rounded-xl whitespace-nowrap"
-                  >
-                    {cat.cname}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <Link to="/about" className="font-semibold text-gray-700 hover:text-primary">
-              About us
-            </Link>
-          </div>
-
-          {/* Right side icons */}
-          <div className="flex items-center space-x-3 md:space-x-4">
-            {/* Search */}
-            <Search
-              isOpen={searchOpen}
-              onOpen={() => {
-                closeAllExcept("search");
-                setSearchOpen(true);
-              }}
-              onClose={() => setSearchOpen(false)}
-            />
-
-            {/* Cart */}
-            <div className="relative">
-              <FiShoppingCart
-                size={20}
-                onClick={() => {
-                  closeAllExcept("cart");
-                  setCartOpen((prev) => !prev);
-                }}
-                className="text-primary cursor-pointer hover:scale-110 transition"
-              />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-2 bg-primary text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </div>
-
-            {/* Wishlist */}
-            <div className="relative">
-              <IoMdHeartEmpty
-                size={22}
-                onClick={() => {
-                  closeAllExcept("wishlist");
-                  setWishlistOpen((prev) => !prev);
-                }}
-                className="text-primary cursor-pointer hover:scale-110 transition"
-              />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-2 bg-primary text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  {wishlistCount}
-                </span>
-              )}
-            </div>
-
-            {/* Orders */}
-            <div className="relative">
-              <FaBoxOpen
-                size={22}
-                onClick={handleOrdersClick}
-                className="text-primary cursor-pointer hover:scale-110 transition"
-              />
-              {orderCount > 0 && (
-                <span className="absolute -top-1 -right-2 bg-primary text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  {orderCount}
-                </span>
-              )}
-            </div>
-
-            {/* User dropdown */}
-            {user ? (
-              <div className="relative">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    closeAllExcept("user");
-                    setUserDropdownOpen((prev) => !prev);
-                  }}
-                  className="w-8 h-8 bg-primary text-white cursor-pointer rounded-full flex items-center justify-center font-semibold"
+                    }`}
                 >
-                  {user.username?.charAt(0).toUpperCase() || "U"}
-                </button>
-                {userDropdownOpen && (
-                  <div
-                    ref={userDropdownRef}
-                    className="absolute right-0 mt-2 w-40 bg-white shadow-md rounded-lg py-2 z-50"
-                  >
+                  {categories.map((cat) => (
                     <button
-                      onClick={handleAccountClick}
-                      className="w-full px-4 py-2 cursor-pointer text-gray-700 hover:bg-indigo-100 text-left"
+                      key={cat.id || cat.cname}
+                      onClick={() => handleCategoryClick(cat)}
+                      className="block w-full px-4 py-2 text-left text-primary hover:bg-primary hover:text-white rounded-xl whitespace-nowrap"
                     >
-                      My Account
+                      {cat.cname}
                     </button>
-                    {user.role === "admin" && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate("/superadmin");
-                          setUserDropdownOpen(false);
-                        }}
-                        className="w-full px-4 py-2 cursor-pointer text-gray-700 hover:bg-indigo-100 text-left"
-                      >
-                        Admin Panel
-                      </button>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="w-full px-4 py-2 cursor-pointer text-gray-700 hover:bg-indigo-100 text-left"
-                    >
-                      Logout
-                    </button>
-                  </div>
+                  ))}
+                </div>
+              </div>
+
+              <NavLink
+                to="/about"
+                className={({ isActive }) =>
+                  `font-semibold ${isActive
+                    ? "text-primary"
+                    : "text-gray-700 hover:text-primary"
+                  }`
+                }
+              >
+                About us
+              </NavLink>
+            </div>
+
+            {/* Right side icons */}
+            <div className="flex items-center space-x-3 md:space-x-4">
+              {/* Search */}
+              <Search
+                isOpen={searchOpen}
+                onOpen={() => {
+                  closeAllExcept("search");
+                  setSearchOpen(true);
+                }}
+                onClose={() => setSearchOpen(false)}
+              />
+
+              {/* Cart */}
+              <div className="relative">
+                <FiShoppingCart
+                  size={20}
+                  onClick={() => {
+                    closeAllExcept("cart");
+                    setCartOpen((prev) => !prev);
+                  }}
+                  className="text-primary cursor-pointer hover:scale-110 transition"
+                />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-primary text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                    {cartCount}
+                  </span>
                 )}
               </div>
-            ) : (
-              <button
-                onClick={() => setLoginOpen(true)}
-                className="text-primary cursor-pointer hover:scale-110 transition"
-              >
-                <FiUser size={24} />
-              </button>
-            )}
 
-            {/* Mobile menu */}
-            <div className="md:hidden flex items-center">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="text-primary cursor-pointer hover:scale-110 transition flex items-center justify-center h-8 w-8"
-              >
-                <FiMenu size={24} />
-              </button>
+              {/* Wishlist */}
+              <div className="relative">
+                <IoMdHeartEmpty
+                  size={22}
+                  onClick={() => {
+                    closeAllExcept("wishlist");
+                    setWishlistOpen((prev) => !prev);
+                  }}
+                  className="text-primary cursor-pointer hover:scale-110 transition"
+                />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-primary text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </div>
+
+              {/* Orders */}
+              <div className="relative">
+                <FaBoxOpen
+                  size={22}
+                  onClick={handleOrdersClick}
+                  className="text-primary cursor-pointer hover:scale-110 transition"
+                />
+                {orderCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-primary text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                    {orderCount}
+                  </span>
+                )}
+              </div>
+
+              {/* User dropdown */}
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeAllExcept("user");
+                      setUserDropdownOpen((prev) => !prev);
+                    }}
+                    className="w-8 h-8 bg-primary text-white cursor-pointer rounded-full flex items-center justify-center font-semibold"
+                  >
+                    {user.username?.charAt(0).toUpperCase() || "U"}
+                  </button>
+                  {userDropdownOpen && (
+                    <div
+                      ref={userDropdownRef}
+                      className="absolute right-0 mt-2 w-40 bg-white shadow-md rounded-lg py-2 z-50"
+                    >
+                      <button
+                        onClick={handleAccountClick}
+                        className="w-full px-4 py-2 cursor-pointer text-gray-700 hover:bg-indigo-100 text-left"
+                      >
+                        My Account
+                      </button>
+                      {user.role === "admin" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate("/superadmin");
+                            setUserDropdownOpen(false);
+                          }}
+                          className="w-full px-4 py-2 cursor-pointer text-gray-700 hover:bg-indigo-100 text-left"
+                        >
+                          Admin Panel
+                        </button>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-2 cursor-pointer text-gray-700 hover:bg-indigo-100 text-left"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => setLoginOpen(true)}
+                  className="text-primary cursor-pointer hover:scale-110 transition"
+                >
+                  <FiUser size={24} />
+                </button>
+              )}
+
+              {/* Mobile menu */}
+              <div className="md:hidden flex items-center">
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="text-primary cursor-pointer hover:scale-110 transition flex items-center justify-center h-8 w-8"
+                >
+                  <FiMenu size={24} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </PageContainer>
-    </nav>
+        </PageContainer>
+      </nav>
 
       {/* Modals */}
       {loginOpen && <Login onClose={() => setLoginOpen(false)} setUser={setUser} onOpenRegister={() => {
@@ -447,9 +470,8 @@ function Navbar() {
           }}
         >
           <div
-            className={`bg-white h-[100vh] w-[50%] shadow-lg p-6 relative transform transition-transform duration-300 ${
-              sidebarOpen ? "translate-x-0" : "-translate-x-full"
-            }`}
+            className={`bg-white h-[100vh] w-[50%] shadow-lg p-6 relative transform transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+              }`}
           >
             <button
               className="absolute top-4 right-4 text-gray-600"
