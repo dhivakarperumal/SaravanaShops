@@ -32,10 +32,17 @@ const AllUsers = () => {
   const fetchUsers = async () => {
     try {
       const response = await api.get("/users");
-      setUsers(response.data);
+      if (Array.isArray(response.data)) {
+        setUsers(response.data);
+      } else {
+        console.error("Invalid response from server. Expected an array, got:", typeof response.data);
+        toast.error("Server configuration error. API returned HTML.");
+        setUsers([]);
+      }
     } catch (error) {
       console.error("Error fetching users:", error);
       toast.error("Failed to fetch users.");
+      setUsers([]);
     }
   };
 

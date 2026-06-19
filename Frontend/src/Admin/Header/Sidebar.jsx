@@ -149,13 +149,17 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
     const fetchNewUsersCount = async () => {
       try {
         const res = await api.get("/users");
-        const todayStart = dayjs().startOf("day").toDate();
-        const count = res.data.filter(u => {
-          const createdAt = new Date(u.created_at || u.createdAt);
-          if (isNaN(createdAt.getTime())) return false;
-          return createdAt >= todayStart;
-        }).length;
-        setNewUsersCount(count);
+        if (Array.isArray(res.data)) {
+          const todayStart = dayjs().startOf("day").toDate();
+          const count = res.data.filter(u => {
+            const createdAt = new Date(u.created_at || u.createdAt);
+            if (isNaN(createdAt.getTime())) return false;
+            return createdAt >= todayStart;
+          }).length;
+          setNewUsersCount(count);
+        } else {
+          setNewUsersCount(0);
+        }
       } catch (err) {
         console.error("Error fetching new users:", err);
       }

@@ -15,7 +15,7 @@ export default defineConfig({
         secure: false,
       },
       '/proxy-uploads': {
-        target: 'https://mauvalprint.in/uploads',
+        target: 'https://saravanashops.qtechx.com/uploads',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/proxy-uploads/, '')
       }

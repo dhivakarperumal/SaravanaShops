@@ -4,6 +4,17 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app = express();
+
+// Fix for Plesk/Nginx/IIS rewriting API requests to /index.html
+app.use((req, res, next) => {
+  const originalUrl = req.headers['x-original-uri'] || req.headers['x-rewrite-url'] || req.headers['x-original-url'];
+  if (originalUrl && req.url === '/index.html') {
+    req.url = originalUrl;
+    req.originalUrl = originalUrl;
+  }
+  next();
+});
+
 const PORT = process.env.PORT || 5000;
 
 // CORS configuration for Frontend
