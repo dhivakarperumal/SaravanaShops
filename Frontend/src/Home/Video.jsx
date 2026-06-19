@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../api/";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
+import PageContainer from "../Components/PageContainer";
 
 // Import Swiper styles
 import "swiper/css";
@@ -29,17 +30,17 @@ const Video = () => {
 
   if (loading) {
     return (
-      <div className="w-full max-w-6xl px-6 mx-auto py-6 text-center text-gray-500">
+      <PageContainer className="py-6 text-center text-gray-500">
         Loading videos...
-      </div>
+      </PageContainer>
     );
   }
 
   if (videos.length === 0) {
     return (
-      <div className="w-full max-w-6xl px-6 mx-auto py-6 text-center text-gray-500">
+      <PageContainer className="py-6 text-center text-gray-500">
         No videos available.
-      </div>
+      </PageContainer>
     );
   }
 
@@ -69,7 +70,7 @@ const Video = () => {
   };
 
   return (
-    <div className="w-full max-w-6xl px-6 mx-auto py-10">
+    <PageContainer className="py-10">
       <h2 className="relative text-2xl font-bold mb-8 text-left inline-block">
         Our Collection
         <span className="absolute left-0 -bottom-2 w-20 h-1 bg-gradient-to-r from-primary to-pink-400 rounded-full"></span>
@@ -116,7 +117,7 @@ const Video = () => {
           </SwiperSlide>
         ))}
       </Swiper>
-    </div>
+    </PageContainer>
   );
 };
 

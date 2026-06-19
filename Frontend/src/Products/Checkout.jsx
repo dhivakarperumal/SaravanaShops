@@ -7,6 +7,7 @@ import Head from "../Components/Head";
 import { IoIosArrowForward } from "react-icons/io";
 import emailjs from "@emailjs/browser";
 import { FaLocationDot } from "react-icons/fa6";
+import PageContainer from "../Components/PageContainer";
 
 /* ----------------------------- Static lists ------------------------------ */
 const indianStates = [
@@ -670,260 +671,259 @@ const Checkout = () => {
         }
       />
 
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
-        {/* Saved addresses */}
+      <div className="min-h-screen bg-gray-50 py-8">
+        <PageContainer>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Shipping form */}
+            <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow">
+              <h2 className="text-xl font-semibold mb-6">Shipping Details</h2>
 
+              <div className="mb-6 relative">
+                <label className="block text-sm font-medium mb-2">
+                  Search Saved Address
+                </label>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Shipping form */}
-          <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow">
-            <h2 className="text-xl font-semibold mb-6">Shipping Details</h2>
+                <div className="flex flex-col md:flex-row gap-3 mb-6">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="Search by name, phone, address..."
+                      value={addressSearch}
+                      onChange={(e) => {
+                        setAddressSearch(e.target.value);
+                        setShowAddressDropdown(true);
+                      }}
+                      className="w-full p-3 border border-gray-300 rounded-lg"
+                    />
 
-            <div className="mb-6 relative">
-              <label className="block text-sm font-medium mb-2">
-                Search Saved Address
-              </label>
+                    {showAddressDropdown && filteredAddresses.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {filteredAddresses.map((addr) => (
+                          <div
+                            key={addr.id}
+                            onClick={() => selectAddress(addr)}
+                            className="p-3 border-b cursor-pointer hover:bg-gray-100"
+                          >
+                            <div className="font-semibold">
+                              {addr.firstname} {addr.lastname}
+                            </div>
 
-              <div className="flex flex-col md:flex-row gap-3 mb-6">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    placeholder="Search by name, phone, address..."
-                    value={addressSearch}
-                    onChange={(e) => {
-                      setAddressSearch(e.target.value);
-                      setShowAddressDropdown(true);
-                    }}
-                    className="w-full p-3 border border-gray-300 rounded-lg"
-                  />
+                            <div className="text-sm text-gray-600">
+                              {addr.contact}
+                            </div>
 
-                  {showAddressDropdown && filteredAddresses.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      {filteredAddresses.map((addr) => (
-                        <div
-                          key={addr.id}
-                          onClick={() => selectAddress(addr)}
-                          className="p-3 border-b cursor-pointer hover:bg-gray-100"
-                        >
-                          <div className="font-semibold">
-                            {addr.firstname} {addr.lastname}
+                            <div className="text-xs text-gray-500">
+                              {addr.address}, {addr.city}
+                            </div>
                           </div>
-
-                          <div className="text-sm text-gray-600">
-                            {addr.contact}
-                          </div>
-
-                          <div className="text-xs text-gray-500">
-                            {addr.address}, {addr.city}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={getCurrentLocation}
-                  disabled={locationLoading}
-                  className="bg-primary text-white px-4 py-3 rounded-lg hover:bg-primary/80 cursor-pointer whitespace-nowrap flex items-center gap-2"
-                >
-                  <FaLocationDot />
-
-                  {locationLoading
-                    ? "Fetching..."
-                    : "Current Location"}
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
-              {/* Full Name - Full width */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                  name="name"
-                  placeholder="Enter your full name"
-                  value={shipping.name}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                />
-                {errors.name && <span className="text-red-500 text-xs mt-1">{errors.name}</span>}
-              </div>
-
-              {/* Contact Info - 2 columns */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                <input
-                  name="phone"
-                  type="tel"
-                  maxLength="10"
-                  placeholder="10-digit mobile number"
-                  value={shipping.phone}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                />
-                {errors.phone && <span className="text-red-500 text-xs mt-1">{errors.phone}</span>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  name="email"
-                  type="email"
-                  placeholder="Email address"
-                  value={shipping.email}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                />
-                {errors.email && <span className="text-red-500 text-xs mt-1">{errors.email}</span>}
-              </div>
-
-              {/* Address Details */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Door Number</label>
-                <input
-                  name="doorNumber"
-                  placeholder="Door/Flat/Block No."
-                  value={shipping.doorNumber}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                />
-                {errors.doorNumber && <span className="text-red-500 text-xs mt-1">{errors.doorNumber}</span>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Street Name</label>
-                <input
-                  name="streetName"
-                  placeholder="Street name"
-                  value={shipping.streetName}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                />
-                {errors.streetName && <span className="text-red-500 text-xs mt-1">{errors.streetName}</span>}
-              </div>
-
-              {/* Full Address - Full width */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <textarea
-                  name="address"
-                  placeholder="Full address"
-                  value={shipping.address}
-                  onChange={handleChange}
-                  rows="2"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none"
-                />
-                {errors.address && <span className="text-red-500 text-xs mt-1">{errors.address}</span>}
-              </div>
-
-              {/* Landmark */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Landmark</label>
-                <input
-                  name="landmark"
-                  placeholder="Nearby landmark"
-                  value={shipping.landmark}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                />
-                {errors.landmark && <span className="text-red-500 text-xs mt-1">{errors.landmark}</span>}
-              </div>
-
-              {/* City, State, PIN */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                <input
-                  name="city"
-                  placeholder="City/Town"
-                  value={shipping.city}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                />
-                {errors.city && <span className="text-red-500 text-xs mt-1">{errors.city}</span>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">PIN Code</label>
-                <input
-                  name="zip"
-                  type="text"
-                  maxLength="6"
-                  placeholder="6-digit PIN code"
-                  value={shipping.zip}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                />
-                {errors.zip && <span className="text-red-500 text-xs mt-1">{errors.zip}</span>}
-              </div>
-
-              {/* State and Country */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                <select
-                  name="state"
-                  value={shipping.state}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300  rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                >
-                  <option value="">Select State</option>
-                  {indianStates.map((st) => (
-                    <option key={st} value={st}>{st}</option>
-                  ))}
-                </select>
-                {errors.state && <span className="text-red-500 text-xs mt-1">{errors.state}</span>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                <select
-                  name="country"
-                  value={shipping.country}
-                  onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                >
-                  {countryList.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Order summary */}
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-
-            <div className="flex flex-col gap-4 mb-4 max-h-64 overflow-y-auto">
-              {cartItems.map((it) => (
-                <div key={it.id} className="flex items-center gap-3">
-                  <img src={it.image || "/placeholder.jpg"} className="w-14 h-14 object-cover rounded" alt={it.product_name || it.name} />
-                  <div className="flex-1 flex flex-col">
-                    <span className="font-medium">{it.product_name || "N/A"}</span>
-                    <span className="text-xs text-gray-500">Qty: {it.quantity || 1}</span>
-                    {it.size && <span className="text-xs text-gray-400">Size: {it.size} {it.color && `| Color: ${it.color}`}</span>}
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div className="font-semibold">₹{((Number(it.sellingprice) || 0) * (it.quantity || 1)).toFixed(2)}</div>
+
+                  <button
+                    type="button"
+                    onClick={getCurrentLocation}
+                    disabled={locationLoading}
+                    className="bg-primary text-white px-4 py-3 rounded-lg hover:bg-primary/80 cursor-pointer whitespace-nowrap flex items-center gap-2"
+                  >
+                    <FaLocationDot />
+
+                    {locationLoading
+                      ? "Fetching..."
+                      : "Current Location"}
+                  </button>
                 </div>
-              ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+                {/* Full Name - Full width */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <input
+                    name="name"
+                    placeholder="Enter your full name"
+                    value={shipping.name}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  />
+                  {errors.name && <span className="text-red-500 text-xs mt-1">{errors.name}</span>}
+                </div>
+
+                {/* Contact Info - 2 columns */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <input
+                    name="phone"
+                    type="tel"
+                    maxLength="10"
+                    placeholder="10-digit mobile number"
+                    value={shipping.phone}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  />
+                  {errors.phone && <span className="text-red-500 text-xs mt-1">{errors.phone}</span>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    name="email"
+                    type="email"
+                    placeholder="Email address"
+                    value={shipping.email}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  />
+                  {errors.email && <span className="text-red-500 text-xs mt-1">{errors.email}</span>}
+                </div>
+
+                {/* Address Details */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Door Number</label>
+                  <input
+                    name="doorNumber"
+                    placeholder="Door/Flat/Block No."
+                    value={shipping.doorNumber}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  />
+                  {errors.doorNumber && <span className="text-red-500 text-xs mt-1">{errors.doorNumber}</span>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Street Name</label>
+                  <input
+                    name="streetName"
+                    placeholder="Street name"
+                    value={shipping.streetName}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  />
+                  {errors.streetName && <span className="text-red-500 text-xs mt-1">{errors.streetName}</span>}
+                </div>
+
+                {/* Full Address - Full width */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <textarea
+                    name="address"
+                    placeholder="Full address"
+                    value={shipping.address}
+                    onChange={handleChange}
+                    rows="2"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none"
+                  />
+                  {errors.address && <span className="text-red-500 text-xs mt-1">{errors.address}</span>}
+                </div>
+
+                {/* Landmark */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Landmark</label>
+                  <input
+                    name="landmark"
+                    placeholder="Nearby landmark"
+                    value={shipping.landmark}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  />
+                  {errors.landmark && <span className="text-red-500 text-xs mt-1">{errors.landmark}</span>}
+                </div>
+
+                {/* City, State, PIN */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                  <input
+                    name="city"
+                    placeholder="City/Town"
+                    value={shipping.city}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  />
+                  {errors.city && <span className="text-red-500 text-xs mt-1">{errors.city}</span>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">PIN Code</label>
+                  <input
+                    name="zip"
+                    type="text"
+                    maxLength="6"
+                    placeholder="6-digit PIN code"
+                    value={shipping.zip}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  />
+                  {errors.zip && <span className="text-red-500 text-xs mt-1">{errors.zip}</span>}
+                </div>
+
+                {/* State and Country */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                  <select
+                    name="state"
+                    value={shipping.state}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300  rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  >
+                    <option value="">Select State</option>
+                    {indianStates.map((st) => (
+                      <option key={st} value={st}>{st}</option>
+                    ))}
+                  </select>
+                  {errors.state && <span className="text-red-500 text-xs mt-1">{errors.state}</span>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                  <select
+                    name="country"
+                    value={shipping.country}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  >
+                    {countryList.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <div className="flex justify-between mb-2"><span>Subtotal:</span> <span>₹{subtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between mb-2"><span>Shipping:</span> <span>₹{shippingCost}</span></div>
+            {/* Order summary */}
+            <div className="bg-white p-6 rounded-xl shadow">
+              <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
 
-            <div className="flex justify-between font-semibold text-lg mb-4"><span>Total:</span> <span>₹{totalPayable.toFixed(2)}</span></div>
+              <div className="flex flex-col gap-4 mb-4 max-h-64 overflow-y-auto">
+                {cartItems.map((it) => (
+                  <div key={it.id} className="flex items-center gap-3">
+                    <img src={it.image || "/placeholder.jpg"} className="w-14 h-14 object-cover rounded" alt={it.product_name || it.name} />
+                    <div className="flex-1 flex flex-col">
+                      <span className="font-medium">{it.product_name || "N/A"}</span>
+                      <span className="text-xs text-gray-500">Qty: {it.quantity || 1}</span>
+                      {it.size && <span className="text-xs text-gray-400">Size: {it.size} {it.color && `| Color: ${it.color}`}</span>}
+                    </div>
+                    <div className="font-semibold">₹{((Number(it.sellingprice) || 0) * (it.quantity || 1)).toFixed(2)}</div>
+                  </div>
+                ))}
+              </div>
 
-            <button
-              onClick={handlePlaceOrder}
-              disabled={placing}
-              className={`w-full py-2 rounded transition font-medium ${placing ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/80 cursor-pointer"
-                }`}
-            >
-              {placing ? "Placing Order..." : "Pay Online"}
-            </button>
+              <div className="flex justify-between mb-2"><span>Subtotal:</span> <span>₹{subtotal.toFixed(2)}</span></div>
+              <div className="flex justify-between mb-2"><span>Shipping:</span> <span>₹{shippingCost}</span></div>
+
+              <div className="flex justify-between font-semibold text-lg mb-4"><span>Total:</span> <span>₹{totalPayable.toFixed(2)}</span></div>
+
+              <button
+                onClick={handlePlaceOrder}
+                disabled={placing}
+                className={`w-full py-2 rounded transition font-medium ${placing ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/80 cursor-pointer"
+                  }`}
+              >
+                {placing ? "Placing Order..." : "Pay Online"}
+              </button>
+            </div>
           </div>
-        </div>
+          </PageContainer>
       </div>
     </>
   );

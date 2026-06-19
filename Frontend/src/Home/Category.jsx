@@ -10,6 +10,7 @@ import ProductCard from './../Products/ProductCard';
 import ProductModal from './../Products/ProductModal';
 import Head from "../Components/Head";
 import { IoIosArrowForward } from "react-icons/io";
+import PageContainer from "../Components/PageContainer";
 
 const Category = ({ onOpenModal }) => {
 
@@ -343,389 +344,391 @@ const Category = ({ onOpenModal }) => {
       />
 
 
-      <div className="flex flex-col md:flex-row gap-4 p-4 mt-4 relative">
-        {/* Sidebar */}
+      <PageContainer className="mt-4">
+        <div className="flex flex-col md:flex-row gap-4 relative">
+          {/* Sidebar */}
 
-        <aside
-          className={`
+          <aside
+            className={`
     bg-white p-4 border border-primary/30 rounded-lg
     md:w-64 md:sticky md:top-25 md:self-start
     w-70 fixed top-0 left-0 h-full z-50 md:z-30
     transform transition-transform duration-300 overflow-y-auto
     ${showFilters ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
   `}
-        >
-          {/* Mobile Header */}
-          <div className="flex justify-between items-center mb-4 md:hidden">
-            <h3 className="text-lg font-bold">Filters</h3>
-            <button
-              onClick={() => setShowFilters(false)}
-              className="text-black font-bold cursor-pointer"
-            >
-              ✕
-            </button>
-          </div>
+          >
+            {/* Mobile Header */}
+            <div className="flex justify-between items-center mb-4 md:hidden">
+              <h3 className="text-lg font-bold">Filters</h3>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="text-black font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
 
-          <h3 className="text-2xl font-bold mb-4 hidden md:block text-primary">
-            Filters
-          </h3>
+            <h3 className="text-2xl font-bold mb-4 hidden md:block text-primary">
+              Filters
+            </h3>
 
-          {/* --- Dynamic Filters --- */}
+            {/* --- Dynamic Filters --- */}
 
-          {/* Category */}
-          <div className="mb-4">
-            <h4 className="font-bold mb-1 text-primary text-lg mt-2">Category</h4>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="category"
-                value=""
-                checked={filters.category === ""}
-                onChange={(e) => handleFilterChange("category", e.target.value)}
-                className="accent-primary cursor-pointer"
-              />
-              All
-            </label>
-            {categories.filter(Boolean).map((c) => (
-              <label key={c} className="flex items-center gap-2 mt-1">
+            {/* Category */}
+            <div className="mb-4">
+              <h4 className="font-bold mb-1 text-primary text-lg mt-2">Category</h4>
+              <label className="flex items-center gap-2">
                 <input
                   type="radio"
                   name="category"
-                  value={c}
-                  checked={filters.category === c}
+                  value=""
+                  checked={filters.category === ""}
                   onChange={(e) => handleFilterChange("category", e.target.value)}
                   className="accent-primary cursor-pointer"
                 />
-                {c}
-              </label>
-            ))}
-          </div>
-
-          {/* Subcategory */}
-          {subcategories.length > 0 && (
-            <div className="mb-4">
-              <h4 className="font-bold mb-2 text-primary text-lg">Subcategory</h4>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="subcategory"
-                  value=""
-                  checked={filters.subcategory === ""}
-                  onChange={(e) => handleFilterChange("subcategory", e.target.value)}
-                  className="accent-primary cursor-pointer"
-                />
                 All
               </label>
-              {subcategories.map((s) => (
-                <label key={s} className="flex items-center gap-2 mt-1">
-                  <input
-                    type="radio"
-                    name="subcategory"
-                    value={s}
-                    checked={filters.subcategory === s}
-                    onChange={(e) => handleFilterChange("subcategory", e.target.value)}
-                    className="accent-primary cursor-pointer"
-                  />
-                  {s}
-                </label>
-              ))}
-            </div>
-          )}
-
-          {/* Color */}
-          {getColors().filter(Boolean).length > 0 && (
-            <div className="mb-4">
-              <label className="block font-semibold mb-2 text-primary text-lg">Color:</label>
-              <div className="flex flex-wrap gap-2">
-                {getColors()
-                  .filter(Boolean)
-                  .map((c) => (
-                    <div
-                      key={c}
-                      onClick={() => handleMultiSelect("color", c)}
-                      className={`w-6 h-6 rounded-full cursor-pointer border-2 ${filters.color.includes(c) ? "border-black" : "border-gray-300"
-                        }`}
-                      style={{ backgroundColor: c }}
-                      title={c}
-                    />
-                  ))}
-              </div>
-            </div>
-          )}
-
-          {/* Size */}
-          {getSizes().filter(Boolean).length > 0 && (
-            <div className="mb-4">
-              <label className="block font-semibold text-primary text-lg">Size:</label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={filters.size.length === 0}
-                  onChange={() => handleFilterChange("size", [])}
-                  className="accent-primary cursor-pointer"
-                />
-                All
-              </label>
-              {getSizes()
-                .filter(Boolean)
-                .map((s) => (
-                  <label key={s} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={filters.size.includes(s)}
-                      onChange={() => handleMultiSelect("size", s)}
-                      className="accent-primary cursor-pointer"
-                    />
-                    {s}
-                  </label>
-                ))}
-            </div>
-          )}
-
-          {/* Count (Bangle only) */}
-          {filters.category === "Bangle" && (
-            <div className="mb-4">
-              <label className="block font-semibold text-primary text-lg mt-1">Count:</label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="count"
-                  value=""
-                  checked={filters.count === ""}
-                  onChange={(e) => handleFilterChange("count", e.target.value)}
-                  className="accent-primary cursor-pointer"
-                />
-                All
-              </label>
-              {["SingleColor", "MultiColor"].map((c) => (
+              {categories.filter(Boolean).map((c) => (
                 <label key={c} className="flex items-center gap-2 mt-1">
                   <input
                     type="radio"
-                    name="count"
+                    name="category"
                     value={c}
-                    checked={filters.count === c}
-                    onChange={(e) => handleFilterChange("count", e.target.value)}
+                    checked={filters.category === c}
+                    onChange={(e) => handleFilterChange("category", e.target.value)}
                     className="accent-primary cursor-pointer"
                   />
                   {c}
                 </label>
               ))}
             </div>
-          )}
 
-          {/* --- Static Filters (Price, Rating, Offer) --- */}
-
-          {/* Price Range */}
-          <div className="mb-4">
-            <label className="block font-semibold mb-2 text-primary text-lg">Price Range:</label>
-            {products.length > 0 && (
-              <>
-                {(() => {
-                  const minSellingPrice = Math.min(...products.map((p) => p.sellingprice));
-                  const maxSellingPrice = Math.max(...products.map((p) => p.sellingprice));
-                  return (
-                    <>
-                      <div className="text-center mt-1 text-sm font-medium">
-                        ₹{filters.price[0]} – ₹{filters.price[1]}
-                      </div>
-                      <input
-                        type="range"
-                        min={minSellingPrice}
-                        max={maxSellingPrice}
-                        value={filters.price[1]}
-                        onChange={(e) =>
-                          handleFilterChange("price", [filters.price[0], Number(e.target.value)])
-                        }
-                        className="w-full accent-primary cursor-pointer -mt-2"
-                      />
-                      <div className="flex justify-between text-sm text-gray-600 mt-1">
-                        <span>₹{minSellingPrice}</span>
-                        <span>₹{maxSellingPrice}</span>
-                      </div>
-                    </>
-                  );
-                })()}
-              </>
-            )}
-          </div>
-
-          {/* Rating */}
-          <div className="mb-4">
-            <label className="block font-semibold text-primary text-lg mb-1">Rating:</label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="rating"
-                value=""
-                checked={filters.rating === ""}
-                onChange={(e) => handleFilterChange("rating", e.target.value)}
-                className="accent-primary cursor-pointer"
-              />
-              All
-            </label>
-            {[5, 4, 3, 2, 1].map((r) => (
-              <label key={r} className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="rating"
-                  value={r}
-                  checked={filters.rating == r}
-                  onChange={(e) => handleFilterChange("rating", e.target.value)}
-                  className="accent-primary cursor-pointer"
-                />
-                {r} & up
-              </label>
-            ))}
-          </div>
-
-          {/* Offer */}
-          <div className="mb-4">
-            <label className="block font-semibold text-primary text-lg mb-1">Offer:</label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="offer"
-                value=""
-                checked={filters.offer === ""}
-                onChange={(e) => handleFilterChange("offer", e.target.value)}
-                className="accent-primary cursor-pointer"
-              />
-              All
-            </label>
-            {[50, 30, 20, 10].map((o) => (
-              <label key={o} className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="offer"
-                  value={o}
-                  checked={filters.offer == o}
-                  onChange={(e) => handleFilterChange("offer", e.target.value)}
-                  className="accent-primary cursor-pointer"
-                />
-                {o}% & above
-              </label>
-            ))}
-          </div>
-
-          {/* Clear Filters */}
-          <button
-            onClick={clearFilters}
-            className="w-full bg-primary cursor-pointer text-white px-4 py-2 rounded mt-6"
-          >
-            Clear Filters
-          </button>
-        </aside>
-
-        {/* Overlay */}
-        {showFilters && (
-          <div
-            onClick={() => setShowFilters(false)}
-            className="fixed inset-0 bg-black/40 md:hidden z-40"
-          />
-        )}
-
-        {/* Products Section */}
-        <div className="flex-1 flex flex-col">
-          {/* Top Bar: Sort + Grid + Mobile Filter */}
-          <div className="flex justify-between items-center mb-4">
-            <button
-              onClick={() => setShowFilters(true)}
-              className="flex items-center cursor-pointer gap-2 md:hidden border px-3 py-1 rounded"
-            >
-              <FaFilter /> Filters
-            </button>
-
-            <select
-              className="border cursor-pointer border-gray-300 p-1 rounded"
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
-            >
-              <option value="default">Sort By</option>
-              <option value="priceHigh">Price: High → Low</option>
-              <option value="priceLow">Price: Low → High</option>
-            </select>
-
-            <div className="hidden md:flex gap-2">
-              <button
-                onClick={() => setGridCols(3)}
-                className={`cursor-pointer ${gridCols === 3 ? "bg-primary text-white" : "bg-white"
-                  } p-2 border rounded`}
-              >
-                <FaThLarge />
-              </button>
-              <button
-                onClick={() => setGridCols(4)}
-                className={`cursor-pointer ${gridCols === 4 ? "bg-primary text-white" : "bg-white"
-                  } p-2 border rounded`}
-              >
-                <FaTh />
-              </button>
-            </div>
-          </div>
-
-          {/* Product Grid */}
-          <div className="flex-1 overflow-y-auto">
-            {currentProducts.length === 0 ? (
-              <p className="text-center mt-10 text-gray-500">No products found.</p>
-            ) : (
-              <div
-                className={`grid gap-4 ${gridCols === 3
-                    ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
-                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
-                  }`}
-              >
-                {currentProducts.map((p) => (
-                  <ProductCard
-                    key={p.id}
-                    product={p}
-                    onOpenModal={() => setSelectedProduct(p)}
+            {/* Subcategory */}
+            {subcategories.length > 0 && (
+              <div className="mb-4">
+                <h4 className="font-bold mb-2 text-primary text-lg">Subcategory</h4>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="subcategory"
+                    value=""
+                    checked={filters.subcategory === ""}
+                    onChange={(e) => handleFilterChange("subcategory", e.target.value)}
+                    className="accent-primary cursor-pointer"
                   />
+                  All
+                </label>
+                {subcategories.map((s) => (
+                  <label key={s} className="flex items-center gap-2 mt-1">
+                    <input
+                      type="radio"
+                      name="subcategory"
+                      value={s}
+                      checked={filters.subcategory === s}
+                      onChange={(e) => handleFilterChange("subcategory", e.target.value)}
+                      className="accent-primary cursor-pointer"
+                    />
+                    {s}
+                  </label>
                 ))}
               </div>
             )}
-          </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-6">
+            {/* Color */}
+            {getColors().filter(Boolean).length > 0 && (
+              <div className="mb-4">
+                <label className="block font-semibold mb-2 text-primary text-lg">Color:</label>
+                <div className="flex flex-wrap gap-2">
+                  {getColors()
+                    .filter(Boolean)
+                    .map((c) => (
+                      <div
+                        key={c}
+                        onClick={() => handleMultiSelect("color", c)}
+                        className={`w-6 h-6 rounded-full cursor-pointer border-2 ${filters.color.includes(c) ? "border-black" : "border-gray-300"
+                          }`}
+                        style={{ backgroundColor: c }}
+                        title={c}
+                      />
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Size */}
+            {getSizes().filter(Boolean).length > 0 && (
+              <div className="mb-4">
+                <label className="block font-semibold text-primary text-lg">Size:</label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={filters.size.length === 0}
+                    onChange={() => handleFilterChange("size", [])}
+                    className="accent-primary cursor-pointer"
+                  />
+                  All
+                </label>
+                {getSizes()
+                  .filter(Boolean)
+                  .map((s) => (
+                    <label key={s} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={filters.size.includes(s)}
+                        onChange={() => handleMultiSelect("size", s)}
+                        className="accent-primary cursor-pointer"
+                      />
+                      {s}
+                    </label>
+                  ))}
+              </div>
+            )}
+
+            {/* Count (Bangle only) */}
+            {filters.category === "Bangle" && (
+              <div className="mb-4">
+                <label className="block font-semibold text-primary text-lg mt-1">Count:</label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="count"
+                    value=""
+                    checked={filters.count === ""}
+                    onChange={(e) => handleFilterChange("count", e.target.value)}
+                    className="accent-primary cursor-pointer"
+                  />
+                  All
+                </label>
+                {["SingleColor", "MultiColor"].map((c) => (
+                  <label key={c} className="flex items-center gap-2 mt-1">
+                    <input
+                      type="radio"
+                      name="count"
+                      value={c}
+                      checked={filters.count === c}
+                      onChange={(e) => handleFilterChange("count", e.target.value)}
+                      className="accent-primary cursor-pointer"
+                    />
+                    {c}
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {/* --- Static Filters (Price, Rating, Offer) --- */}
+
+            {/* Price Range */}
+            <div className="mb-4">
+              <label className="block font-semibold mb-2 text-primary text-lg">Price Range:</label>
+              {products.length > 0 && (
+                <>
+                  {(() => {
+                    const minSellingPrice = Math.min(...products.map((p) => p.sellingprice));
+                    const maxSellingPrice = Math.max(...products.map((p) => p.sellingprice));
+                    return (
+                      <>
+                        <div className="text-center mt-1 text-sm font-medium">
+                          ₹{filters.price[0]} – ₹{filters.price[1]}
+                        </div>
+                        <input
+                          type="range"
+                          min={minSellingPrice}
+                          max={maxSellingPrice}
+                          value={filters.price[1]}
+                          onChange={(e) =>
+                            handleFilterChange("price", [filters.price[0], Number(e.target.value)])
+                          }
+                          className="w-full accent-primary cursor-pointer -mt-2"
+                        />
+                        <div className="flex justify-between text-sm text-gray-600 mt-1">
+                          <span>₹{minSellingPrice}</span>
+                          <span>₹{maxSellingPrice}</span>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
+
+            {/* Rating */}
+            <div className="mb-4">
+              <label className="block font-semibold text-primary text-lg mb-1">Rating:</label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="rating"
+                  value=""
+                  checked={filters.rating === ""}
+                  onChange={(e) => handleFilterChange("rating", e.target.value)}
+                  className="accent-primary cursor-pointer"
+                />
+                All
+              </label>
+              {[5, 4, 3, 2, 1].map((r) => (
+                <label key={r} className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="rating"
+                    value={r}
+                    checked={filters.rating == r}
+                    onChange={(e) => handleFilterChange("rating", e.target.value)}
+                    className="accent-primary cursor-pointer"
+                  />
+                  {r} & up
+                </label>
+              ))}
+            </div>
+
+            {/* Offer */}
+            <div className="mb-4">
+              <label className="block font-semibold text-primary text-lg mb-1">Offer:</label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="offer"
+                  value=""
+                  checked={filters.offer === ""}
+                  onChange={(e) => handleFilterChange("offer", e.target.value)}
+                  className="accent-primary cursor-pointer"
+                />
+                All
+              </label>
+              {[50, 30, 20, 10].map((o) => (
+                <label key={o} className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="offer"
+                    value={o}
+                    checked={filters.offer == o}
+                    onChange={(e) => handleFilterChange("offer", e.target.value)}
+                    className="accent-primary cursor-pointer"
+                  />
+                  {o}% & above
+                </label>
+              ))}
+            </div>
+
+            {/* Clear Filters */}
+            <button
+              onClick={clearFilters}
+              className="w-full bg-primary cursor-pointer text-white px-4 py-2 rounded mt-6"
+            >
+              Clear Filters
+            </button>
+          </aside>
+
+          {/* Overlay */}
+          {showFilters && (
+            <div
+              onClick={() => setShowFilters(false)}
+              className="fixed inset-0 bg-black/40 md:hidden z-40"
+            />
+          )}
+
+          {/* Products Section */}
+          <div className="flex-1 flex flex-col">
+            {/* Top Bar: Sort + Grid + Mobile Filter */}
+            <div className="flex justify-between items-center mb-4">
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
+                onClick={() => setShowFilters(true)}
+                className="flex items-center cursor-pointer gap-2 md:hidden border px-3 py-1 rounded"
               >
-                <MdOutlineArrowBackIosNew />
+                <FaFilter /> Filters
               </button>
 
-              {[...Array(totalPages)].map((_, i) => (
+              <select
+                className="border cursor-pointer border-gray-300 p-1 rounded"
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+              >
+                <option value="default">Sort By</option>
+                <option value="priceHigh">Price: High → Low</option>
+                <option value="priceLow">Price: Low → High</option>
+              </select>
+
+              <div className="hidden md:flex gap-2">
                 <button
-                  key={i}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`cursor-pointer px-3 py-1 border rounded-full ${currentPage === i + 1
-                      ? "bg-primary text-white"
-                      : "bg-white text-primary"
+                  onClick={() => setGridCols(3)}
+                  className={`cursor-pointer ${gridCols === 3 ? "bg-primary text-white" : "bg-white"
+                    } p-2 border rounded`}
+                >
+                  <FaThLarge />
+                </button>
+                <button
+                  onClick={() => setGridCols(4)}
+                  className={`cursor-pointer ${gridCols === 4 ? "bg-primary text-white" : "bg-white"
+                    } p-2 border rounded`}
+                >
+                  <FaTh />
+                </button>
+              </div>
+            </div>
+
+            {/* Product Grid */}
+            <div className="flex-1 overflow-y-auto">
+              {currentProducts.length === 0 ? (
+                <p className="text-center mt-10 text-gray-500">No products found.</p>
+              ) : (
+                <div
+                  className={`grid gap-4 ${gridCols === 3
+                    ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
                     }`}
                 >
-                  {i + 1}
-                </button>
-              ))}
-
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-              >
-                <MdOutlineArrowForwardIos />
-              </button>
+                  {currentProducts.map((p) => (
+                    <ProductCard
+                      key={p.id}
+                      product={p}
+                      onOpenModal={() => setSelectedProduct(p)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-6">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  <MdOutlineArrowBackIosNew />
+                </button>
+
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`cursor-pointer px-3 py-1 border rounded-full ${currentPage === i + 1
+                      ? "bg-primary text-white"
+                      : "bg-white text-primary"
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  <MdOutlineArrowForwardIos />
+                </button>
+              </div>
+            )}
+          </div>
+          {selectedProduct && (
+            <ProductModal
+              product={selectedProduct}
+              onClose={() => setSelectedProduct(null)}
+            />
           )}
         </div>
-        {selectedProduct && (
-          <ProductModal
-            product={selectedProduct}
-            onClose={() => setSelectedProduct(null)}
-          />
-        )}
-      </div>
+      </PageContainer>
     </>
   );
 };

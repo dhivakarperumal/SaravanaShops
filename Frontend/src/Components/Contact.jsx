@@ -1,6 +1,3 @@
-
-
-
 import React, { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -12,6 +9,7 @@ import { LuPhoneCall } from "react-icons/lu";
 import Head from "./Head";
 import Button from "./Button";
 import emailjs from "emailjs-com";
+import PageContainer from "./PageContainer";
 
 const Contact = () => {
   useEffect(() => {
@@ -110,7 +108,7 @@ const Contact = () => {
 
       <div className="w-full bg-gray-50">
         {/* Contact Info Section */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+        <PageContainer className="py-12 text-center">
           <h2 data-aos="flip-left" className="text-2xl md:text-4xl font-bold text-primary">
             Get in Touch With Us
           </h2>
@@ -154,10 +152,10 @@ const Contact = () => {
               </p>
             </div>
           </div>
-        </div>
+        </PageContainer>
 
         {/* Form Section */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <PageContainer>
           <div
             data-aos="flip-right"
             data-aos-delay="200"
@@ -179,20 +177,18 @@ const Contact = () => {
                       field === "name"
                         ? "Your Name"
                         : field === "email"
-                        ? "Your Email"
-                        : field === "phone"
-                        ? "Mobile Number"
-                        : "Products"
+                          ? "Your Email"
+                          : field === "phone"
+                            ? "Mobile Number"
+                            : "Products"
                     }
-                    className={`bg-white w-full px-4 py-3 rounded-lg border ${
-                      errors[field] ? "border-red-500" : "border-gray-300"
-                    } text-gray-900 focus:outline-none focus:border-primary`}
+                    className={`bg-white w-full px-4 py-3 rounded-lg border ${errors[field] ? "border-red-500" : "border-gray-300"
+                      } text-gray-900 focus:outline-none focus:border-primary`}
                   />
                   <div className="h-5">
                     <p
-                      className={`text-red-500 text-sm transition-opacity duration-300 ${
-                        errors[field] ? "opacity-100" : "opacity-0"
-                      }`}
+                      className={`text-red-500 text-sm transition-opacity duration-300 ${errors[field] ? "opacity-100" : "opacity-0"
+                        }`}
                     >
                       {errors[field] || "Placeholder"}
                     </p>
@@ -207,15 +203,13 @@ const Contact = () => {
                   onChange={handleChange}
                   rows={4}
                   placeholder="Your Message"
-                  className={`bg-white w-full px-4 py-3 rounded-lg border ${
-                    errors.message ? "border-red-500" : "border-gray-300"
-                  } text-gray-900 focus:outline-none focus:border-primary`}
+                  className={`bg-white w-full px-4 py-3 rounded-lg border ${errors.message ? "border-red-500" : "border-gray-300"
+                    } text-gray-900 focus:outline-none focus:border-primary`}
                 ></textarea>
                 <div className="h-5">
                   <p
-                    className={`text-red-500 text-sm transition-opacity duration-300 ${
-                      errors.message ? "opacity-100" : "opacity-0"
-                    }`}
+                    className={`text-red-500 text-sm transition-opacity duration-300 ${errors.message ? "opacity-100" : "opacity-0"
+                      }`}
                   >
                     {errors.message || "Placeholder"}
                   </p>
@@ -233,21 +227,27 @@ const Contact = () => {
               </p>
             )}
           </div>
-        </div>
+        </PageContainer>
 
         {/* Map */}
-        <div data-aos="zoom-in-up" className="w-full h-[300px] md:h-[400px] lg:h-[500px]">
-          <iframe
-            title="Google Map"
-            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d7790.74506298768!2d78.569137!3d12.491449000000001!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bac558a4a8bbf27%3A0x6a4d2eae8fe0e4d4!2sSri%20Saravana%20Shoppings!5e0!3m2!1sen!2sin!4v1760509526404!5m2!1sen!2sin"
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            allowFullScreen=""
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
-        </div>
+        {/* Map */}
+        <PageContainer className="py-12">
+          <div
+            data-aos="zoom-in-up"
+            className="h-[300px] md:h-[400px] lg:h-[500px] rounded-3xl overflow-hidden shadow-lg"
+          >
+            <iframe
+              title="Google Map"
+              src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d7790.74506298768!2d78.569137!3d12.491449000000001!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bac558a4a8bbf27%3A0x6a4d2eae8fe0e4d4!2sSri%20Saravana%20Shoppings!5e0!3m2!1sen!2sin!4v1760509526404!5m2!1sen!2sin"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        </PageContainer>
       </div>
     </>
   );

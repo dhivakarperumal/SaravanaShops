@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import api from "../api";
 import ProductCard from "../Products/ProductCard";
 import ProductModal from "../Products/ProductModal";
+import PageContainer from "../Components/PageContainer";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -75,7 +76,7 @@ const Offer = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <PageContainer className="py-10">
       <h2 className="relative text-2xl font-bold mb-6 text-left inline-block">
         Offers & Deals
         <span className="absolute left-0 -bottom-2 w-20 h-1 bg-gradient-to-r from-primary to-pink-400 rounded-full"></span>
@@ -117,7 +118,7 @@ const Offer = () => {
           onClose={() => setSelectedProduct(null)}
         />
       )}
-    </div>
+    </PageContainer>
   );
 };
 
