@@ -611,7 +611,7 @@ function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl p-6 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-100 cursor-pointer transition"
@@ -661,45 +661,21 @@ function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
             Shipping Details
           </h4>
 
-          <p>
-            <strong>Name:</strong>{" "}
-            {selectedOrder.shipping?.name}
-          </p>
+          <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <p><strong>Name:</strong> {selectedOrder.shipping?.name}</p>
+              <p><strong>Email:</strong> {selectedOrder.shipping?.email}</p>
+              <p><strong>Phone:</strong> {selectedOrder.shipping?.phone}</p>
+              <p><strong>Address:</strong> {selectedOrder.shipping?.address}</p>
+            </div>
 
-          <p>
-            <strong>Email:</strong>{" "}
-            {selectedOrder.shipping?.email}
-          </p>
-
-          <p>
-            <strong>Phone:</strong>{" "}
-            {selectedOrder.shipping?.phone}
-          </p>
-
-          <p>
-            <strong>Address:</strong>{" "}
-            {selectedOrder.shipping?.address}
-          </p>
-
-          <p>
-            <strong>City:</strong>{" "}
-            {selectedOrder.shipping?.city}
-          </p>
-
-          <p>
-            <strong>State:</strong>{" "}
-            {selectedOrder.shipping?.state}
-          </p>
-
-          <p>
-            <strong>Pincode:</strong>{" "}
-            {selectedOrder.shipping?.zip}
-          </p>
-
-          <p>
-            <strong>Country:</strong>{" "}
-            {selectedOrder.shipping?.country}
-          </p>
+            <div className="space-y-2">
+              <p><strong>City:</strong> {selectedOrder.shipping?.city}</p>
+              <p><strong>State:</strong> {selectedOrder.shipping?.state}</p>
+              <p><strong>Pincode:</strong> {selectedOrder.shipping?.zip}</p>
+              <p><strong>Country:</strong> {selectedOrder.shipping?.country}</p>
+            </div>
+          </div>
 
           <hr className="border-gray-300" />
 
@@ -707,32 +683,57 @@ function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
             Products
           </h4>
 
-          {(selectedOrder.items || []).map((item, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 border-b border-gray-300 pb-2"
-            >
-              <img
-                src={item.image}
-                alt=""
-                className="w-14 h-14 rounded object-cover"
-              />
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse rounded-lg overflow-hidden">
+              <thead>
+                <tr className="bg-primary text-white">
+                  <th className="px-3 py-2 text-left">Image</th>
+                  <th className="px-3 py-2 text-left">Product</th>
+                  <th className="px-3 py-2 text-center">Size</th>
+                  <th className="px-3 py-2 text-center">Qty</th>
+                  <th className="px-3 py-2 text-center">Price</th>
+                  <th className="px-3 py-2 text-center">Total</th>
+                </tr>
+              </thead>
 
-              <div>
-                <p className="font-medium">
-                  {item.product_name || item.name}
-                </p>
+              <tbody>
+                {(selectedOrder.items || []).map((item, i) => (
+                  <tr key={i}>
+                    <td className="px-3 py-2 border border-gray-300">
+                      <img
+                        src={item.image}
+                        alt=""
+                        className="w-12 h-12 rounded object-cover"
+                      />
+                    </td>
 
-                <p className="text-sm text-gray-500">
-                  Qty: {item.quantity}
-                </p>
+                    <td className="px-3 py-2 border border-gray-300">
+                      {item.product_name || item.name}
+                    </td>
 
-                <p className="text-sm text-gray-500">
-                  ₹{item.price}
-                </p>
-              </div>
-            </div>
-          ))}
+                    <td className="px-3 py-2 text-center border border-gray-300">
+                      {item.size || "-"}
+                    </td>
+
+                    <td className="px-3 py-2 text-center border border-gray-300">
+                      {item.quantity}
+                    </td>
+
+                    <td className="px-3 py-2 text-center border border-gray-300">
+                      ₹{Number(item.price || 0).toFixed(2)}
+                    </td>
+
+                    <td className="px-3 py-2 text-center font-semibold text-primary border border-gray-300">
+                      ₹{(
+                        Number(item.quantity || 0) *
+                        Number(item.price || 0)
+                      ).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <div className="mt-5 mb-5">
             <h4 className="font-semibold text-lg text-primary mb-4">
