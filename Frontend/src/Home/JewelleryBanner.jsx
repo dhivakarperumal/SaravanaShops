@@ -3,6 +3,7 @@ import Banner1 from "/public/Image/JewelleryBanner1.jpg";
 import Banner3 from "/public/Image/JewelleryBanner3.jpg";
 import Banner4 from "/public/Image/JewelleryBanner4.jpeg";
 import { useNavigate } from "react-router-dom";
+import PageContainer from "../Components/PageContainer";
 
 const JewelleryBanner = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const JewelleryBanner = () => {
       ></div>
 
       {/* Content */}
-      <div className="relative max-w-6xl mx-auto px-5 py-10 text-center">
+      <PageContainer className="relative py-10 text-center">
         {/* Header */}
         <h1 className="text-3xl md:text-4xl font-serif font-semibold mb-2">
           Traditional Jewellery 
@@ -49,7 +50,7 @@ const JewelleryBanner = () => {
             />
           </div>
         </div>
-      </div>
+      </PageContainer>
     </section>
   );
 };
