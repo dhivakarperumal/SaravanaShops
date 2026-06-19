@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
 import {
   FaUser,
   FaBox,
@@ -17,6 +18,7 @@ import { toast } from "react-hot-toast";
 import api from "../api";
 import Head from "./Head";
 import PageContainer from "../components/PageContainer";
+import { IoClose } from "react-icons/io5";
 
 const tabs = [
   { key: "personal", label: "Personal Details", icon: <FaUser /> },
@@ -175,213 +177,218 @@ export default function Account() {
           </main>
         </div>
       </PageContainer>
-      </>
-      );
+    </>
+  );
 }
 
-      function PersonalDetails() {
-  const [form, setForm] = useState({fullName: "", email: "", phone: "" });
+function PersonalDetails() {
+  const [form, setForm] = useState({ fullName: "", email: "", phone: "" });
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const {data} = await api.get("/auth/profile");
-      if (data.user) {
-        setForm({
-          fullName: data.user.username || "",
-          email: data.user.email || "",
-          phone: data.user.phone || "",
-        });
+        const { data } = await api.get("/auth/profile");
+        if (data.user) {
+          setForm({
+            fullName: data.user.username || "",
+            email: data.user.email || "",
+            phone: data.user.phone || "",
+          });
         }
       } catch (err) {
         console.error("Failed to fetch profile", err);
       }
     };
-      fetchProfile();
+    fetchProfile();
   }, []);
 
   const handleChange = (e) =>
-      setForm({...form, [e.target.name]: e.target.value });
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSave = async (e) => {
-        e.preventDefault();
-      try {
-        await api.put("/users/profile", {
-          username: form.fullName,
-          phone: form.phone,
-        });
+    e.preventDefault();
+    try {
+      await api.put("/users/profile", {
+        username: form.fullName,
+        phone: form.phone,
+      });
       toast.success("Profile updated successfully!");
     } catch (err) {
-        console.error(err);
+      console.error(err);
       toast.error("Failed to update profile");
     }
   };
 
-      return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-secondary">
-        <h2 className="text-2xl font-semibold mb-6 text-primary">
-          Personal Details
-        </h2>
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-secondary">
+      <h2 className="text-2xl font-semibold mb-6 text-primary">
+        Personal Details
+      </h2>
 
-        {/* ✅ Wrap in form so 'required' & pattern validation works */}
-        <form onSubmit={handleSave} className="space-y-5">
-          <input
-            name="fullName"
-            value={form.fullName}
-            onChange={handleChange}
-            placeholder="Full Name"
-            required
-            className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
-          />
+      {/* ✅ Wrap in form so 'required' & pattern validation works */}
+      <form onSubmit={handleSave} className="space-y-5">
+        <input
+          name="fullName"
+          value={form.fullName}
+          onChange={handleChange}
+          placeholder="Full Name"
+          required
+          className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
+        />
 
-          <input
-            name="email"
-            value={form.email}
-            placeholder="E-mail"
-            disabled
-            className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-gray-100 text-gray-500"
-          />
+        <input
+          name="email"
+          value={form.email}
+          placeholder="E-mail"
+          disabled
+          className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-gray-100 text-gray-500"
+        />
 
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            placeholder="Phone Number"
-            required
-            pattern="[6-9]{1}[0-9]{9}"
-            title="Enter a valid 10-digit phone number"
-            className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
-          />
+        <input
+          name="phone"
+          value={form.phone}
+          onChange={handleChange}
+          placeholder="Phone Number"
+          required
+          pattern="[6-9]{1}[0-9]{9}"
+          title="Enter a valid 10-digit phone number"
+          className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
+        />
 
-          <button
-            type="submit"
-            className="bg-primary pointer-events-none text-white font-medium px-6 py-3 rounded-lg hover:bg-primary/90 transition-all shadow cursor-pointer"
-          >
-            Save Changes
-          </button>
-        </form>
-      </div>
-      );
+        <button
+          type="submit"
+          className="bg-primary pointer-events-none text-white font-medium px-6 py-3 rounded-lg hover:bg-primary/90 transition-all shadow cursor-pointer"
+        >
+          Save Changes
+        </button>
+      </form>
+    </div>
+  );
 }
 
-      //
-      // 🔹 ORDERS
-      //
-      function Orders() {
+//
+// 🔹 ORDERS
+//
+function Orders() {
   const [orders, setOrders] = useState([]);
-      const [expandedOrder, setExpandedOrder] = useState(null);
-      const [loading, setLoading] = useState(true);
-      const [showCancelPopup, setShowCancelPopup] = useState(false);
-      const [cancelReason, setCancelReason] = useState("");
-      const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [expandedOrder, setExpandedOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showCancelPopup, setShowCancelPopup] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-      const trackingSteps = ["Order Placed", "Packing", "Shipped", "Delivered"];
+  const trackingSteps = ["Order Placed", "Packing", "Shipped", "Delivered"];
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const {data} = await api.get("/orders/my-orders");
+        const { data } = await api.get("/orders/my-orders");
 
-      setOrders(Array.isArray(data) ? data : data.orders || data.data || []);
+        setOrders(Array.isArray(data) ? data : data.orders || data.data || []);
       } catch (err) {
         console.error(err);
-      toast.error("Failed to fetch orders.");
+        toast.error("Failed to fetch orders.");
       } finally {
         setLoading(false);
       }
     };
-      fetchOrders();
+    fetchOrders();
   }, []);
 
   // ✅ Open cancel popup
   const openCancelPopup = (orderId) => {
-        setSelectedOrderId(orderId);
-      setCancelReason("");
-      setShowCancelPopup(true);
+    setSelectedOrderId(orderId);
+    setCancelReason("");
+    setShowCancelPopup(true);
   };
 
   // ✅ Confirm cancel order
   const confirmCancelOrder = async () => {
     if (!cancelReason.trim()) {
-        toast.error("Please provide a reason for cancellation.");
+      toast.error("Please provide a reason for cancellation.");
       return;
     }
 
-      if (!selectedOrderId) return;
+    if (!selectedOrderId) return;
 
-      try {
-        await api.put(`/orders/${selectedOrderId}/status`, {
-          status: "Cancelled",
-          cancelReasons: cancelReason,
-        });
+    try {
+      await api.put(`/orders/${selectedOrderId}/status`, {
+        status: "Cancelled",
+        cancelReasons: cancelReason,
+      });
       toast.success("Order cancelled successfully!");
       // Update local state instead of snapshot refresh
-      setOrders(orders.map(o => o.id === selectedOrderId ? {...o, status: "Cancelled" } : o));
+      setOrders(orders.map(o => o.id === selectedOrderId ? { ...o, status: "Cancelled" } : o));
       setShowCancelPopup(false);
       setCancelReason("");
       setSelectedOrderId(null);
     } catch (error) {
-        console.error(error);
+      console.error(error);
       toast.error("Failed to cancel order. Try again.");
     }
   };
 
   const handlePrint = (order) => {
-    const logoUrl = "/Image/logo.png"; // Your logo path
+    if (!order) {
+      toast.error("No order selected for printing.");
+      return;
+    }
 
-      const itemsHTML = order.items
-      .map(
-        (i, index) => `
-      <tr>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">${index + 1
-        }</td>
-        <td style="border:1px solid #ddd;padding:10px;display:flex;align-items:center;gap:10px;">
-          <img src="${i.image}" alt="${i.name}"
-            style="width:50px;height:50px;object-fit:cover;border-radius:5px;border:1px solid #ddd;" />
-          <span>${i.name}</span>
-        </td>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">${i.quantity
-        }</td>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${i.price.toFixed(
-          2
-        )}</td>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${(
-          i.quantity * i.price
-        ).toFixed(2)}</td>
-      </tr>`
-      )
+    const logoUrl = "/Image/logo.png";
+    const items = Array.isArray(order.items) ? order.items : [];
+    const subtotal = Number(order.subtotal ?? order.total_amount ?? order.total ?? 0);
+    const shippingCost = Number(order.shippingCost ?? order.shipping_cost ?? 0);
+    const total = Number(order.total ?? order.total_amount ?? subtotal + shippingCost);
+    const orderId = order.order_id || order.orderId || order.id || "N/A";
+    const paymentMethod = order.payment_method || order.paymentMethod || "Online";
+    const createdAt = order.created_at ? new Date(order.created_at).toLocaleString() : "N/A";
+    const shipping = order.shipping || {};
+
+    const itemsHTML = items
+      .map((item, index) => {
+        const itemName = item.product_name || item.productName || item.name || "Item";
+        const quantity = Number(item.quantity ?? 0);
+        const price = Number(item.price ?? 0);
+        const itemTotal = quantity * price;
+        const itemImage = item.image
+          ? `<img src="${item.image}" alt="${itemName}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;border:1px solid #ddd;" />`
+          : "";
+
+        return `
+          <tr>
+            <td style="border:1px solid #ddd;padding:10px;text-align:center;">${index + 1}</td>
+            <td style="border:1px solid #ddd;padding:10px;display:flex;align-items:center;gap:10px;">${itemImage}<span>${itemName}</span></td>
+            <td style="border:1px solid #ddd;padding:10px;text-align:center;">${quantity}</td>
+            <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${price.toFixed(2)}</td>
+            <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${itemTotal.toFixed(2)}</td>
+          </tr>`;
+      })
       .join("");
 
-      const html = `
+    const html = `
       <div id="printableArea" style="font-family: Arial, sans-serif; color: #333; padding: 30px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #8c52ff;padding-bottom:10px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #8c52ff;padding-bottom:10px;margin-bottom:20px;flex-wrap:wrap;gap:20px;">
           <img src="${logoUrl}" style="height:60px;" />
           <div style="font-size:28px;color:#8c52ff;font-weight:bold;">Order Invoice</div>
         </div>
 
-        <div style="display:flex;justify-content:space-between;margin-top:20px;">
-          <div style="width:48%; font-size:16px;">
+        <div style="display:flex;justify-content:space-between;margin-top:20px;flex-wrap:wrap;gap:20px;">
+          <div style="flex:1;min-width:240px;font-size:16px;">
             <h3 style="font-size:20px;margin-bottom:10px;">Customer Details</h3>
-            <p><strong>Name:</strong> ${order.shipping?.name || "N/A"}</p>
-            <p><strong>Email:</strong> ${order.shipping?.email || "N/A"}</p>
-            <p><strong>Phone:</strong> ${order.shipping?.phone || "N/A"}</p>
-            <p><strong>Address:</strong> ${order.shipping?.address || ""}, ${order.shipping?.city || ""
-            }, ${order.shipping?.state || ""}, ${order.shipping?.zip || ""}</p>
-            <p><strong>Country:</strong> ${order.shipping?.country || ""}</p>
+            <p><strong>Name:</strong> ${shipping.name || "N/A"}</p>
+            <p><strong>Email:</strong> ${shipping.email || "N/A"}</p>
+            <p><strong>Phone:</strong> ${shipping.phone || "N/A"}</p>
+            <p><strong>Address:</strong> ${shipping.address || ""}, ${shipping.city || ""}, ${shipping.state || ""}, ${shipping.zip || ""}</p>
+            <p><strong>Country:</strong> ${shipping.country || "India"}</p>
           </div>
-
-          <div style="width:48%; font-size:16px;">
+          <div style="flex:1;min-width:240px;font-size:16px;">
             <h3 style="font-size:20px;margin-bottom:10px;">Order Details</h3>
-            <p><strong>Order ID:</strong> ${order.orderId}</p>
-            <p><strong>Shop Address:</strong> Sri Saravana Bangles
-              78/3, chetty Street Tirupattur Near AVS Mahal and Jain Temple 635601
-              Ph: 7010575375</p>
-            <p><strong>Status:</strong> ${order.status}</p>
-            <p><strong>Payment:</strong> ${order.paymentMethod || "Online"}</p>
-            <p><strong>Date:</strong> ${order.created_at
-              ? new Date(order.created_at).toLocaleString()
-              : "N/A"
-            }</p>
+            <p><strong>Order ID:</strong> ${orderId}</p>
+            <p><strong>Status:</strong> ${order.status || "N/A"}</p>
+            <p><strong>Payment:</strong> ${paymentMethod}</p>
+            <p><strong>Date:</strong> ${createdAt}</p>
           </div>
         </div>
 
@@ -402,9 +409,9 @@ export default function Account() {
         </table>
 
         <div style="margin-top:20px;border-top:2px solid #8c52ff;padding-top:10px;font-weight:bold;">
-          <p>Subtotal: ₹${order.subtotal.toFixed(2)}</p>
-          <p>Shipping: ₹${order.shippingCost.toFixed(2)}</p>
-          <p>Total: ₹${order.total.toFixed(2)}</p>
+          <p>Subtotal: ₹${subtotal.toFixed(2)}</p>
+          <p>Shipping: ₹${shippingCost.toFixed(2)}</p>
+          <p>Total: ₹${total.toFixed(2)}</p>
         </div>
 
         <div style="text-align:center;margin-top:40px;font-size:13px;color:#666;border-top:1px solid #ccc;padding-top:10px;">
@@ -412,43 +419,37 @@ export default function Account() {
           For any support, contact us at support@saravanashoppings.in
         </div>
       </div>
-      `;
+    `;
 
-      // Open a new window for printing to avoid modifying the current page
-      // NOTE: avoid 'noopener' so we can access the new window in all browsers
-      const printWindow = window.open("", "_blank");
-      if (printWindow) {
-      // Add a base tag so relative URLs (like /Image/logo.png) resolve correctly
-      const baseHref = window.location.origin;
-      const fullHtml = `<!doctype html><html><head><base href="${baseHref}"><title>Invoice</title></head><body>${html}</body></html>`;
+    const fullHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Invoice</title></head><body>${html}</body></html>`;
 
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
       printWindow.document.open();
       printWindow.document.write(fullHtml);
       printWindow.document.close();
 
-      // Use onload to ensure resources are ready before printing
-      const onLoaded = () => {
+      const doPrint = () => {
         try {
-        printWindow.focus();
-      printWindow.print();
-        } catch {
-        // if printing fails, we'll silently ignore — iframe fallback exists
-      }
-        // Try to close the window after a short delay (may be blocked in some browsers)
+          printWindow.focus();
+          printWindow.print();
+        } catch (error) {
+          console.error("Print failed:", error);
+        }
         setTimeout(() => {
           try {
-        printWindow.close();
-          } catch {
-        /* ignored */
-      }
+            printWindow.close();
+          } catch (ignored) { }
         }, 500);
       };
 
-      // If the window already loaded, call onLoaded, else attach listener
-      if (printWindow.document.readyState === "complete") onLoaded();
-      else printWindow.addEventListener("load", onLoaded);
+      if (printWindow.document.readyState === "complete") {
+        doPrint();
+      } else {
+        printWindow.onload = doPrint;
+        setTimeout(doPrint, 500);
+      }
     } else {
-      // Fallback: create a hidden iframe to print without touching the main document
       const iframe = document.createElement("iframe");
       iframe.style.position = "fixed";
       iframe.style.right = "0";
@@ -459,298 +460,389 @@ export default function Account() {
       iframe.style.overflow = "hidden";
       document.body.appendChild(iframe);
 
-      try {
-        const idoc = iframe.contentWindow?.document || iframe.contentDocument;
-      if (idoc) {
-        idoc.open();
-      idoc.write(`<!doctype html><html><head><title>Invoice</title></head><body>${html}</body></html>`);
+      const idoc = iframe.contentWindow?.document || iframe.contentDocument;
+      if (!idoc) {
+        alert("Unable to open print preview. Please enable popups or try a different browser.");
+        try { document.body.removeChild(iframe); } catch (ignored) { }
+        return;
+      }
+
+      idoc.open();
+      idoc.write(fullHtml);
       idoc.close();
 
-          const tryPrintIframe = () => {
-            try {
-        iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-              setTimeout(() => {
-                try {
-        document.body.removeChild(iframe);
-                } catch {
-        // ignore
-      }
-              }, 500);
-            } catch {
-        setTimeout(tryPrintIframe, 300);
-            }
-          };
-
-      setTimeout(tryPrintIframe, 200);
-        } else {
-        // As a last resort, alert user
-        alert("Unable to open print preview. Please enable popups or try a different browser.");
-      try {document.body.removeChild(iframe); } catch { /* ignored */}
+      const tryPrintIframe = () => {
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        } catch (error) {
+          console.error("Iframe print failed:", error);
         }
-      } catch {
-        try {document.body.removeChild(iframe); } catch { /* ignored */}
-      }
+        setTimeout(() => {
+          try {
+            document.body.removeChild(iframe);
+          } catch (ignored) { }
+        }, 500);
+      };
+
+      iframe.onload = tryPrintIframe;
+      setTimeout(tryPrintIframe, 500);
     }
   };
 
-      if (loading) return <p>Loading orders...</p>;
-      if (!orders.length)
-      return <p className="text-gray-500 text-center">No orders yet.</p>;
+  if (loading) return <p>Loading orders...</p>;
+  if (!orders.length)
+    return <p className="text-gray-500 text-center">No orders yet.</p>;
 
-      return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-secondary relative">
-        <h2 className="text-2xl font-semibold mb-6 text-primary">My Orders</h2>
+  const filteredOrders = orders.filter((order) => {
+    const search = searchTerm.toLowerCase();
 
-        <div className="space-y-4">
-          {orders.map((order) => {
-            const safeIndex = (arr, val) => (Array.isArray(arr) ? arr.indexOf(val) : -1);
-            const currentIndex = Array.isArray(trackingSteps)
-              ? safeIndex(trackingSteps, order.status || trackingSteps[0])
-              : -1;
-            const denom = (Array.isArray(trackingSteps) && trackingSteps.length > 1) ? (trackingSteps.length - 1) : 1;
-            const progressPercent = denom > 0 ? (currentIndex / denom) * 100 : 0;
+    return (
+      (order.order_id || order.orderId || "")
+        .toString()
+        .toLowerCase()
+        .includes(search) ||
 
-            return (
+      (order.docketNumber || "")
+        .toString()
+        .toLowerCase()
+        .includes(search) ||
+
+      (order.status || "")
+        .toLowerCase()
+        .includes(search) ||
+
+      (order.payment_method || order.paymentMethod || "")
+        .toLowerCase()
+        .includes(search) ||
+
+      (order.shipping?.name || "")
+        .toLowerCase()
+        .includes(search)
+    );
+  });
+
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6 border border-secondary relative">
+      <h2 className="text-2xl font-semibold mb-6 text-primary">My Orders</h2>
+      <div className="mb-5">
+        <input
+          type="text"
+          placeholder="Search Order ID, LR No, Status, Payment..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-primary"
+        />
+      </div>
+
+      <div className="space-y-4">
+        {filteredOrders.map((order) => {
+          const safeIndex = (arr, val) => (Array.isArray(arr) ? arr.indexOf(val) : -1);
+          const currentIndex = Array.isArray(trackingSteps)
+            ? safeIndex(trackingSteps, order.status || trackingSteps[0])
+            : -1;
+          const denom = (Array.isArray(trackingSteps) && trackingSteps.length > 1) ? (trackingSteps.length - 1) : 1;
+          const progressPercent = denom > 0 ? (currentIndex / denom) * 100 : 0;
+
+          return (
+            <div
+              key={order.id}
+              className="border border-gray-200 p-5 rounded-lg bg-gradient-to-br from-white to-secondary/20 shadow-sm"
+            >
+              {/* Summary Header */}
               <div
-                key={order.id}
-                className="border border-gray-200 p-5 rounded-lg bg-gradient-to-br from-white to-secondary/20 shadow-sm"
+                className="flex flex-col md:flex-row justify-between cursor-pointer"
+                onClick={() => setSelectedOrder(order)}
               >
-                {/* Summary Header */}
-                <div
-                  className="flex flex-col md:flex-row justify-between cursor-pointer"
-                  onClick={() =>
-                    setExpandedOrder(expandedOrder === order.id ? null : order.id)
-                  }
-                >
+                <span className="flex flex-row">
+                  <span className="text-primary font-semibold">Order ID:</span>
+                  <p className="pl-1">
+                    {order.order_id || order.orderId}
+                  </p>
+                </span>
+                <span className="flex flex-row">
+                  <span className="text-primary font-semibold">Status:</span>
+                  <p className="pl-1">{order.status}</p>
+                </span>
+                <span className="flex flex-row">
+                  <span className="text-primary font-semibold">Payment:</span>
+                  <p className="pl-1">
+                    {order.payment_method || order.paymentMethod || "Online"}
+                  </p>
+                </span>
+                {order.docketNumber && (
                   <span className="flex flex-row">
-                    <span className="text-primary font-semibold">Order ID:</span>
-                    <p className="pl-1">
-                      {order.order_id || order.orderId}
+                    <span className="text-primary font-semibold">LR No:</span>
+                    <p className="pl-1 font-medium text-green-600">
+                      {order.docketNumber}
                     </p>
                   </span>
-                  <span className="flex flex-row">
-                    <span className="text-primary font-semibold">Status:</span>
-                    <p className="pl-1">{order.status}</p>
-                  </span>
-                  <span className="flex flex-row">
-                    <span className="text-primary font-semibold">Payment:</span>
-                    <p className="pl-1">
-                      {order.payment_method || order.paymentMethod || "Online"}
-                    </p>
-                  </span>
-                </div>
-
-                {/* Expanded Order */}
-                {expandedOrder === order.id && (
-                  <div className="mt-4 border-t border-gray-300 pt-3 space-y-3">
-                    {/* Items */}
-                    <div className="space-y-2">
-                      {(order.items || []).map((item, i) => (
-                        <div key={i} className="flex items-center gap-3">
-                          <img
-                            src={item.image}
-                            className="w-16 h-16 object-cover rounded"
-                            alt={item.name}
-                          />
-
-                          <div>
-                            <p className="text-primary font-semibold line-clamp-1">
-                              {item.product_name || item.productName || "N/A"}
-                            </p>
-                            {item.name && item.name !== (item.product_name || item.productName) && (
-                              <p className="text-xs text-gray-500">({item.name})</p>
-                            )}
-                            <p>
-                              {item.quantity} × ₹{item.price} = ₹
-                              {(item.quantity * item.price).toFixed(2)}
-                              <br />
-                              Size:  {item.size}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Totals */}
-                    <div className="border-t border-gray-200 pt-2 space-y-1">
-                      <div className="flex justify-between font-semibold">
-                        <span>Subtotal:</span>
-                        <span>₹{Number(order.subtotal || 0).toFixed(2)}</span>
-                      </div>
-
-                      <div className="flex justify-between pb-5 font-semibold">
-                        <span>Shipping:</span>
-                        <span>₹{Number(order.shipping_cost || order.shippingCost || 0).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between font-bold text-primary border-t pt-2 text-lg">
-                        <span>Total:</span>
-                        <span>₹{Number(order.total_amount || order.total || 0).toFixed(2)}</span>
-                      </div>
-                    </div>
-
-                    {/* Tracking Section */}
-                    {(order.qname || order.docketNumber) && (
-                      <div className="flex mt-4 pt-3 border-t justify-between font-semibold">
-                        {order.qname && (
-                          <>
-                            <span>Courier: </span>
-                            <span>{order.qname}</span>
-                          </>
-                        )}
-                        {order.docketNumber && (
-                          <>
-                            <span>Docket Number: </span>
-                            <span>{order.docketNumber}</span>
-                          </>
-                        )}
-                      </div>
-                    )}
-                    <div className=" flex flex-col md:flex-row md:items-start justify-between gap-8">
-                      <div className="w-full md:w-2/3">
-                        <h4 className="font-semibold text-primary mb-3">
-                          Order Tracking
-                        </h4>
-
-
-
-                        <>
-                          {/* Desktop Horizontal Progress */}
-                          <div className="relative hidden md:flex items-center justify-between w-full">
-                            <div className="absolute top-[10px] left-0 w-full h-[3px] bg-gray-300 z-0"></div>
-                            <div
-                              className="absolute top-[10px] left-0 h-[3px] bg-primary z-0 transition-[width] duration-700 ease-in-out"
-                              style={{ width: `${progressPercent}%` }}
-                            ></div>
-
-                            {trackingSteps.map((step, index) => {
-                              const isActive = index <= currentIndex;
-                              return (
-                                <div
-                                  key={index}
-                                  className="relative z-10 flex flex-col items-center text-center flex-1"
-                                >
-                                  <div
-                                    className={`w-5 h-5 rounded-full border-2 transition-all duration-500 ${isActive
-                                      ? "bg-primary border-primary scale-110 shadow-md"
-                                      : "bg-white border-gray-300 scale-100"
-                                      }`}
-                                  ></div>
-                                  <p
-                                    className={`text-xs mt-2 ${isActive
-                                      ? "text-primary font-medium"
-                                      : "text-gray-400"
-                                      }`}
-                                  >
-                                    {step}
-                                  </p>
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          {/* Mobile Vertical Progress */}
-                          <div className="relative flex flex-col gap-5 md:hidden items-start pl-4">
-                            <div className="absolute left-[25px] top-0 h-full w-[3px] bg-gray-300 z-0"></div>
-                            <div
-                              className="absolute left-[25px] top-0 w-[3px] bg-primary z-0 transition-[height] duration-700 ease-in-out"
-                              style={{ height: `${progressPercent}%` }}
-                            ></div>
-
-                            {trackingSteps.map((step, index) => {
-                              const isActive = index <= currentIndex;
-                              return (
-                                <div
-                                  key={index}
-                                  className="relative z-10 flex items-center mb-5 last:mb-0"
-                                >
-                                  <div
-                                    className={`w-5 h-5 rounded-full border-2 transition-all duration-500 ${isActive
-                                      ? "bg-primary border-primary scale-110 shadow-md"
-                                      : "bg-white border-gray-300 scale-100"
-                                      }`}
-                                  ></div>
-                                  <p
-                                    className={`text-sm ml-3 ${isActive
-                                      ? "text-primary font-medium"
-                                      : "text-gray-400"
-                                      }`}
-                                  >
-                                    {step}
-                                  </p>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </>
-
-                      </div>
-
-                      {/* Buttons */}
-                      <div className="w-full md:w-1/3 flex flex-col md:flex-row justify-center items-center gap-3 pt-8 md:mt-0">
-                        <button
-                          onClick={() => handlePrint(order)}
-                          className="bg-primary text-white cursor-pointer px-4 py-2 rounded-md shadow hover:opacity-90 transition w-full md:w-auto flex items-center justify-center"
-                        >
-                          <FaPrint className="mr-2" /> Print
-                        </button>
-
-
-
-                        {/* <button
-                        onClick={() => openCancelPopup(order.id)}
-                        disabled={
-                          !["Order Placed", "Packing"].includes(order.status)
-                        } // disable after shipped
-                        className={`px-4 py-2 rounded-md cursor-pointer shadow w-full md:w-auto flex items-center justify-center transition
-    ${
-      ["Order Placed", "Packing"].includes(order.status)
-        ? "bg-red-500 text-white hover:bg-red-600 cursor-pointer"
-        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-    }`}
-                      >
-                        Cancel
-                      </button> */}
-                      </div>
-                    </div>
-                  </div>
                 )}
               </div>
-            );
-          })}
+
+            </div>
+          );
+        })}
+
+      </div>
+      <OrderDetailsModal selectedOrder={selectedOrder} onClose={() => setSelectedOrder(null)} handlePrint={handlePrint} />
+    </div>
+  );
+}
+
+// Order Details Modal - Rendered as Portal for Full Page Display
+function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
+  if (!selectedOrder) return null;
+  const trackingSteps = [
+    "Order Placed",
+    "Packing",
+    "Shipped",
+    "Delivered",
+  ];
+
+  const currentIndex = trackingSteps.indexOf(
+    selectedOrder.status || "Order Placed"
+  );
+
+  const progressPercent =
+    currentIndex >= 0
+      ? (currentIndex / (trackingSteps.length - 1)) * 100
+      : 0;
+
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl relative max-h-[90vh] overflow-hidden">
+
+        {/* Fixed Header */}
+        <div className="sticky top-0 z-20 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-primary">
+            Order Details
+          </h3>
+
+          <button
+            onClick={onClose}
+            className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-100 cursor-pointer transition"
+          >
+            <IoClose size={20} />
+          </button>
         </div>
 
-        {/* Cancel Popup */}
-        {/* {showCancelPopup && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 px-4">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
-            <h3 className="text-lg font-semibold text-primary mb-3">
-              Cancel Order
-            </h3>
-            <textarea
-              className="w-full border rounded p-2 h-24 outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Enter reason for cancellation..."
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-            ></textarea>
-            <div className="flex justify-end gap-3 mt-4">
+        {/* Scroll Content */}
+        <div
+          className="p-6 max-h-[calc(90vh-70px)] overflow-y-auto"
+          style={{
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }}
+        >
+
+          <div className="space-y-3">
+            <div>
+              <strong>Order ID:</strong>{" "}
+              {selectedOrder.order_id || selectedOrder.orderId}
+            </div>
+
+            <div>
+              <strong>Status:</strong>{" "}
+              {selectedOrder.status}
+            </div>
+
+            {selectedOrder.qname && (
+              <div>
+                <strong>Courier:</strong>{" "}
+                {selectedOrder.qname}
+              </div>
+            )}
+
+            {selectedOrder.docketNumber && (
+              <div>
+                <strong>LR Number:</strong>{" "}
+                <span className="text-primary font-semibold">
+                  {selectedOrder.docketNumber}
+                </span>
+              </div>
+            )}
+
+            <div>
+              <strong>Date:</strong>{" "}
+              {new Date(selectedOrder.created_at).toLocaleString()}
+            </div>
+
+            <hr className="border-gray-300" />
+
+            <h4 className="font-semibold text-lg text-primary">
+              Shipping Details
+            </h4>
+
+            <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <p><strong>Name:</strong> {selectedOrder.shipping?.name}</p>
+                <p><strong>Email:</strong> {selectedOrder.shipping?.email}</p>
+                <p><strong>Phone:</strong> {selectedOrder.shipping?.phone}</p>
+                <p><strong>Address:</strong> {selectedOrder.shipping?.address}</p>
+              </div>
+
+              <div className="space-y-2">
+                <p><strong>City:</strong> {selectedOrder.shipping?.city}</p>
+                <p><strong>State:</strong> {selectedOrder.shipping?.state}</p>
+                <p><strong>Pincode:</strong> {selectedOrder.shipping?.zip}</p>
+                <p><strong>Country:</strong> {selectedOrder.shipping?.country}</p>
+              </div>
+            </div>
+
+            <hr className="border-gray-300" />
+
+            <h4 className="font-semibold text-lg text-primary">
+              Products
+            </h4>
+
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse rounded-lg overflow-hidden">
+                <thead>
+                  <tr className="bg-primary text-white">
+                    <th className="px-3 py-2 text-left">Image</th>
+                    <th className="px-3 py-2 text-left">Product</th>
+                    <th className="px-3 py-2 text-center">Size</th>
+                    <th className="px-3 py-2 text-center">Qty</th>
+                    <th className="px-3 py-2 text-center">Price</th>
+                    <th className="px-3 py-2 text-center">Total</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {(selectedOrder.items || []).map((item, i) => (
+                    <tr key={i}>
+                      <td className="px-3 py-2 border border-gray-300">
+                        <img
+                          src={item.image}
+                          alt=""
+                          className="w-12 h-12 rounded object-cover"
+                        />
+                      </td>
+
+                      <td className="px-3 py-2 border border-gray-300">
+                        {item.product_name || item.name}
+                      </td>
+
+                      <td className="px-3 py-2 text-center border border-gray-300">
+                        {item.size || "-"}
+                      </td>
+
+                      <td className="px-3 py-2 text-center border border-gray-300">
+                        {item.quantity}
+                      </td>
+
+                      <td className="px-3 py-2 text-center border border-gray-300">
+                        ₹{Number(item.price || 0).toFixed(2)}
+                      </td>
+
+                      <td className="px-3 py-2 text-center font-semibold text-primary border border-gray-300">
+                        ₹{(
+                          Number(item.quantity || 0) *
+                          Number(item.price || 0)
+                        ).toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-5 mb-5">
+              <h4 className="font-semibold text-lg text-primary mb-4">
+                Order Tracking
+              </h4>
+
+              <div className="relative flex items-center justify-between w-full">
+                <div className="absolute top-[10px] left-0 w-full h-[3px] bg-gray-300"></div>
+
+                <div
+                  className="absolute top-[10px] left-0 h-[3px] bg-primary transition-all duration-700"
+                  style={{ width: `${progressPercent}%` }}
+                ></div>
+
+                {trackingSteps.map((step, index) => {
+                  const isActive = index <= currentIndex;
+
+                  return (
+                    <div
+                      key={index}
+                      className="relative z-10 flex flex-col items-center flex-1"
+                    >
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 ${isActive
+                          ? "bg-primary border-primary"
+                          : "bg-white border-gray-300"
+                          }`}
+                      />
+
+                      <p
+                        className={`text-xs mt-2 text-center ${isActive
+                          ? "text-primary font-semibold"
+                          : "text-gray-400"
+                          }`}
+                      >
+                        {step}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="border-t border-gray-300 pt-4 space-y-2">
+              <div className="flex justify-between">
+                <span className="font-medium">Subtotal</span>
+                <span>
+                  ₹
+                  {Number(
+                    selectedOrder.subtotal ||
+                    selectedOrder.total_amount ||
+                    selectedOrder.total ||
+                    0
+                  ).toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="font-medium">Shipping</span>
+                <span>
+                  ₹
+                  {Number(
+                    selectedOrder.shipping_cost ||
+                    selectedOrder.shippingCost ||
+                    0
+                  ).toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex justify-between border-t border-gray-300 pt-2 text-lg font-bold text-primary">
+                <span>Total</span>
+                <span>
+                  ₹
+                  {Number(
+                    selectedOrder.total_amount ||
+                    selectedOrder.total ||
+                    0
+                  ).toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-300 mt-5 pt-4 flex justify-end">
               <button
-                onClick={() => setShowCancelPopup(false)}
-                className="px-4 py-2  cursor-pointer rounded border border-gray-400 hover:bg-gray-100"
+                onClick={() => handlePrint(selectedOrder)}
+                className="bg-primary text-white px-5 py-2 rounded-md flex items-center gap-2 hover:opacity-90"
               >
-                Close
-              </button>
-              <button
-                onClick={confirmCancelOrder}
-                className="bg-red-500  cursor-pointer text-white px-4 py-2 rounded hover:bg-red-600 transition"
-              >
-                Confirm Cancel
+                <FaPrint />
+                Print Invoice
               </button>
             </div>
           </div>
         </div>
-      )} */}
-      </div>
+        </div>
+      </div>,
+      document.body
       );
 }
 
