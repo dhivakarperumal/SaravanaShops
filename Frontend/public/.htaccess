@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # Ignore API routes
+  RewriteCond %{REQUEST_URI} !^/api/
+  
+  # Serve existing files/directories
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  
+  # Forward all other requests to index.html for React SPA
+  RewriteRule ^ index.html [QSA,L]
+</IfModule>
