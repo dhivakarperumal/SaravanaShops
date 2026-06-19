@@ -11,7 +11,7 @@ import { Autoplay } from "swiper/modules";
 import "swiper/css";
 import ProductCard from "../Products/ProductCard";
 import ProductModal from "../Products/ProductModal";
-
+import PageContainer from "../Components/PageContainer";
 
 const ProductDetails = () => {
   const navigate = useNavigate();
@@ -320,7 +320,7 @@ const ProductDetails = () => {
             }
           />
 
-          <div className="max-w-6xl mx-auto px-6 py-10">
+          <PageContainer className="py-10">
             <div className="flex flex-col md:flex-row gap-8">
               {/* LEFT SIDE - Image Gallery */}
               <div className="w-full md:w-1/2 flex flex-col md:flex-row-reverse gap-3 md:sticky md:top-27 self-start">
@@ -709,10 +709,10 @@ const ProductDetails = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </PageContainer>
 
           {/* Related products */}
-          <div className="max-w-6xl mx-auto mt-5 px-6 py-12">
+          <PageContainer className="mt-5 py-12">
             <h2 className="relative text-2xl font-bold mb-6 text-left inline-block">
               Related Products
               <span className="absolute left-0 -bottom-2 w-20 h-1 bg-gradient-to-r from-primary to-pink-400 rounded-full"></span>
@@ -764,7 +764,7 @@ const ProductDetails = () => {
                 onClose={() => setSelectedProduct(null)}
               />
             )}
-          </div>
+          </PageContainer>
 
           {/* Review Section */}
           {/* <div className="mt-2 mb-7 max-w-6xl mx-auto px-6 flex flex-col items-center text-center">
@@ -845,7 +845,7 @@ const ProductDetails = () => {
             </div>
           </div> */}
 
-          <div className="mt-3 mb-5 max-w-6xl mx-auto px-6 flex flex-col items-center text-center">
+          <PageContainer className="mt-3 mb-5">
             {!userHasReviewed && (
               <div className="w-full max-w-3xl border-t border-gray-300 pt-8">
                 <div className="flex justify-between items-center mb-6">
@@ -980,7 +980,7 @@ const ProductDetails = () => {
                 </p>
               )}
             </div>
-          </div>
+          </PageContainer>
         </>
       )
       }
