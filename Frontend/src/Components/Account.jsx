@@ -720,13 +720,29 @@ function Orders() {
         })}
 
       </div>
+      <OrderDetailsModal selectedOrder={selectedOrder} onClose={() => setSelectedOrder(null)} handlePrint={handlePrint} />
     </div>
   );
 }
 
 // Order Details Modal - Rendered as Portal for Full Page Display
-function OrderDetailsModal({ selectedOrder, onClose }) {
+function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
   if (!selectedOrder) return null;
+  const trackingSteps = [
+    "Order Placed",
+    "Packing",
+    "Shipped",
+    "Delivered",
+  ];
+
+  const currentIndex = trackingSteps.indexOf(
+    selectedOrder.status || "Order Placed"
+  );
+
+  const progressPercent =
+    currentIndex >= 0
+      ? (currentIndex / (trackingSteps.length - 1)) * 100
+      : 0;
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -839,6 +855,48 @@ function OrderDetailsModal({ selectedOrder, onClose }) {
             </div>
           ))}
 
+          <div className="mt-5 mb-5">
+            <h4 className="font-semibold text-lg text-primary mb-4">
+              Order Tracking
+            </h4>
+
+            <div className="relative flex items-center justify-between w-full">
+              <div className="absolute top-[10px] left-0 w-full h-[3px] bg-gray-300"></div>
+
+              <div
+                className="absolute top-[10px] left-0 h-[3px] bg-primary transition-all duration-700"
+                style={{ width: `${progressPercent}%` }}
+              ></div>
+
+              {trackingSteps.map((step, index) => {
+                const isActive = index <= currentIndex;
+
+                return (
+                  <div
+                    key={index}
+                    className="relative z-10 flex flex-col items-center flex-1"
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 ${isActive
+                        ? "bg-primary border-primary"
+                        : "bg-white border-gray-300"
+                        }`}
+                    />
+
+                    <p
+                      className={`text-xs mt-2 text-center ${isActive
+                        ? "text-primary font-semibold"
+                        : "text-gray-400"
+                        }`}
+                    >
+                      {step}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="border-t pt-3">
             <p>
               <strong>Total:</strong> ₹
@@ -847,6 +905,16 @@ function OrderDetailsModal({ selectedOrder, onClose }) {
                 selectedOrder.total
               ).toFixed(2)}
             </p>
+          </div>
+
+          <div className="border-t mt-5 pt-4 flex justify-end">
+            <button
+              onClick={() => handlePrint(selectedOrder)}
+              className="bg-primary text-white px-5 py-2 rounded-md flex items-center gap-2 hover:opacity-90"
+            >
+              <FaPrint />
+              Print Invoice
+            </button>
           </div>
         </div>
       </div>
