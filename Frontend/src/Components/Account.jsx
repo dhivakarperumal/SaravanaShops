@@ -277,6 +277,7 @@ function Orders() {
   const [cancelReason, setCancelReason] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const trackingSteps = ["Order Placed", "Packing", "Shipped", "Delivered"];
 
@@ -493,12 +494,49 @@ function Orders() {
   if (!orders.length)
     return <p className="text-gray-500 text-center">No orders yet.</p>;
 
+  const filteredOrders = orders.filter((order) => {
+    const search = searchTerm.toLowerCase();
+
+    return (
+      (order.order_id || order.orderId || "")
+        .toString()
+        .toLowerCase()
+        .includes(search) ||
+
+      (order.docketNumber || "")
+        .toString()
+        .toLowerCase()
+        .includes(search) ||
+
+      (order.status || "")
+        .toLowerCase()
+        .includes(search) ||
+
+      (order.payment_method || order.paymentMethod || "")
+        .toLowerCase()
+        .includes(search) ||
+
+      (order.shipping?.name || "")
+        .toLowerCase()
+        .includes(search)
+    );
+  });
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 border border-secondary relative">
       <h2 className="text-2xl font-semibold mb-6 text-primary">My Orders</h2>
+      <div className="mb-5">
+        <input
+          type="text"
+          placeholder="Search Order ID, LR No, Status, Payment..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-primary"
+        />
+      </div>
 
       <div className="space-y-4">
-        {orders.map((order) => {
+        {filteredOrders.map((order) => {
           const safeIndex = (arr, val) => (Array.isArray(arr) ? arr.indexOf(val) : -1);
           const currentIndex = Array.isArray(trackingSteps)
             ? safeIndex(trackingSteps, order.status || trackingSteps[0])
@@ -543,9 +581,9 @@ function Orders() {
               </div>
 
               {/* Expanded Order */}
-              {expandedOrder === order.id && (
+              {/* {expandedOrder === order.id && (
                 <div className="mt-4 border-t border-gray-300 pt-3 space-y-3">
-                  {/* Items */}
+                  
                   <div className="space-y-2">
                     {(order.items || []).map((item, i) => (
                       <div key={i} className="flex items-center gap-3">
@@ -573,7 +611,6 @@ function Orders() {
                     ))}
                   </div>
 
-                  {/* Totals */}
                   <div className="border-t border-gray-200 pt-2 space-y-1">
                     <div className="flex justify-between font-semibold">
                       <span>Subtotal:</span>
@@ -590,7 +627,6 @@ function Orders() {
                     </div>
                   </div>
 
-                  {/* Tracking Section */}
                   {(order.qname || order.docketNumber) && (
                     <div className="flex mt-4 pt-3 border-t justify-between font-semibold">
                       {order.qname && (
@@ -616,7 +652,6 @@ function Orders() {
 
 
                       <>
-                        {/* Desktop Horizontal Progress */}
                         <div className="relative hidden md:flex items-center justify-between w-full">
                           <div className="absolute top-[10px] left-0 w-full h-[3px] bg-gray-300 z-0"></div>
                           <div
@@ -650,7 +685,6 @@ function Orders() {
                           })}
                         </div>
 
-                        {/* Mobile Vertical Progress */}
                         <div className="relative flex flex-col gap-5 md:hidden items-start pl-4">
                           <div className="absolute left-[25px] top-0 h-full w-[3px] bg-gray-300 z-0"></div>
                           <div
@@ -687,7 +721,6 @@ function Orders() {
 
                     </div>
 
-                    {/* Buttons */}
                     <div className="w-full md:w-1/3 flex flex-col md:flex-row justify-center items-center gap-3 pt-8 md:mt-0">
                       <button
                         onClick={() => handlePrint(order)}
@@ -695,27 +728,10 @@ function Orders() {
                       >
                         <FaPrint className="mr-2" /> Print
                       </button>
-
-
-
-                      {/* <button
-                        onClick={() => openCancelPopup(order.id)}
-                        disabled={
-                          !["Order Placed", "Packing"].includes(order.status)
-                        } // disable after shipped
-                        className={`px-4 py-2 rounded-md cursor-pointer shadow w-full md:w-auto flex items-center justify-center transition
-    ${
-      ["Order Placed", "Packing"].includes(order.status)
-        ? "bg-red-500 text-white hover:bg-red-600 cursor-pointer"
-        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-    }`}
-                      >
-                        Cancel
-                      </button> */}
                     </div>
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           );
         })}
