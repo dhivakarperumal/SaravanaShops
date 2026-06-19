@@ -239,6 +239,26 @@ function PersonalDetails() {
           value={form.email}
           placeholder="E-mail"
           disabled
+          className="w-full border border-gray-200 rounded-lg px-4 py-3 bg-gray-100 text-gray-500"
+        />
+
+        <input
+          name="phone"
+          value={form.phone}
+          onChange={handleChange}
+          placeholder="Phone Number"
+          required
+          pattern="[6-9]{1}[0-9]{9}"
+          title="Enter a valid 10-digit phone number"
+          className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
+        />
+
+        <button
+          type="submit"
+          className="bg-primary pointer-events-none text-white font-medium px-6 py-3 rounded-lg hover:bg-primary/90 transition-all shadow cursor-pointer"
+        >
+          Save Changes
+        </button>
       </form>
     </div>
   );
