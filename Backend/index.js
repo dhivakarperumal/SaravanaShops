@@ -71,9 +71,17 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Default root route for Plesk health checks
+app.get('/', (req, res) => {
+  res.status(200).send('<h1>Backend is running!</h1>');
+});
+
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({ 
+    success: false,
+    message: `Route not found: ${req.originalUrl}. Did you forget the /api prefix?` 
+  });
 });
 
 const http = require('http');
