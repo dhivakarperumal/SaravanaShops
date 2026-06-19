@@ -322,7 +322,7 @@ function Navbar() {
             </div>
 
             {/* Right side icons */}
-            <div className="flex items-center space-x-3 md:space-x-4">
+            <div className="flex items-center gap-3 md:gap-4">
               {/* Search */}
               <Search
                 isOpen={searchOpen}
