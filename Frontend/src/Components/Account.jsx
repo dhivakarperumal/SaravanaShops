@@ -520,9 +520,7 @@ function Orders() {
               {/* Summary Header */}
               <div
                 className="flex flex-col md:flex-row justify-between cursor-pointer"
-                onClick={() =>
-                  setExpandedOrder(expandedOrder === order.id ? null : order.id)
-                }
+                onClick={() => setSelectedOrder(order)}
               >
                 <span className="flex flex-row">
                   <span className="text-primary font-semibold">Order ID:</span>
@@ -540,12 +538,6 @@ function Orders() {
                     {order.payment_method || order.paymentMethod || "Online"}
                   </p>
                 </span>
-                <button
-                  onClick={() => setSelectedOrder(order)}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600 transition w-full md:w-auto"
-                >
-                  View Details
-                </button>
               </div>
 
               {/* Expanded Order */}
@@ -725,7 +717,7 @@ function Orders() {
             </div>
           );
         })}
-      
+
       </div>
 
       {/* Cancel Popup */}
@@ -758,138 +750,138 @@ function Orders() {
           </div>
         </div>
       )} */}
-        {selectedOrder && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
 
-              <button
-                onClick={() => setSelectedOrder(null)}
-                className="absolute top-3 right-3 text-xl font-bold"
-              >
-                ×
-              </button>
+            <button
+              onClick={() => setSelectedOrder(null)}
+              className="absolute top-3 right-3 text-xl font-bold"
+            >
+              ×
+            </button>
 
-              <h3 className="text-2xl font-bold text-primary mb-4">
-                Order Details
-              </h3>
+            <h3 className="text-2xl font-bold text-primary mb-4">
+              Order Details
+            </h3>
 
-              <div className="space-y-3">
+            <div className="space-y-3">
 
-                <div>
-                  <strong>Order ID:</strong>{" "}
-                  {selectedOrder.order_id || selectedOrder.orderId}
-                </div>
+              <div>
+                <strong>Order ID:</strong>{" "}
+                {selectedOrder.order_id || selectedOrder.orderId}
+              </div>
 
-                <div>
-                  <strong>Status:</strong>{" "}
-                  {selectedOrder.status}
-                </div>
+              <div>
+                <strong>Status:</strong>{" "}
+                {selectedOrder.status}
+              </div>
 
-                <div>
-                  <strong>Payment Method:</strong>{" "}
-                  {selectedOrder.payment_method ||
-                    selectedOrder.paymentMethod}
-                </div>
+              <div>
+                <strong>Payment Method:</strong>{" "}
+                {selectedOrder.payment_method ||
+                  selectedOrder.paymentMethod}
+              </div>
 
-                <div>
-                  <strong>Date:</strong>{" "}
-                  {new Date(
-                    selectedOrder.created_at
-                  ).toLocaleString()}
-                </div>
+              <div>
+                <strong>Date:</strong>{" "}
+                {new Date(
+                  selectedOrder.created_at
+                ).toLocaleString()}
+              </div>
 
-                <hr />
+              <hr />
 
-                <h4 className="font-semibold text-lg text-primary">
-                  Shipping Details
-                </h4>
+              <h4 className="font-semibold text-lg text-primary">
+                Shipping Details
+              </h4>
 
-                <p>
-                  <strong>Name:</strong>{" "}
-                  {selectedOrder.shipping?.name}
-                </p>
+              <p>
+                <strong>Name:</strong>{" "}
+                {selectedOrder.shipping?.name}
+              </p>
 
-                <p>
-                  <strong>Email:</strong>{" "}
-                  {selectedOrder.shipping?.email}
-                </p>
+              <p>
+                <strong>Email:</strong>{" "}
+                {selectedOrder.shipping?.email}
+              </p>
 
-                <p>
-                  <strong>Phone:</strong>{" "}
-                  {selectedOrder.shipping?.phone}
-                </p>
+              <p>
+                <strong>Phone:</strong>{" "}
+                {selectedOrder.shipping?.phone}
+              </p>
 
-                <p>
-                  <strong>Address:</strong>{" "}
-                  {selectedOrder.shipping?.address}
-                </p>
+              <p>
+                <strong>Address:</strong>{" "}
+                {selectedOrder.shipping?.address}
+              </p>
 
-                <p>
-                  <strong>City:</strong>{" "}
-                  {selectedOrder.shipping?.city}
-                </p>
+              <p>
+                <strong>City:</strong>{" "}
+                {selectedOrder.shipping?.city}
+              </p>
 
-                <p>
-                  <strong>State:</strong>{" "}
-                  {selectedOrder.shipping?.state}
-                </p>
+              <p>
+                <strong>State:</strong>{" "}
+                {selectedOrder.shipping?.state}
+              </p>
 
-                <p>
-                  <strong>Pincode:</strong>{" "}
-                  {selectedOrder.shipping?.zip}
-                </p>
+              <p>
+                <strong>Pincode:</strong>{" "}
+                {selectedOrder.shipping?.zip}
+              </p>
 
-                <p>
-                  <strong>Country:</strong>{" "}
-                  {selectedOrder.shipping?.country}
-                </p>
+              <p>
+                <strong>Country:</strong>{" "}
+                {selectedOrder.shipping?.country}
+              </p>
 
-                <hr />
+              <hr />
 
-                <h4 className="font-semibold text-lg text-primary">
-                  Products
-                </h4>
+              <h4 className="font-semibold text-lg text-primary">
+                Products
+              </h4>
 
-                {(selectedOrder.items || []).map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 border-b pb-2"
-                  >
-                    <img
-                      src={item.image}
-                      alt=""
-                      className="w-14 h-14 rounded object-cover"
-                    />
+              {(selectedOrder.items || []).map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 border-b pb-2"
+                >
+                  <img
+                    src={item.image}
+                    alt=""
+                    className="w-14 h-14 rounded object-cover"
+                  />
 
-                    <div>
-                      <p className="font-medium">
-                        {item.product_name || item.name}
-                      </p>
+                  <div>
+                    <p className="font-medium">
+                      {item.product_name || item.name}
+                    </p>
 
-                      <p className="text-sm text-gray-500">
-                        Qty: {item.quantity}
-                      </p>
+                    <p className="text-sm text-gray-500">
+                      Qty: {item.quantity}
+                    </p>
 
-                      <p className="text-sm text-gray-500">
-                        ₹{item.price}
-                      </p>
-                    </div>
+                    <p className="text-sm text-gray-500">
+                      ₹{item.price}
+                    </p>
                   </div>
-                ))}
-
-                <div className="border-t pt-3">
-                  <p>
-                    <strong>Total:</strong> ₹
-                    {Number(
-                      selectedOrder.total_amount ||
-                      selectedOrder.total
-                    ).toFixed(2)}
-                  </p>
                 </div>
+              ))}
+
+              <div className="border-t pt-3">
+                <p>
+                  <strong>Total:</strong> ₹
+                  {Number(
+                    selectedOrder.total_amount ||
+                    selectedOrder.total
+                  ).toFixed(2)}
+                </p>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }
