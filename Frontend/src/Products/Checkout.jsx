@@ -178,14 +178,24 @@ const Checkout = () => {
 
   /* ------------------------- Pre-fill user email ------------------------ */
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const fetchProfile = async () => {
+      try {
+        const { data } = await api.get("/auth/profile");
 
-    if (user && !shipping.email) {
-      setShipping((prev) => ({
-        ...prev,
-        email: user.email || "",
-      }));
-    }
+        if (data?.user) {
+          setShipping((prev) => ({
+            ...prev,
+            name: data.user.username || "",
+            email: data.user.email || "",
+            phone: data.user.phone || "",
+          }));
+        }
+      } catch (err) {
+        console.error("Profile fetch failed:", err);
+      }
+    };
+
+    fetchProfile();
   }, []);
 
   /* ---------------------- Load cart or buy-now item --------------------- */
