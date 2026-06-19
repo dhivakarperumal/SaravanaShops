@@ -329,61 +329,64 @@ function Orders() {
   };
 
   const handlePrint = (order) => {
-    const logoUrl = "/Image/logo.png"; // Your logo path
+    if (!order) {
+      toast.error("No order selected for printing.");
+      return;
+    }
 
-    const itemsHTML = order.items
-      .map(
-        (i, index) => `
-      <tr>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">${index + 1
-          }</td>
-        <td style="border:1px solid #ddd;padding:10px;display:flex;align-items:center;gap:10px;">
-          <img src="${i.image}" alt="${i.name}"
-            style="width:50px;height:50px;object-fit:cover;border-radius:5px;border:1px solid #ddd;" />
-          <span>${i.name}</span>
-        </td>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">${i.quantity
-          }</td>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${i.price.toFixed(
-            2
-          )}</td>
-        <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${(
-            i.quantity * i.price
-          ).toFixed(2)}</td>
-      </tr>`
-      )
+    const logoUrl = "/Image/logo.png";
+    const items = Array.isArray(order.items) ? order.items : [];
+    const subtotal = Number(order.subtotal ?? order.total_amount ?? order.total ?? 0);
+    const shippingCost = Number(order.shippingCost ?? order.shipping_cost ?? 0);
+    const total = Number(order.total ?? order.total_amount ?? subtotal + shippingCost);
+    const orderId = order.order_id || order.orderId || order.id || "N/A";
+    const paymentMethod = order.payment_method || order.paymentMethod || "Online";
+    const createdAt = order.created_at ? new Date(order.created_at).toLocaleString() : "N/A";
+    const shipping = order.shipping || {};
+
+    const itemsHTML = items
+      .map((item, index) => {
+        const itemName = item.product_name || item.productName || item.name || "Item";
+        const quantity = Number(item.quantity ?? 0);
+        const price = Number(item.price ?? 0);
+        const itemTotal = quantity * price;
+        const itemImage = item.image
+          ? `<img src="${item.image}" alt="${itemName}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;border:1px solid #ddd;" />`
+          : "";
+
+        return `
+          <tr>
+            <td style="border:1px solid #ddd;padding:10px;text-align:center;">${index + 1}</td>
+            <td style="border:1px solid #ddd;padding:10px;display:flex;align-items:center;gap:10px;">${itemImage}<span>${itemName}</span></td>
+            <td style="border:1px solid #ddd;padding:10px;text-align:center;">${quantity}</td>
+            <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${price.toFixed(2)}</td>
+            <td style="border:1px solid #ddd;padding:10px;text-align:center;">₹${itemTotal.toFixed(2)}</td>
+          </tr>`;
+      })
       .join("");
 
     const html = `
       <div id="printableArea" style="font-family: Arial, sans-serif; color: #333; padding: 30px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #8c52ff;padding-bottom:10px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #8c52ff;padding-bottom:10px;margin-bottom:20px;flex-wrap:wrap;gap:20px;">
           <img src="${logoUrl}" style="height:60px;" />
           <div style="font-size:28px;color:#8c52ff;font-weight:bold;">Order Invoice</div>
         </div>
 
-        <div style="display:flex;justify-content:space-between;margin-top:20px;">
-          <div style="width:48%; font-size:16px;">
+        <div style="display:flex;justify-content:space-between;margin-top:20px;flex-wrap:wrap;gap:20px;">
+          <div style="flex:1;min-width:240px;font-size:16px;">
             <h3 style="font-size:20px;margin-bottom:10px;">Customer Details</h3>
-            <p><strong>Name:</strong> ${order.shipping?.name || "N/A"}</p>
-            <p><strong>Email:</strong> ${order.shipping?.email || "N/A"}</p>
-            <p><strong>Phone:</strong> ${order.shipping?.phone || "N/A"}</p>
-            <p><strong>Address:</strong> ${order.shipping?.address || ""}, ${order.shipping?.city || ""
-      }, ${order.shipping?.state || ""}, ${order.shipping?.zip || ""}</p>
-            <p><strong>Country:</strong> ${order.shipping?.country || ""}</p>
+            <p><strong>Name:</strong> ${shipping.name || "N/A"}</p>
+            <p><strong>Email:</strong> ${shipping.email || "N/A"}</p>
+            <p><strong>Phone:</strong> ${shipping.phone || "N/A"}</p>
+            <p><strong>Address:</strong> ${shipping.address || ""}, ${shipping.city || ""}, ${shipping.state || ""}, ${shipping.zip || ""}</p>
+            <p><strong>Country:</strong> ${shipping.country || "India"}</p>
           </div>
-
-          <div style="width:48%; font-size:16px;">
+          <div style="flex:1;min-width:240px;font-size:16px;">
             <h3 style="font-size:20px;margin-bottom:10px;">Order Details</h3>
-            <p><strong>Order ID:</strong> ${order.orderId}</p>
-            <p><strong>Shop Address:</strong> Sri Saravana Bangles
-              78/3, chetty Street Tirupattur Near AVS Mahal and Jain Temple 635601
-              Ph: 7010575375</p>
-            <p><strong>Status:</strong> ${order.status}</p>
-            <p><strong>Payment:</strong> ${order.paymentMethod || "Online"}</p>
-            <p><strong>Date:</strong> ${order.created_at
-        ? new Date(order.created_at).toLocaleString()
-        : "N/A"
-      }</p>
+            <p><strong>Order ID:</strong> ${orderId}</p>
+            <p><strong>Status:</strong> ${order.status || "N/A"}</p>
+            <p><strong>Payment:</strong> ${paymentMethod}</p>
+            <p><strong>Date:</strong> ${createdAt}</p>
           </div>
         </div>
 
@@ -404,9 +407,9 @@ function Orders() {
         </table>
 
         <div style="margin-top:20px;border-top:2px solid #8c52ff;padding-top:10px;font-weight:bold;">
-          <p>Subtotal: ₹${order.subtotal.toFixed(2)}</p>
-          <p>Shipping: ₹${order.shippingCost.toFixed(2)}</p>
-          <p>Total: ₹${order.total.toFixed(2)}</p>
+          <p>Subtotal: ₹${subtotal.toFixed(2)}</p>
+          <p>Shipping: ₹${shippingCost.toFixed(2)}</p>
+          <p>Total: ₹${total.toFixed(2)}</p>
         </div>
 
         <div style="text-align:center;margin-top:40px;font-size:13px;color:#666;border-top:1px solid #ccc;padding-top:10px;">
@@ -414,43 +417,37 @@ function Orders() {
           For any support, contact us at support@saravanashoppings.in
         </div>
       </div>
-      `;
+    `;
 
-    // Open a new window for printing to avoid modifying the current page
-    // NOTE: avoid 'noopener' so we can access the new window in all browsers
+    const fullHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Invoice</title></head><body>${html}</body></html>`;
+
     const printWindow = window.open("", "_blank");
     if (printWindow) {
-      // Add a base tag so relative URLs (like /Image/logo.png) resolve correctly
-      const baseHref = window.location.origin;
-      const fullHtml = `<!doctype html><html><head><base href="${baseHref}"><title>Invoice</title></head><body>${html}</body></html>`;
-
       printWindow.document.open();
       printWindow.document.write(fullHtml);
       printWindow.document.close();
 
-      // Use onload to ensure resources are ready before printing
-      const onLoaded = () => {
+      const doPrint = () => {
         try {
           printWindow.focus();
           printWindow.print();
-        } catch {
-          // if printing fails, we'll silently ignore — iframe fallback exists
+        } catch (error) {
+          console.error("Print failed:", error);
         }
-        // Try to close the window after a short delay (may be blocked in some browsers)
         setTimeout(() => {
           try {
             printWindow.close();
-          } catch {
-            /* ignored */
-          }
+          } catch (ignored) { }
         }, 500);
       };
 
-      // If the window already loaded, call onLoaded, else attach listener
-      if (printWindow.document.readyState === "complete") onLoaded();
-      else printWindow.addEventListener("load", onLoaded);
+      if (printWindow.document.readyState === "complete") {
+        doPrint();
+      } else {
+        printWindow.onload = doPrint;
+        setTimeout(doPrint, 500);
+      }
     } else {
-      // Fallback: create a hidden iframe to print without touching the main document
       const iframe = document.createElement("iframe");
       iframe.style.position = "fixed";
       iframe.style.right = "0";
@@ -461,38 +458,33 @@ function Orders() {
       iframe.style.overflow = "hidden";
       document.body.appendChild(iframe);
 
-      try {
-        const idoc = iframe.contentWindow?.document || iframe.contentDocument;
-        if (idoc) {
-          idoc.open();
-          idoc.write(`<!doctype html><html><head><title>Invoice</title></head><body>${html}</body></html>`);
-          idoc.close();
-
-          const tryPrintIframe = () => {
-            try {
-              iframe.contentWindow.focus();
-              iframe.contentWindow.print();
-              setTimeout(() => {
-                try {
-                  document.body.removeChild(iframe);
-                } catch {
-                  // ignore
-                }
-              }, 500);
-            } catch {
-              setTimeout(tryPrintIframe, 300);
-            }
-          };
-
-          setTimeout(tryPrintIframe, 200);
-        } else {
-          // As a last resort, alert user
-          alert("Unable to open print preview. Please enable popups or try a different browser.");
-          try { document.body.removeChild(iframe); } catch { /* ignored */ }
-        }
-      } catch {
-        try { document.body.removeChild(iframe); } catch { /* ignored */ }
+      const idoc = iframe.contentWindow?.document || iframe.contentDocument;
+      if (!idoc) {
+        alert("Unable to open print preview. Please enable popups or try a different browser.");
+        try { document.body.removeChild(iframe); } catch (ignored) { }
+        return;
       }
+
+      idoc.open();
+      idoc.write(fullHtml);
+      idoc.close();
+
+      const tryPrintIframe = () => {
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        } catch (error) {
+          console.error("Iframe print failed:", error);
+        }
+        setTimeout(() => {
+          try {
+            document.body.removeChild(iframe);
+          } catch (ignored) { }
+        }, 500);
+      };
+
+      iframe.onload = tryPrintIframe;
+      setTimeout(tryPrintIframe, 500);
     }
   };
 
