@@ -8,6 +8,7 @@ const {
   updateProduct,
   deleteProduct,
   getNextProductId,
+  addProductReview,
 } = require('../controllers/productController');
 
 // GET /api/products        → fetch all products
@@ -30,5 +31,8 @@ router.put('/:id', updateProduct);
 
 // DELETE /api/products/:id → delete a product
 router.delete('/:id', deleteProduct);
+
+// POST /api/products/:id/reviews → add a review to a product
+router.post('/:id/reviews', addProductReview);
 
 module.exports = router;

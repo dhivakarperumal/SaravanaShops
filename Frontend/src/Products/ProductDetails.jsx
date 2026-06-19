@@ -70,27 +70,17 @@ const ProductDetails = () => {
         const res = await api.get(`/products/${id}`);
         const data = res.data.product;
 
+        // reviews are stored directly in product.reviews (JSON array in DB)
+        const reviews = Array.isArray(data.reviews) ? data.reviews : [];
+        data.reviews = reviews;
+
         setProduct(data);
 
         const user = JSON.parse(localStorage.getItem("user"));
-
-        // attach product-specific reviews from backend if available
-        try {
-          const revRes = await api.get(`/reviews/product/${data.id}`);
-          const reviews = revRes.data?.reviews || [];
-          // merge into product state so existing render logic uses it
-          setProduct((p) => ({ ...(p || {}), reviews }));
-          if (user && reviews) {
-            const alreadyReviewed = reviews.some((r) => r.user_id === user.id || r.userId === user.id);
-            setUserHasReviewed(alreadyReviewed);
-          }
-        } catch (err) {
-          // ignore; no product-specific reviews present
-        }
-
-        if (user && data.reviews) {
-          const alreadyReviewed = data.reviews.some(
-            (r) => r.userId === user.id
+        if (user && reviews.length > 0) {
+          const userId = user?.user_id || user?.id;
+          const alreadyReviewed = reviews.some(
+            (r) => r.user_id === userId
           );
           setUserHasReviewed(alreadyReviewed);
         }
@@ -279,24 +269,27 @@ const ProductDetails = () => {
 
     try {
       const userId = user?.user_id || user?.id;
-      await api.post("/reviews", {
-        product_id: product.id,
+      const productId = product.productId || product.id;
+
+      // POST to product-specific review endpoint (stored in products.reviews JSON)
+      await api.post(`/products/${productId}/reviews`, {
         user_id: userId,
         user_name: user.username || user.name,
         rating,
         review: reviewText.trim(),
       });
 
+      // Refresh product to get updated reviews
       const res = await api.get(`/products/${id}`);
-      setProduct(res.data.product);
+      const data = res.data.product;
+      data.reviews = Array.isArray(data.reviews) ? data.reviews : [];
+      setProduct(data);
 
       toast.success("Review added successfully!");
       setReviewText("");
       setRating(0);
       setShowReviews(false);
       setUserHasReviewed(true);
-      const refresh = await api.get(`/products/${id}`);
-      setProduct(refresh.data.product);
     } catch (err) {
       console.error(err);
       toast.error("Failed to submit review.");
@@ -941,10 +934,10 @@ const ProductDetails = () => {
                     1024: { slidesPerView: 3 },
                   }}
                 >
-                  {product.reviews
+                  {[...product.reviews]
                     .sort(
                       (a, b) =>
-                        (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+                        new Date(b.created_at || 0) - new Date(a.created_at || 0)
                     )
                     .map((rev, idx) => (
                       <SwiperSlide key={idx}>
@@ -969,14 +962,12 @@ const ProductDetails = () => {
 
                           <div className="mt-auto border-t border-gray-100 pt-3">
                             <p className="text-sm font-semibold text-gray-800">
-                              {rev.userName || "Anonymous"}
+                              {rev.user_name || rev.userName || "Anonymous"}
                             </p>
                             <p className="text-xs text-gray-400">
-                              {rev.createdAt?.toDate
-                                ? new Date(rev.createdAt.toDate()).toLocaleDateString()
-                                : rev.created_at
-                                  ? new Date(rev.created_at).toLocaleDateString()
-                                  : ""}
+                              {rev.created_at
+                                ? new Date(rev.created_at).toLocaleDateString()
+                                : ""}
                             </p>
                           </div>
                         </div>

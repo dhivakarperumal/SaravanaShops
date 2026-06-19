@@ -56,6 +56,7 @@ async function initializeDatabase() {
         images LONGTEXT,
         fabricdetails LONGTEXT,
         list_of_items LONGTEXT,
+        reviews LONGTEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
@@ -186,6 +187,14 @@ async function initializeDatabase() {
         if (e.code === 'ER_BAD_FIELD_ERROR') {
           await connection.query(`ALTER TABLE orders ADD COLUMN ${column.name} ${column.definition}`);
         }
+      }
+    }
+
+    try {
+      await connection.query(`SELECT reviews FROM products LIMIT 1`);
+    } catch (e) {
+      if (e.code === 'ER_BAD_FIELD_ERROR') {
+        await connection.query(`ALTER TABLE products ADD COLUMN reviews LONGTEXT`);
       }
     }
 

@@ -21,6 +21,7 @@ exports.getProducts = async (req, res) => {
       images: safeParseJSON(row.images, []),
       fabricdetails: safeParseJSON(row.fabricdetails, []),
       list_of_items: safeParseJSON(row.list_of_items, []),
+      reviews: safeParseJSON(row.reviews, []),
     }));
     res.json({ success: true, data: products });
   } catch (err) {
@@ -49,6 +50,7 @@ exports.getProductById = async (req, res) => {
       images: safeParseJSON(row.images, []),
       fabricdetails: safeParseJSON(row.fabricdetails, []),
       list_of_items: safeParseJSON(row.list_of_items, []),
+      reviews: safeParseJSON(row.reviews, []),
     };
 
     res.json({ success: true, product });
@@ -76,6 +78,7 @@ exports.getRelatedProducts = async (req, res) => {
       images: safeParseJSON(row.images, []),
       fabricdetails: safeParseJSON(row.fabricdetails, []),
       list_of_items: safeParseJSON(row.list_of_items, []),
+      reviews: safeParseJSON(row.reviews, []),
     }));
 
     res.json({ success: true, products });
@@ -91,7 +94,7 @@ exports.createProduct = async (req, res) => {
     const {
       productId, name, description, notes, mrp, offer, sellingprice, sellingpriceManually,
       rating, category, subcategory, productType, count, stock,
-      colors = [], images = [], fabricdetails = [], list_of_items = []
+      colors = [], images = [], fabricdetails = [], list_of_items = [], reviews = []
     } = req.body;
 
     if (!name || !productType) {
@@ -104,12 +107,12 @@ exports.createProduct = async (req, res) => {
       `INSERT INTO products (
         productId, name, description, notes, mrp, offer, sellingprice, sellingpriceManually,
         rating, category, subcategory, productType, count, stock,
-        colors, images, fabricdetails, list_of_items
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        colors, images, fabricdetails, list_of_items, reviews
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id, name, description, notes, mrp || null, offer || null, sellingprice || null,
         sellingpriceManually ? 1 : 0, rating || 0.0, category, subcategory, productType, count, stock || null,
-        JSON.stringify(colors), JSON.stringify(images), JSON.stringify(fabricdetails), JSON.stringify(list_of_items)
+        JSON.stringify(colors), JSON.stringify(images), JSON.stringify(fabricdetails), JSON.stringify(list_of_items), JSON.stringify(reviews)
       ]
     );
 
@@ -127,7 +130,7 @@ exports.updateProduct = async (req, res) => {
     const {
       name, description, notes, mrp, offer, sellingprice, sellingpriceManually,
       rating, category, subcategory, productType, count, stock,
-      colors = [], images = [], fabricdetails = [], list_of_items = []
+      colors = [], images = [], fabricdetails = [], list_of_items = [], reviews = []
     } = req.body;
 
     if (!name || !productType) {
@@ -142,12 +145,12 @@ exports.updateProduct = async (req, res) => {
       `UPDATE products SET
         name=?, description=?, notes=?, mrp=?, offer=?, sellingprice=?, sellingpriceManually=?,
         rating=?, category=?, subcategory=?, productType=?, count=?, stock=?,
-        colors=?, images=?, fabricdetails=?, list_of_items=?, updated_at=NOW()
+        colors=?, images=?, fabricdetails=?, list_of_items=?, reviews=?, updated_at=NOW()
        ${whereClause}`,
       [
         name, description, notes, mrp || null, offer || null, sellingprice || null,
         sellingpriceManually ? 1 : 0, rating || 0.0, category, subcategory, productType, count, stock || null,
-        JSON.stringify(colors), JSON.stringify(images), JSON.stringify(fabricdetails), JSON.stringify(list_of_items),
+        JSON.stringify(colors), JSON.stringify(images), JSON.stringify(fabricdetails), JSON.stringify(list_of_items), JSON.stringify(reviews),
         id
       ]
     );
@@ -190,6 +193,48 @@ exports.getNextProductId = async (req, res) => {
   } catch (err) {
     console.error('getNextProductId error:', err);
     res.status(500).json({ success: false, message: 'Failed to generate ID.' });
+  }
+};
+
+// ── POST add product review ─────────────────────────────────
+exports.addProductReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user_id, user_name, rating, review } = req.body;
+
+    const isNumeric = /^\d+$/.test(id);
+    const whereClause = isNumeric ? 'WHERE id = ?' : 'WHERE productId = ?';
+    
+    // Get existing reviews
+    const [rows] = await pool.query(`SELECT reviews FROM products ${whereClause} LIMIT 1`, [id]);
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
+    }
+
+    const existingReviews = safeParseJSON(rows[0].reviews, []);
+    
+    const newReview = {
+      id: Date.now().toString(),
+      user_id,
+      user_name,
+      rating: Number(rating),
+      review,
+      created_at: new Date().toISOString()
+    };
+    
+    existingReviews.push(newReview);
+
+    // Update reviews column
+    await pool.query(
+      `UPDATE products SET reviews = ?, updated_at = NOW() ${whereClause}`,
+      [JSON.stringify(existingReviews), id]
+    );
+
+    res.json({ success: true, message: 'Review added successfully!', review: newReview });
+  } catch (err) {
+    console.error('addProductReview error:', err);
+    res.status(500).json({ success: false, message: 'Failed to add review.' });
   }
 };
 
