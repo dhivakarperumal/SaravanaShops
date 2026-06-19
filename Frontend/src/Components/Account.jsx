@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
 import {
   FaUser,
   FaBox,
@@ -719,170 +720,138 @@ function Orders() {
         })}
 
       </div>
+    </div>
+  );
+}
 
-      {/* Cancel Popup */}
-      {/* {showCancelPopup && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 px-4">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
-            <h3 className="text-lg font-semibold text-primary mb-3">
-              Cancel Order
-            </h3>
-            <textarea
-              className="w-full border rounded p-2 h-24 outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Enter reason for cancellation..."
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-            ></textarea>
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                onClick={() => setShowCancelPopup(false)}
-                className="px-4 py-2  cursor-pointer rounded border border-gray-400 hover:bg-gray-100"
-              >
-                Close
-              </button>
-              <button
-                onClick={confirmCancelOrder}
-                className="bg-red-500  cursor-pointer text-white px-4 py-2 rounded hover:bg-red-600 transition"
-              >
-                Confirm Cancel
-              </button>
-            </div>
+// Order Details Modal - Rendered as Portal for Full Page Display
+function OrderDetailsModal({ selectedOrder, onClose }) {
+  if (!selectedOrder) return null;
+
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-xl font-bold cursor-pointer"
+        >
+          ×
+        </button>
+
+        <h3 className="text-2xl font-bold text-primary mb-4">
+          Order Details
+        </h3>
+
+        <div className="space-y-3">
+          <div>
+            <strong>Order ID:</strong>{" "}
+            {selectedOrder.order_id || selectedOrder.orderId}
           </div>
-        </div>
-      )} */}
-      {selectedOrder && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
 
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="absolute top-3 right-3 text-xl font-bold"
+          <div>
+            <strong>Status:</strong>{" "}
+            {selectedOrder.status}
+          </div>
+
+          <div>
+            <strong>Date:</strong>{" "}
+            {new Date(
+              selectedOrder.created_at
+            ).toLocaleString()}
+          </div>
+
+          <hr />
+
+          <h4 className="font-semibold text-lg text-primary">
+            Shipping Details
+          </h4>
+
+          <p>
+            <strong>Name:</strong>{" "}
+            {selectedOrder.shipping?.name}
+          </p>
+
+          <p>
+            <strong>Email:</strong>{" "}
+            {selectedOrder.shipping?.email}
+          </p>
+
+          <p>
+            <strong>Phone:</strong>{" "}
+            {selectedOrder.shipping?.phone}
+          </p>
+
+          <p>
+            <strong>Address:</strong>{" "}
+            {selectedOrder.shipping?.address}
+          </p>
+
+          <p>
+            <strong>City:</strong>{" "}
+            {selectedOrder.shipping?.city}
+          </p>
+
+          <p>
+            <strong>State:</strong>{" "}
+            {selectedOrder.shipping?.state}
+          </p>
+
+          <p>
+            <strong>Pincode:</strong>{" "}
+            {selectedOrder.shipping?.zip}
+          </p>
+
+          <p>
+            <strong>Country:</strong>{" "}
+            {selectedOrder.shipping?.country}
+          </p>
+
+          <hr />
+
+          <h4 className="font-semibold text-lg text-primary">
+            Products
+          </h4>
+
+          {(selectedOrder.items || []).map((item, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 border-b pb-2"
             >
-              ×
-            </button>
-
-            <h3 className="text-2xl font-bold text-primary mb-4">
-              Order Details
-            </h3>
-
-            <div className="space-y-3">
+              <img
+                src={item.image}
+                alt=""
+                className="w-14 h-14 rounded object-cover"
+              />
 
               <div>
-                <strong>Order ID:</strong>{" "}
-                {selectedOrder.order_id || selectedOrder.orderId}
-              </div>
+                <p className="font-medium">
+                  {item.product_name || item.name}
+                </p>
 
-              <div>
-                <strong>Status:</strong>{" "}
-                {selectedOrder.status}
-              </div>
+                <p className="text-sm text-gray-500">
+                  Qty: {item.quantity}
+                </p>
 
-              <div>
-                <strong>Payment Method:</strong>{" "}
-                {selectedOrder.payment_method ||
-                  selectedOrder.paymentMethod}
-              </div>
-
-              <div>
-                <strong>Date:</strong>{" "}
-                {new Date(
-                  selectedOrder.created_at
-                ).toLocaleString()}
-              </div>
-
-              <hr />
-
-              <h4 className="font-semibold text-lg text-primary">
-                Shipping Details
-              </h4>
-
-              <p>
-                <strong>Name:</strong>{" "}
-                {selectedOrder.shipping?.name}
-              </p>
-
-              <p>
-                <strong>Email:</strong>{" "}
-                {selectedOrder.shipping?.email}
-              </p>
-
-              <p>
-                <strong>Phone:</strong>{" "}
-                {selectedOrder.shipping?.phone}
-              </p>
-
-              <p>
-                <strong>Address:</strong>{" "}
-                {selectedOrder.shipping?.address}
-              </p>
-
-              <p>
-                <strong>City:</strong>{" "}
-                {selectedOrder.shipping?.city}
-              </p>
-
-              <p>
-                <strong>State:</strong>{" "}
-                {selectedOrder.shipping?.state}
-              </p>
-
-              <p>
-                <strong>Pincode:</strong>{" "}
-                {selectedOrder.shipping?.zip}
-              </p>
-
-              <p>
-                <strong>Country:</strong>{" "}
-                {selectedOrder.shipping?.country}
-              </p>
-
-              <hr />
-
-              <h4 className="font-semibold text-lg text-primary">
-                Products
-              </h4>
-
-              {(selectedOrder.items || []).map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 border-b pb-2"
-                >
-                  <img
-                    src={item.image}
-                    alt=""
-                    className="w-14 h-14 rounded object-cover"
-                  />
-
-                  <div>
-                    <p className="font-medium">
-                      {item.product_name || item.name}
-                    </p>
-
-                    <p className="text-sm text-gray-500">
-                      Qty: {item.quantity}
-                    </p>
-
-                    <p className="text-sm text-gray-500">
-                      ₹{item.price}
-                    </p>
-                  </div>
-                </div>
-              ))}
-
-              <div className="border-t pt-3">
-                <p>
-                  <strong>Total:</strong> ₹
-                  {Number(
-                    selectedOrder.total_amount ||
-                    selectedOrder.total
-                  ).toFixed(2)}
+                <p className="text-sm text-gray-500">
+                  ₹{item.price}
                 </p>
               </div>
             </div>
+          ))}
+
+          <div className="border-t pt-3">
+            <p>
+              <strong>Total:</strong> ₹
+              {Number(
+                selectedOrder.total_amount ||
+                selectedOrder.total
+              ).toFixed(2)}
+            </p>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
