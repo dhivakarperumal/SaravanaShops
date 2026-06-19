@@ -683,53 +683,54 @@ const Checkout = () => {
                 Search Saved Address
               </label>
 
-              <input
-                type="text"
-                placeholder="Search by name, phone, address..."
-                value={addressSearch}
-                onChange={(e) => {
-                  setAddressSearch(e.target.value);
-                  setShowAddressDropdown(true);
-                }}
-                onFocus={() => setShowAddressDropdown(true)}
-                className="w-full p-3 border rounded-lg"
-              />
+              <div className="flex flex-col md:flex-row gap-3 mb-6">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search by name, phone, address..."
+                    value={addressSearch}
+                    onChange={(e) => {
+                      setAddressSearch(e.target.value);
+                      setShowAddressDropdown(true);
+                    }}
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                  />
 
-              {showAddressDropdown && filteredAddresses.length > 0 && (
-                <div className="absolute z-50 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {filteredAddresses.map((addr) => (
-                    <div
-                      key={addr.id}
-                      onClick={() => selectAddress(addr)}
-                      className="p-3 border-b cursor-pointer hover:bg-gray-100"
-                    >
-                      <div className="font-semibold">
-                        {addr.firstname} {addr.lastname}
-                      </div>
+                  {showAddressDropdown && filteredAddresses.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {filteredAddresses.map((addr) => (
+                        <div
+                          key={addr.id}
+                          onClick={() => selectAddress(addr)}
+                          className="p-3 border-b cursor-pointer hover:bg-gray-100"
+                        >
+                          <div className="font-semibold">
+                            {addr.firstname} {addr.lastname}
+                          </div>
 
-                      <div className="text-sm text-gray-600">
-                        {addr.contact}
-                      </div>
+                          <div className="text-sm text-gray-600">
+                            {addr.contact}
+                          </div>
 
-                      <div className="text-xs text-gray-500">
-                        {addr.address}, {addr.city}
-                      </div>
+                          <div className="text-xs text-gray-500">
+                            {addr.address}, {addr.city}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
 
-            <button
-              type="button"
-              onClick={getCurrentLocation}
-              disabled={locationLoading}
-              className="mb-6 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-            >
-              {locationLoading
-                ? "Fetching Location..."
-                : "📍 Use Current Location"}
-            </button>
+                <button
+                  type="button"
+                  onClick={getCurrentLocation}
+                  disabled={locationLoading}
+                  className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 whitespace-nowrap"
+                >
+                  {locationLoading ? "Fetching..." : "📍 Current Location"}
+                </button>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
               {/* Full Name - Full width */}
@@ -740,7 +741,7 @@ const Checkout = () => {
                   placeholder="Enter your full name"
                   value={shipping.name}
                   onChange={handleChange}
-                  className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
                 {errors.name && <span className="text-red-500 text-xs mt-1">{errors.name}</span>}
               </div>
@@ -755,7 +756,7 @@ const Checkout = () => {
                   placeholder="10-digit mobile number"
                   value={shipping.phone}
                   onChange={handleChange}
-                  className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
                 {errors.phone && <span className="text-red-500 text-xs mt-1">{errors.phone}</span>}
               </div>
@@ -768,7 +769,7 @@ const Checkout = () => {
                   placeholder="Email address"
                   value={shipping.email}
                   onChange={handleChange}
-                  className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
                 {errors.email && <span className="text-red-500 text-xs mt-1">{errors.email}</span>}
               </div>
@@ -781,7 +782,7 @@ const Checkout = () => {
                   placeholder="Door/Flat/Block No."
                   value={shipping.doorNumber}
                   onChange={handleChange}
-                  className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
                 {errors.doorNumber && <span className="text-red-500 text-xs mt-1">{errors.doorNumber}</span>}
               </div>
@@ -793,7 +794,7 @@ const Checkout = () => {
                   placeholder="Street name"
                   value={shipping.streetName}
                   onChange={handleChange}
-                  className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
                 {errors.streetName && <span className="text-red-500 text-xs mt-1">{errors.streetName}</span>}
               </div>
@@ -807,7 +808,7 @@ const Checkout = () => {
                   value={shipping.address}
                   onChange={handleChange}
                   rows="2"
-                  className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none"
                 />
                 {errors.address && <span className="text-red-500 text-xs mt-1">{errors.address}</span>}
               </div>
@@ -820,7 +821,7 @@ const Checkout = () => {
                   placeholder="Nearby landmark"
                   value={shipping.landmark}
                   onChange={handleChange}
-                  className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
                 {errors.landmark && <span className="text-red-500 text-xs mt-1">{errors.landmark}</span>}
               </div>
@@ -833,7 +834,7 @@ const Checkout = () => {
                   placeholder="City/Town"
                   value={shipping.city}
                   onChange={handleChange}
-                  className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
                 {errors.city && <span className="text-red-500 text-xs mt-1">{errors.city}</span>}
               </div>
@@ -847,7 +848,7 @@ const Checkout = () => {
                   placeholder="6-digit PIN code"
                   value={shipping.zip}
                   onChange={handleChange}
-                  className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
                 {errors.zip && <span className="text-red-500 text-xs mt-1">{errors.zip}</span>}
               </div>
@@ -859,7 +860,7 @@ const Checkout = () => {
                   name="state"
                   value={shipping.state}
                   onChange={handleChange}
-                  className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  className="w-full p-3 border border-gray-300  rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 >
                   <option value="">Select State</option>
                   {indianStates.map((st) => (
@@ -875,7 +876,7 @@ const Checkout = () => {
                   name="country"
                   value={shipping.country}
                   onChange={handleChange}
-                  className="w-full p-3 border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 >
                   {countryList.map((c) => (
                     <option key={c} value={c}>{c}</option>
