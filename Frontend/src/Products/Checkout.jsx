@@ -373,6 +373,7 @@ const Checkout = () => {
   /* ------------------------ Clear user cart ---------------------------- */
   const clearUserCart = async (userId) => {
     await api.delete(`/cart/clear/${userId}`);
+    window.dispatchEvent(new Event("cartUpdated"));
   };
 
   /* ------------------------ Place Order / Pay -------------------------- */
