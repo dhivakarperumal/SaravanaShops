@@ -611,246 +611,260 @@ function OrderDetailsModal({ selectedOrder, onClose, handlePrint }) {
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl p-6 relative max-h-[90vh] overflow-y-auto">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-100 cursor-pointer transition"
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl relative max-h-[90vh] overflow-hidden">
+
+        {/* Fixed Header */}
+        <div className="sticky top-0 z-20 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <h3 className="text-2xl font-bold text-primary">
+            Order Details
+          </h3>
+
+          <button
+            onClick={onClose}
+            className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-100 cursor-pointer transition"
+          >
+            <IoClose size={20} />
+          </button>
+        </div>
+
+        {/* Scroll Content */}
+        <div
+          className="p-6 max-h-[calc(90vh-70px)] overflow-y-auto"
+          style={{
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }}
         >
-          <IoClose size={20} />
-        </button>
 
-        <h3 className="text-2xl font-bold text-primary mb-4">
-          Order Details
-        </h3>
-
-        <div className="space-y-3">
-          <div>
-            <strong>Order ID:</strong>{" "}
-            {selectedOrder.order_id || selectedOrder.orderId}
-          </div>
-
-          <div>
-            <strong>Status:</strong>{" "}
-            {selectedOrder.status}
-          </div>
-
-          {selectedOrder.qname && (
+          <div className="space-y-3">
             <div>
-              <strong>Courier:</strong>{" "}
-              {selectedOrder.qname}
+              <strong>Order ID:</strong>{" "}
+              {selectedOrder.order_id || selectedOrder.orderId}
             </div>
-          )}
 
-          {selectedOrder.docketNumber && (
             <div>
-              <strong>LR Number:</strong>{" "}
-              <span className="text-primary font-semibold">
-                {selectedOrder.docketNumber}
-              </span>
-            </div>
-          )}
-
-          <div>
-            <strong>Date:</strong>{" "}
-            {new Date(selectedOrder.created_at).toLocaleString()}
-          </div>
-
-          <hr className="border-gray-300" />
-
-          <h4 className="font-semibold text-lg text-primary">
-            Shipping Details
-          </h4>
-
-          <div className="grid grid-cols-2 gap-8">
-            <div className="space-y-2">
-              <p><strong>Name:</strong> {selectedOrder.shipping?.name}</p>
-              <p><strong>Email:</strong> {selectedOrder.shipping?.email}</p>
-              <p><strong>Phone:</strong> {selectedOrder.shipping?.phone}</p>
-              <p><strong>Address:</strong> {selectedOrder.shipping?.address}</p>
+              <strong>Status:</strong>{" "}
+              {selectedOrder.status}
             </div>
 
-            <div className="space-y-2">
-              <p><strong>City:</strong> {selectedOrder.shipping?.city}</p>
-              <p><strong>State:</strong> {selectedOrder.shipping?.state}</p>
-              <p><strong>Pincode:</strong> {selectedOrder.shipping?.zip}</p>
-              <p><strong>Country:</strong> {selectedOrder.shipping?.country}</p>
+            {selectedOrder.qname && (
+              <div>
+                <strong>Courier:</strong>{" "}
+                {selectedOrder.qname}
+              </div>
+            )}
+
+            {selectedOrder.docketNumber && (
+              <div>
+                <strong>LR Number:</strong>{" "}
+                <span className="text-primary font-semibold">
+                  {selectedOrder.docketNumber}
+                </span>
+              </div>
+            )}
+
+            <div>
+              <strong>Date:</strong>{" "}
+              {new Date(selectedOrder.created_at).toLocaleString()}
             </div>
-          </div>
 
-          <hr className="border-gray-300" />
+            <hr className="border-gray-300" />
 
-          <h4 className="font-semibold text-lg text-primary">
-            Products
-          </h4>
-
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse rounded-lg overflow-hidden">
-              <thead>
-                <tr className="bg-primary text-white">
-                  <th className="px-3 py-2 text-left">Image</th>
-                  <th className="px-3 py-2 text-left">Product</th>
-                  <th className="px-3 py-2 text-center">Size</th>
-                  <th className="px-3 py-2 text-center">Qty</th>
-                  <th className="px-3 py-2 text-center">Price</th>
-                  <th className="px-3 py-2 text-center">Total</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {(selectedOrder.items || []).map((item, i) => (
-                  <tr key={i}>
-                    <td className="px-3 py-2 border border-gray-300">
-                      <img
-                        src={item.image}
-                        alt=""
-                        className="w-12 h-12 rounded object-cover"
-                      />
-                    </td>
-
-                    <td className="px-3 py-2 border border-gray-300">
-                      {item.product_name || item.name}
-                    </td>
-
-                    <td className="px-3 py-2 text-center border border-gray-300">
-                      {item.size || "-"}
-                    </td>
-
-                    <td className="px-3 py-2 text-center border border-gray-300">
-                      {item.quantity}
-                    </td>
-
-                    <td className="px-3 py-2 text-center border border-gray-300">
-                      ₹{Number(item.price || 0).toFixed(2)}
-                    </td>
-
-                    <td className="px-3 py-2 text-center font-semibold text-primary border border-gray-300">
-                      ₹{(
-                        Number(item.quantity || 0) *
-                        Number(item.price || 0)
-                      ).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-5 mb-5">
-            <h4 className="font-semibold text-lg text-primary mb-4">
-              Order Tracking
+            <h4 className="font-semibold text-lg text-primary">
+              Shipping Details
             </h4>
 
-            <div className="relative flex items-center justify-between w-full">
-              <div className="absolute top-[10px] left-0 w-full h-[3px] bg-gray-300"></div>
+            <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <p><strong>Name:</strong> {selectedOrder.shipping?.name}</p>
+                <p><strong>Email:</strong> {selectedOrder.shipping?.email}</p>
+                <p><strong>Phone:</strong> {selectedOrder.shipping?.phone}</p>
+                <p><strong>Address:</strong> {selectedOrder.shipping?.address}</p>
+              </div>
 
-              <div
-                className="absolute top-[10px] left-0 h-[3px] bg-primary transition-all duration-700"
-                style={{ width: `${progressPercent}%` }}
-              ></div>
+              <div className="space-y-2">
+                <p><strong>City:</strong> {selectedOrder.shipping?.city}</p>
+                <p><strong>State:</strong> {selectedOrder.shipping?.state}</p>
+                <p><strong>Pincode:</strong> {selectedOrder.shipping?.zip}</p>
+                <p><strong>Country:</strong> {selectedOrder.shipping?.country}</p>
+              </div>
+            </div>
 
-              {trackingSteps.map((step, index) => {
-                const isActive = index <= currentIndex;
+            <hr className="border-gray-300" />
 
-                return (
-                  <div
-                    key={index}
-                    className="relative z-10 flex flex-col items-center flex-1"
-                  >
+            <h4 className="font-semibold text-lg text-primary">
+              Products
+            </h4>
+
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse rounded-lg overflow-hidden">
+                <thead>
+                  <tr className="bg-primary text-white">
+                    <th className="px-3 py-2 text-left">Image</th>
+                    <th className="px-3 py-2 text-left">Product</th>
+                    <th className="px-3 py-2 text-center">Size</th>
+                    <th className="px-3 py-2 text-center">Qty</th>
+                    <th className="px-3 py-2 text-center">Price</th>
+                    <th className="px-3 py-2 text-center">Total</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {(selectedOrder.items || []).map((item, i) => (
+                    <tr key={i}>
+                      <td className="px-3 py-2 border border-gray-300">
+                        <img
+                          src={item.image}
+                          alt=""
+                          className="w-12 h-12 rounded object-cover"
+                        />
+                      </td>
+
+                      <td className="px-3 py-2 border border-gray-300">
+                        {item.product_name || item.name}
+                      </td>
+
+                      <td className="px-3 py-2 text-center border border-gray-300">
+                        {item.size || "-"}
+                      </td>
+
+                      <td className="px-3 py-2 text-center border border-gray-300">
+                        {item.quantity}
+                      </td>
+
+                      <td className="px-3 py-2 text-center border border-gray-300">
+                        ₹{Number(item.price || 0).toFixed(2)}
+                      </td>
+
+                      <td className="px-3 py-2 text-center font-semibold text-primary border border-gray-300">
+                        ₹{(
+                          Number(item.quantity || 0) *
+                          Number(item.price || 0)
+                        ).toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-5 mb-5">
+              <h4 className="font-semibold text-lg text-primary mb-4">
+                Order Tracking
+              </h4>
+
+              <div className="relative flex items-center justify-between w-full">
+                <div className="absolute top-[10px] left-0 w-full h-[3px] bg-gray-300"></div>
+
+                <div
+                  className="absolute top-[10px] left-0 h-[3px] bg-primary transition-all duration-700"
+                  style={{ width: `${progressPercent}%` }}
+                ></div>
+
+                {trackingSteps.map((step, index) => {
+                  const isActive = index <= currentIndex;
+
+                  return (
                     <div
-                      className={`w-5 h-5 rounded-full border-2 ${isActive
-                        ? "bg-primary border-primary"
-                        : "bg-white border-gray-300"
-                        }`}
-                    />
-
-                    <p
-                      className={`text-xs mt-2 text-center ${isActive
-                        ? "text-primary font-semibold"
-                        : "text-gray-400"
-                        }`}
+                      key={index}
+                      className="relative z-10 flex flex-col items-center flex-1"
                     >
-                      {step}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 ${isActive
+                          ? "bg-primary border-primary"
+                          : "bg-white border-gray-300"
+                          }`}
+                      />
 
-          <div className="border-t border-gray-300 pt-4 space-y-2">
-            <div className="flex justify-between">
-              <span className="font-medium">Subtotal</span>
-              <span>
-                ₹
-                {Number(
-                  selectedOrder.subtotal ||
-                  selectedOrder.total_amount ||
-                  selectedOrder.total ||
-                  0
-                ).toFixed(2)}
-              </span>
-            </div>
-
-            <div className="flex justify-between">
-              <span className="font-medium">Shipping</span>
-              <span>
-                ₹
-                {Number(
-                  selectedOrder.shipping_cost ||
-                  selectedOrder.shippingCost ||
-                  0
-                ).toFixed(2)}
-              </span>
+                      <p
+                        className={`text-xs mt-2 text-center ${isActive
+                          ? "text-primary font-semibold"
+                          : "text-gray-400"
+                          }`}
+                      >
+                        {step}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="flex justify-between border-t border-gray-300 pt-2 text-lg font-bold text-primary">
-              <span>Total</span>
-              <span>
-                ₹
-                {Number(
-                  selectedOrder.total_amount ||
-                  selectedOrder.total ||
-                  0
-                ).toFixed(2)}
-              </span>
-            </div>
-          </div>
+            <div className="border-t border-gray-300 pt-4 space-y-2">
+              <div className="flex justify-between">
+                <span className="font-medium">Subtotal</span>
+                <span>
+                  ₹
+                  {Number(
+                    selectedOrder.subtotal ||
+                    selectedOrder.total_amount ||
+                    selectedOrder.total ||
+                    0
+                  ).toFixed(2)}
+                </span>
+              </div>
 
-          <div className="border-t border-gray-300 mt-5 pt-4 flex justify-end">
-            <button
-              onClick={() => handlePrint(selectedOrder)}
-              className="bg-primary text-white px-5 py-2 rounded-md flex items-center gap-2 hover:opacity-90"
-            >
-              <FaPrint />
-              Print Invoice
-            </button>
+              <div className="flex justify-between">
+                <span className="font-medium">Shipping</span>
+                <span>
+                  ₹
+                  {Number(
+                    selectedOrder.shipping_cost ||
+                    selectedOrder.shippingCost ||
+                    0
+                  ).toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex justify-between border-t border-gray-300 pt-2 text-lg font-bold text-primary">
+                <span>Total</span>
+                <span>
+                  ₹
+                  {Number(
+                    selectedOrder.total_amount ||
+                    selectedOrder.total ||
+                    0
+                  ).toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-300 mt-5 pt-4 flex justify-end">
+              <button
+                onClick={() => handlePrint(selectedOrder)}
+                className="bg-primary text-white px-5 py-2 rounded-md flex items-center gap-2 hover:opacity-90"
+              >
+                <FaPrint />
+                Print Invoice
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>,
-    document.body
-  );
+        </div>
+      </div>,
+      document.body
+      );
 }
 
-//
-// 🔹 CHANGE PASSWORD
-//
-function ChangePassword() {
+      //
+      // 🔹 CHANGE PASSWORD
+      //
+      function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [emailForLink, setEmailForLink] = useState("");
+      const [newPassword, setNewPassword] = useState("");
+      const [confirmPassword, setConfirmPassword] = useState("");
+      const [loading, setLoading] = useState(false);
+      const [emailForLink, setEmailForLink] = useState("");
 
   const handleChangePassword = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    if (newPassword !== confirmPassword) {
+      if (newPassword !== confirmPassword) {
       return toast.error("Passwords do not match");
     }
 
-    try {
-      setLoading(true);
+      try {
+        setLoading(true);
       await api.put("/users/change-password", {
         currentPassword,
         newPassword
@@ -860,215 +874,215 @@ function ChangePassword() {
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
-      console.error(err);
+        console.error(err);
       toast.error(err.response?.data?.message || "Error updating password");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
   };
 
-  return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 border border-secondary max-w-md">
-      <h2 className="text-2xl font-semibold mb-6 text-primary">
-        Change Password
-      </h2>
-      {/* ✅ Wrap inputs in a <form> so required validation works */}
-      <form onSubmit={handleChangePassword} className="space-y-4">
-        {(() => {
-          return (
-            <>
-              <input
-                type="password"
-                required
-                placeholder="Current Password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full border-b border-gray-400 px-4 py-3"
-              />
-              <input
-                type="password"
-                required
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                minLength={6}
-                className="w-full border-b border-gray-400 px-4 py-3"
-              />
-              <input
-                type="password"
-                required
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full border-b border-gray-400 px-4 py-3"
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-primary text-white w-full py-3 rounded-lg cursor-pointer"
-              >
-                {loading ? "Updating..." : "Update Password"}
-              </button>
-            </>
-          );
-        })()}
-      </form>
-    </div>
-  );
+      return (
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-secondary max-w-md">
+        <h2 className="text-2xl font-semibold mb-6 text-primary">
+          Change Password
+        </h2>
+        {/* ✅ Wrap inputs in a <form> so required validation works */}
+        <form onSubmit={handleChangePassword} className="space-y-4">
+          {(() => {
+            return (
+              <>
+                <input
+                  type="password"
+                  required
+                  placeholder="Current Password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full border-b border-gray-400 px-4 py-3"
+                />
+                <input
+                  type="password"
+                  required
+                  placeholder="New Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  minLength={6}
+                  className="w-full border-b border-gray-400 px-4 py-3"
+                />
+                <input
+                  type="password"
+                  required
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full border-b border-gray-400 px-4 py-3"
+                />
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-primary text-white w-full py-3 rounded-lg cursor-pointer"
+                >
+                  {loading ? "Updating..." : "Update Password"}
+                </button>
+              </>
+            );
+          })()}
+        </form>
+      </div>
+      );
 }
 
-//
-// 🔹 UPDATE ADDRESS
-//
+      //
+      // 🔹 UPDATE ADDRESS
+      //
 
 
-function UpdateAddress() {
+      function UpdateAddress() {
   const [addresses, setAddresses] = useState([]);
-  const [form, setForm] = useState({
-    id: "",
-    firstname: "",
-    lastname: "",
-    contact: "",
-    doorNumber: "",
-    streetName: "",
-    address: "",
-    landmark: "",
-    city: "",
-    state: "",
-    pin: "",
+      const [form, setForm] = useState({
+        id: "",
+      firstname: "",
+      lastname: "",
+      contact: "",
+      doorNumber: "",
+      streetName: "",
+      address: "",
+      landmark: "",
+      city: "",
+      state: "",
+      pin: "",
   });
 
-  const [errors, setErrors] = useState({});
+      const [errors, setErrors] = useState({ });
   const fetchAddresses = async () => {
     try {
-      const { data } = await api.get("/addresses");
+      const {data} = await api.get("/addresses");
       setAddresses(data);
     } catch (err) {
-      console.error("Failed to fetch addresses:", err);
+        console.error("Failed to fetch addresses:", err);
     }
   };
 
   useEffect(() => {
-    fetchAddresses();
+        fetchAddresses();
   }, []);
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors = { };
 
-    // Name validation
-    if (!form.firstname.trim()) newErrors.firstname = "First name required";
-    if (!form.lastname.trim()) newErrors.lastname = "Last name required";
+      // Name validation
+      if (!form.firstname.trim()) newErrors.firstname = "First name required";
+      if (!form.lastname.trim()) newErrors.lastname = "Last name required";
 
-    // Phone validation (exactly 10 digits starting with 6-9)
-    if (!form.contact) {
-      newErrors.contact = "Phone number required";
+      // Phone validation (exactly 10 digits starting with 6-9)
+      if (!form.contact) {
+        newErrors.contact = "Phone number required";
     } else if (!/^[6-9]\d{9}$/.test(form.contact)) {
-      newErrors.contact = "Enter valid 10-digit mobile number";
+        newErrors.contact = "Enter valid 10-digit mobile number";
     }
 
-    // Door Number validation
-    if (!form.doorNumber.trim()) newErrors.doorNumber = "Door number required";
+      // Door Number validation
+      if (!form.doorNumber.trim()) newErrors.doorNumber = "Door number required";
 
-    // Street Name validation
-    if (!form.streetName.trim()) newErrors.streetName = "Street name required";
+      // Street Name validation
+      if (!form.streetName.trim()) newErrors.streetName = "Street name required";
 
-    // Address validation
-    if (!form.address.trim()) newErrors.address = "Address required";
-    if (!form.landmark.trim()) newErrors.landmark = "Landmark required";
-    if (!form.city.trim()) newErrors.city = "City required";
-    if (!form.state.trim()) newErrors.state = "State required";
+      // Address validation
+      if (!form.address.trim()) newErrors.address = "Address required";
+      if (!form.landmark.trim()) newErrors.landmark = "Landmark required";
+      if (!form.city.trim()) newErrors.city = "City required";
+      if (!form.state.trim()) newErrors.state = "State required";
 
-    // PIN validation (exactly 6 digits)
-    if (!form.pin) {
-      newErrors.pin = "PIN code required";
+      // PIN validation (exactly 6 digits)
+      if (!form.pin) {
+        newErrors.pin = "PIN code required";
     } else if (!/^\d{6}$/.test(form.pin)) {
-      newErrors.pin = "Enter valid 6-digit pincode";
+        newErrors.pin = "Enter valid 6-digit pincode";
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    let updatedValue = value;
+    const {name, value} = e.target;
+      let updatedValue = value;
 
-    // Special handling for contact and pin
-    if (name === 'contact') {
-      updatedValue = value.replace(/\D/g, '').slice(0, 10);
+      // Special handling for contact and pin
+      if (name === 'contact') {
+        updatedValue = value.replace(/\D/g, '').slice(0, 10);
     } else if (name === 'pin') {
-      updatedValue = value.replace(/\D/g, '').slice(0, 6);
+        updatedValue = value.replace(/\D/g, '').slice(0, 6);
     }
 
-    setForm(prev => ({ ...prev, [name]: updatedValue }));
-    setErrors(prev => ({ ...prev, [name]: undefined }));
+    setForm(prev => ({...prev, [name]: updatedValue }));
+    setErrors(prev => ({...prev, [name]: undefined }));
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    if (!validateForm()) {
-      toast.error("Please fill all required fields correctly");
+      if (!validateForm()) {
+        toast.error("Please fill all required fields correctly");
       return;
     }
 
-    // Check for duplicate address
-    const isDuplicate = addresses.some(
+      // Check for duplicate address
+      const isDuplicate = addresses.some(
       (a) =>
-        a.id !== form.id &&
-        a.doorNumber === form.doorNumber &&
-        a.streetName === form.streetName &&
-        a.address === form.address &&
-        a.landmark === form.landmark &&
-        a.city === form.city &&
-        a.state === form.state &&
-        a.pin === form.pin
-    );
+      a.id !== form.id &&
+      a.doorNumber === form.doorNumber &&
+      a.streetName === form.streetName &&
+      a.address === form.address &&
+      a.landmark === form.landmark &&
+      a.city === form.city &&
+      a.state === form.state &&
+      a.pin === form.pin
+      );
 
-    if (isDuplicate) {
+      if (isDuplicate) {
       return toast.error("This address already exists!");
     }
 
-    try {
+      try {
       const addressData = {
         firstname: form.firstname.trim(),
-        lastname: form.lastname.trim(),
-        contact: form.contact,
-        doorNumber: form.doorNumber.trim(),
-        streetName: form.streetName.trim(),
-        address: form.address.trim(),
-        landmark: form.landmark.trim(),
-        city: form.city.trim(),
-        state: form.state.trim(),
-        pin: form.pin
+      lastname: form.lastname.trim(),
+      contact: form.contact,
+      doorNumber: form.doorNumber.trim(),
+      streetName: form.streetName.trim(),
+      address: form.address.trim(),
+      landmark: form.landmark.trim(),
+      city: form.city.trim(),
+      state: form.state.trim(),
+      pin: form.pin
       };
 
       if (form.id) {
         await api.put(`/addresses/${form.id}`, addressData);
-        toast.success("Address updated successfully!");
+      toast.success("Address updated successfully!");
       } else {
         await api.post("/addresses", addressData);
-        toast.success("Address added successfully!");
+      toast.success("Address added successfully!");
       }
 
       // Reset form and refresh addresses
       setForm({
         id: "",
-        firstname: "",
-        lastname: "",
-        contact: "",
-        doorNumber: "",
-        streetName: "",
-        address: "",
-        landmark: "",
-        city: "",
-        state: "",
-        pin: "",
+      firstname: "",
+      lastname: "",
+      contact: "",
+      doorNumber: "",
+      streetName: "",
+      address: "",
+      landmark: "",
+      city: "",
+      state: "",
+      pin: "",
       });
-      setErrors({});
+      setErrors({ });
       fetchAddresses();
     } catch (err) {
-      console.error(err);
+        console.error(err);
       toast.error("Failed to save address");
     }
   };
@@ -1077,8 +1091,8 @@ function UpdateAddress() {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this address?")) return;
-    try {
-      await api.delete(`/addresses/${id}`);
+      try {
+        await api.delete(`/addresses/${id}`);
       toast.success("Address deleted!");
       setAddresses((prev) => prev.filter((a) => a.id !== id));
 
@@ -1098,213 +1112,213 @@ function UpdateAddress() {
         });
       }
     } catch (err) {
-      console.error(err);
+        console.error(err);
       toast.error("Failed to delete address");
     }
   };
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      {/* Saved addresses */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-secondary">
-        <h3 className="text-xl font-semibold mb-6 text-primary">
-          Saved Addresses
-        </h3>
-        {!addresses.length ? (
-          <p className="text-gray-500">No addresses saved yet.</p>
-        ) : (
-          <ul className="space-y-4">
-            {addresses.map((a) => (
-              <li
-                key={a.id}
-                className="p-4 border border-gray-300 rounded-lg flex justify-between items-start bg-gradient-to-r from-white to-secondary/20 shadow-sm"
-              >
-                <div>
-                  <p className="font-semibold">
-                    {a.firstname} {a.lastname}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {a.doorNumber}, {a.streetName},
-                    <br />{a.address}
-                    {a.landmark && <><br />{a.landmark}</>}
-                    <br />{a.city}, {a.state} - {a.pin}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">Contact: {a.contact}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => setForm(a)} className="text-blue-500 cursor-pointer hover:text-blue-600">
-                    <FaEdit size={18} />
-                  </button>
-                  <button onClick={() => handleDelete(a.id)} className="text-red-500 cursor-pointer hover:text-red-600">
-                    <FaTrash size={18} />
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Saved addresses */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-secondary">
+          <h3 className="text-xl font-semibold mb-6 text-primary">
+            Saved Addresses
+          </h3>
+          {!addresses.length ? (
+            <p className="text-gray-500">No addresses saved yet.</p>
+          ) : (
+            <ul className="space-y-4">
+              {addresses.map((a) => (
+                <li
+                  key={a.id}
+                  className="p-4 border border-gray-300 rounded-lg flex justify-between items-start bg-gradient-to-r from-white to-secondary/20 shadow-sm"
+                >
+                  <div>
+                    <p className="font-semibold">
+                      {a.firstname} {a.lastname}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {a.doorNumber}, {a.streetName},
+                      <br />{a.address}
+                      {a.landmark && <><br />{a.landmark}</>}
+                      <br />{a.city}, {a.state} - {a.pin}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">Contact: {a.contact}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setForm(a)} className="text-blue-500 cursor-pointer hover:text-blue-600">
+                      <FaEdit size={18} />
+                    </button>
+                    <button onClick={() => handleDelete(a.id)} className="text-red-500 cursor-pointer hover:text-red-600">
+                      <FaTrash size={18} />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-      {/* Address form */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-secondary">
-        <h3 className="text-xl font-semibold mb-6 text-primary">
-          {form.id ? "Edit Address" : "Add New Address"}
-        </h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Address form */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-secondary">
+          <h3 className="text-xl font-semibold mb-6 text-primary">
+            {form.id ? "Edit Address" : "Add New Address"}
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <input
+                  name="firstname"
+                  value={form.firstname}
+                  onChange={handleChange}
+                  placeholder="First Name"
+                  className="w-full p-3 border rounded focus:border-primary outline-none"
+                />
+                {errors.firstname && <span className="text-red-500 text-xs">{errors.firstname}</span>}
+              </div>
+
+              <div>
+                <input
+                  name="lastname"
+                  value={form.lastname}
+                  onChange={handleChange}
+                  placeholder="Last Name"
+                  className="w-full p-3 border rounded focus:border-primary outline-none"
+                />
+                {errors.lastname && <span className="text-red-500 text-xs">{errors.lastname}</span>}
+              </div>
+
+              <div>
+                <input
+                  name="doorNumber"
+                  value={form.doorNumber}
+                  onChange={handleChange}
+                  placeholder="Door Number"
+                  className="w-full p-3 border rounded focus:border-primary outline-none"
+                />
+                {errors.doorNumber && <span className="text-red-500 text-xs">{errors.doorNumber}</span>}
+              </div>
+
+              <div>
+                <input
+                  name="streetName"
+                  value={form.streetName}
+                  onChange={handleChange}
+                  placeholder="Street Name"
+                  className="w-full p-3 border rounded focus:border-primary outline-none"
+                />
+                {errors.streetName && <span className="text-red-500 text-xs">{errors.streetName}</span>}
+              </div>
+
+              <div>
+                <input
+                  name="contact"
+                  type="tel"
+                  maxLength="10"
+                  value={form.contact}
+                  onChange={handleChange}
+                  placeholder="Contact Number (10 digits)"
+                  className="w-full p-3 border rounded focus:border-primary outline-none"
+                />
+                {errors.contact && <span className="text-red-500 text-xs">{errors.contact}</span>}
+              </div>
+
+              <div>
+                <input
+                  name="pin"
+                  type="text"
+                  maxLength="6"
+                  value={form.pin}
+                  onChange={handleChange}
+                  placeholder="PIN Code (6 digits)"
+                  className="w-full p-3 border rounded focus:border-primary outline-none"
+                />
+                {errors.pin && <span className="text-red-500 text-xs">{errors.pin}</span>}
+              </div>
+            </div>
+
             <div>
-              <input
-                name="firstname"
-                value={form.firstname}
+              <textarea
+                name="address"
+                value={form.address}
                 onChange={handleChange}
-                placeholder="First Name"
+                placeholder="Full Address"
                 className="w-full p-3 border rounded focus:border-primary outline-none"
+                rows={3}
               />
-              {errors.firstname && <span className="text-red-500 text-xs">{errors.firstname}</span>}
+              {errors.address && <span className="text-red-500 text-xs">{errors.address}</span>}
             </div>
 
             <div>
               <input
-                name="lastname"
-                value={form.lastname}
+                name="landmark"
+                value={form.landmark}
                 onChange={handleChange}
-                placeholder="Last Name"
+                placeholder="Landmark"
                 className="w-full p-3 border rounded focus:border-primary outline-none"
               />
-              {errors.lastname && <span className="text-red-500 text-xs">{errors.lastname}</span>}
+              {errors.landmark && <span className="text-red-500 text-xs">{errors.landmark}</span>}
             </div>
 
-            <div>
-              <input
-                name="doorNumber"
-                value={form.doorNumber}
-                onChange={handleChange}
-                placeholder="Door Number"
-                className="w-full p-3 border rounded focus:border-primary outline-none"
-              />
-              {errors.doorNumber && <span className="text-red-500 text-xs">{errors.doorNumber}</span>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <input
+                  name="city"
+                  value={form.city}
+                  onChange={handleChange}
+                  placeholder="City"
+                  className="w-full p-3 border rounded focus:border-primary outline-none"
+                />
+                {errors.city && <span className="text-red-500 text-xs">{errors.city}</span>}
+              </div>
+
+              <div>
+                <input
+                  name="state"
+                  value={form.state}
+                  onChange={handleChange}
+                  placeholder="State"
+                  className="w-full p-3 border rounded focus:border-primary outline-none"
+                />
+                {errors.state && <span className="text-red-500 text-xs">{errors.state}</span>}
+              </div>
             </div>
 
-            <div>
-              <input
-                name="streetName"
-                value={form.streetName}
-                onChange={handleChange}
-                placeholder="Street Name"
-                className="w-full p-3 border rounded focus:border-primary outline-none"
-              />
-              {errors.streetName && <span className="text-red-500 text-xs">{errors.streetName}</span>}
-            </div>
-
-            <div>
-              <input
-                name="contact"
-                type="tel"
-                maxLength="10"
-                value={form.contact}
-                onChange={handleChange}
-                placeholder="Contact Number (10 digits)"
-                className="w-full p-3 border rounded focus:border-primary outline-none"
-              />
-              {errors.contact && <span className="text-red-500 text-xs">{errors.contact}</span>}
-            </div>
-
-            <div>
-              <input
-                name="pin"
-                type="text"
-                maxLength="6"
-                value={form.pin}
-                onChange={handleChange}
-                placeholder="PIN Code (6 digits)"
-                className="w-full p-3 border rounded focus:border-primary outline-none"
-              />
-              {errors.pin && <span className="text-red-500 text-xs">{errors.pin}</span>}
-            </div>
-          </div>
-
-          <div>
-            <textarea
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              placeholder="Full Address"
-              className="w-full p-3 border rounded focus:border-primary outline-none"
-              rows={3}
-            />
-            {errors.address && <span className="text-red-500 text-xs">{errors.address}</span>}
-          </div>
-
-          <div>
-            <input
-              name="landmark"
-              value={form.landmark}
-              onChange={handleChange}
-              placeholder="Landmark"
-              className="w-full p-3 border rounded focus:border-primary outline-none"
-            />
-            {errors.landmark && <span className="text-red-500 text-xs">{errors.landmark}</span>}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <input
-                name="city"
-                value={form.city}
-                onChange={handleChange}
-                placeholder="City"
-                className="w-full p-3 border rounded focus:border-primary outline-none"
-              />
-              {errors.city && <span className="text-red-500 text-xs">{errors.city}</span>}
-            </div>
-
-            <div>
-              <input
-                name="state"
-                value={form.state}
-                onChange={handleChange}
-                placeholder="State"
-                className="w-full p-3 border rounded focus:border-primary outline-none"
-              />
-              {errors.state && <span className="text-red-500 text-xs">{errors.state}</span>}
-            </div>
-          </div>
-
-          <div className="flex gap-4 justify-end">
-            {form.id && (
+            <div className="flex gap-4 justify-end">
+              {form.id && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm({
+                      id: "",
+                      firstname: "",
+                      lastname: "",
+                      contact: "",
+                      doorNumber: "",
+                      streetName: "",
+                      address: "",
+                      landmark: "",
+                      city: "",
+                      state: "",
+                      pin: "",
+                    });
+                    setErrors({});
+                  }}
+                  className="px-6 py-2 rounded cursor-pointer bg-gray-200 hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
               <button
-                type="button"
-                onClick={() => {
-                  setForm({
-                    id: "",
-                    firstname: "",
-                    lastname: "",
-                    contact: "",
-                    doorNumber: "",
-                    streetName: "",
-                    address: "",
-                    landmark: "",
-                    city: "",
-                    state: "",
-                    pin: "",
-                  });
-                  setErrors({});
-                }}
-                className="px-6 py-2 rounded cursor-pointer bg-gray-200 hover:bg-gray-300 transition-colors"
+                type="submit"
+                className="bg-primary cursor-pointer text-white px-6 py-2 rounded hover:bg-primary/90 transition-colors"
               >
-                Cancel
+                {form.id ? "Update Address" : "Save Address"}
               </button>
-            )}
-            <button
-              type="submit"
-              className="bg-primary cursor-pointer text-white px-6 py-2 rounded hover:bg-primary/90 transition-colors"
-            >
-              {form.id ? "Update Address" : "Save Address"}
-            </button>
-          </div>
-        </form>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-  );
+      );
 }
 
