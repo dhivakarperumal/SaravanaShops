@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { FaEnvelope, FaFacebook, FaPhoneAlt } from "react-icons/fa";
 import { FaSquareInstagram } from "react-icons/fa6";
 import { RiWhatsappFill } from "react-icons/ri";
+import PageContainer from "./PageContainer";
 
 const Header = () => {
   const offers = [
@@ -28,7 +29,7 @@ const Header = () => {
 
   return (
     <div className="bg-primary text-white text-sm py-2">
-      <div className="max-w-8xl mx-auto flex justify-evenly items-center px-4 sm:px-6 lg:px-20">
+      <PageContainer className="flex justify-evenly items-center">
         {/* Left: Phone Numbers */}
         <div className="hidden md:flex space-x-3 items-center">
           <div className="flex text-base items-center space-x-2 hover:text-white transition cursor-pointer">
@@ -82,7 +83,7 @@ const Header = () => {
             <FaFacebook size={19} />
           </a>
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 };
