@@ -230,4 +230,120 @@ const googleLogin = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getProfile, googleLogin };
+const { sendOtpMessage } = require('../services/whatsappService');
+
+// Send WhatsApp OTP
+const sendWhatsAppOtp = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) {
+      return res.status(400).json({ message: 'Phone number is required' });
+    }
+
+    // Generate a 6 digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires_at = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    const connection = await pool.getConnection();
+
+    // Invalidate existing OTPs for this phone
+    await connection.query('DELETE FROM otps WHERE phone = ?', [phone]);
+
+    // Insert new OTP
+    await connection.query(
+      'INSERT INTO otps (phone, otp, expires_at) VALUES (?, ?, ?)',
+      [phone, otp, expires_at]
+    );
+    
+    connection.release();
+
+    // Send via WhatsApp
+    await sendOtpMessage(phone, otp);
+
+    res.json({ message: 'OTP sent successfully to WhatsApp' });
+  } catch (error) {
+    console.error('Send WhatsApp OTP error:', error);
+    res.status(500).json({ message: 'Failed to send OTP', error: error.message });
+  }
+};
+
+// Verify WhatsApp OTP
+const verifyWhatsAppOtp = async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+    if (!phone || !otp) {
+      return res.status(400).json({ message: 'Phone and OTP are required' });
+    }
+
+    const connection = await pool.getConnection();
+
+    // Find OTP
+    const [otps] = await connection.query(
+      'SELECT * FROM otps WHERE phone = ? AND otp = ? AND expires_at > NOW()',
+      [phone, otp]
+    );
+
+    if (otps.length === 0) {
+      connection.release();
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // OTP is valid, delete it
+    await connection.query('DELETE FROM otps WHERE phone = ?', [phone]);
+
+    // Check if user exists with this phone
+    const [users] = await connection.query(
+      'SELECT * FROM users WHERE phone = ?',
+      [phone]
+    );
+
+    let user;
+
+    if (users.length === 0) {
+      // Create new user
+      const user_id = uuidv4();
+      const defaultEmail = `${phone}@whatsapp-user.com`; // Placeholder email
+      const randomPassword = uuidv4() + Math.random().toString(36).slice(-8);
+      const hashedPassword = await bcryptjs.hash(randomPassword, 10);
+
+      await connection.query(
+        'INSERT INTO users (user_id, username, email, phone, password, status) VALUES (?, ?, ?, ?, ?, ?)',
+        [user_id, 'WhatsApp User', defaultEmail, phone, hashedPassword, 'active']
+      );
+
+      user = { user_id, username: 'WhatsApp User', email: defaultEmail, phone, role: 'user' };
+    } else {
+      user = users[0];
+      if (user.status !== 'active') {
+        connection.release();
+        return res.status(403).json({ message: 'User account is inactive' });
+      }
+    }
+
+    connection.release();
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { user_id: user.user_id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '9d' }
+    );
+
+    res.json({
+      message: 'WhatsApp login successful',
+      user: {
+        user_id: user.user_id,
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+        role: user.role || 'user'
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Verify WhatsApp OTP error:', error);
+    res.status(500).json({ message: 'Failed to verify OTP', error: error.message });
+  }
+};
+
+module.exports = { register, login, getProfile, googleLogin, sendWhatsAppOtp, verifyWhatsAppOtp };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import ReactDOM from "react-dom";
 import {
   FaUser,
@@ -13,7 +13,8 @@ import {
   FaChevronDown,
 } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { AuthContext } from "../PrivateRouter.jsx/AuthContext";
 import { toast } from "react-hot-toast";
 import api from "../api";
 import Head from "./Head";
@@ -88,13 +89,15 @@ const headData = {
 
 export default function Account() {
   const location = useLocation();
+  const { logout } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(location.state?.tab || "personal");
-  const [showTabs, setShowTabs] = useState(false); // 👈 for mobile dropdown toggle
+  const [showTabs, setShowTabs] = useState(false); // for mobile dropdown toggle
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    logout(); // clears localStorage + context in one call
     toast.success("Logged out successfully");
-    window.location.href = "/login";
+    navigate("/");
   };
 
   return (
