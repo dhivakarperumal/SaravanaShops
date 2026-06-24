@@ -192,7 +192,7 @@ const AdminPanel = () => {
           {isSidebarOpen ? <FaChevronLeft size={12} /> : <FaChevronRight size={12} />}
         </button>
 
-        <div className="flex items-center bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700 justify-between px-4 py-3 border-b border-purple-400/20 relative shadow-lg shadow-purple-500/20">
+        <div className="flex items-center bg-primary/70 justify-between px-4 py-3 border-b border-purple-400/20 relative shadow-lg shadow-purple-500/20">
           <div className="flex items-center w-full gap-3 overflow-hidden">
             {/* Logo Image with a crisp background plate */}
             <div className="bg-white p-1 rounded-xl shadow-lg shadow-purple-400/30 flex-shrink-0 flex items-center justify-center">
@@ -236,7 +236,7 @@ const AdminPanel = () => {
           </div>
 
           {/* Back Home fixed at bottom */}
-          <div className="p-3 border-t mt-5 border-purple-400/20 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700">
+          <div className="p-3 border-t mt-5 border-purple-400/20 bg-primary/70">
             {isSidebarOpen && (
               <NavLink
                 to="/"
