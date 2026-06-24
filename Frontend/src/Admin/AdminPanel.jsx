@@ -223,36 +223,36 @@ const AdminPanel = () => {
           </button>
         </div>
 
-        <div className="flex flex-col h-[calc(100vh-70px)]">
-          {/* Scrollable sidebar links */}
-          <div className="flex-1 overflow-hidden">
+        <div className="flex flex-col h-[calc(100vh-70px)] min-h-0">
+          {/* Scrollable sidebar links - center section */}
+          <div className="flex-1 min-h-0 overflow-y-auto sidebar-scroll">
             <Sidebar
               isSidebarOpen={isSidebarOpen}
               isSidebarHovered={isSidebarHovered}
               setIsSidebarHovered={setIsSidebarHovered}
               setMobileMenu={setMobileMenu}
             />
+          </div>
 
-            {/* Back Home scrolls with links */}
-            <div className="p-3">
-              {isSidebarOpen && (
-                <NavLink
-                  to="/"
-                  onClick={() => setMobileMenu(false)}
-                  className={({ isActive }) =>
-                    `flex items-center rounded font-bold hidden md:inline-flex hover:bg-bgcolor transition duration-200 ${isActive
-                      ? "bg-bgcolor text-gray font-bold"
-                      : "text-textcolor hover:bg-bgcolor hover:text-textcolor"
-                    } p-3`
-                  }
-                >
-                  <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center text-xl">
-                    <FaHome />
-                  </span>
-                  <span className="ml-2 flex-1 text-left">Back</span>
-                </NavLink>
-              )}
-            </div>
+          {/* Back Home fixed at bottom */}
+          <div className="p-3 border-t border-purple-400/20 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700">
+            {isSidebarOpen && (
+              <NavLink
+                to="/"
+                onClick={() => setMobileMenu(false)}
+                className={({ isActive }) =>
+                  `flex items-center rounded font-bold hidden md:inline-flex hover:bg-bgcolor transition duration-200 ${isActive
+                    ? "bg-bgcolor text-gray font-bold"
+                    : "text-textcolor hover:bg-bgcolor hover:text-textcolor"
+                  } p-3`
+                }
+              >
+                <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center text-xl">
+                  <FaHome />
+                </span>
+                <span className="ml-2 flex-1 text-left">Back</span>
+              </NavLink>
+            )}
           </div>
         </div>
       </aside>
