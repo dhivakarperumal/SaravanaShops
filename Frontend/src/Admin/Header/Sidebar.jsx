@@ -46,11 +46,9 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {/* Section Header */}
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${
-          open ? "text-white" : "text-gray-400"
-        } hover:bg-gray-800 hover:text-white ${
-          isExpanded ? "justify-start" : "justify-center"
-        }`}
+        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${open ? "text-white" : "text-gray-400"
+          } hover:bg-gray-800 hover:text-white ${isExpanded ? "justify-start" : "justify-center"
+          }`}
       >
         <span className={`w-5 h-5 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110 ${open ? "text-white" : ""}`}>
           {icon}
@@ -66,13 +64,11 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {/* Dropdown Items */}
       {open && (
         <ul
-          className={`text-sm space-y-1.5 mt-2 overflow-hidden transition-all duration-500 ease-in-out ${
-            isExpanded ? "pl-8" : "pl-0"
-          } ${
-            !isExpanded
+          className={`text-sm space-y-1.5 mt-2 overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? "pl-8" : "pl-0"
+            } ${!isExpanded
               ? "absolute left-20 top-0 bg-gray-800 shadow-2xl rounded-xl w-52 z-50 border border-gray-700 py-2"
               : ""
-          }`}
+            }`}
         >
           {items.map((item, idx) => (
             <li key={idx}>
@@ -80,10 +76,9 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                 to={item.path}
                 onClick={() => onLinkClick?.()}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 py-3 px-3 rounded-sm transition-all duration-300 ${
-                    isActive
-                      ? "bg-primary text-white font-bold shadow-md shadow-primary/30 translate-x-1"
-                      : "text-gray-400 font-bold hover:text-white hover:bg-gray-700 hover:translate-x-1"
+                  `flex items-center gap-3 py-3 px-3 rounded-sm transition-all duration-300 ${isActive
+                    ? "bg-primary text-white font-bold shadow-md shadow-primary/30 translate-x-1"
+                    : "text-gray-400 font-bold hover:text-white hover:bg-gray-700 hover:translate-x-1"
                   }`
                 }
               >
@@ -174,14 +169,29 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
   };
 
   const navLinkClass = ({ isActive }) =>
-    `flex items-center font-medium rounded-sm transition-all duration-300 group mb-2 ${
-      isActive
-        ? "bg-primary text-white shadow-md shadow-primary/30"
-        : "text-gray-400 hover:bg-gray-800 hover:text-white"
+    `flex items-center font-medium rounded-sm transition-all duration-300 group mb-2 ${isActive
+      ? "bg-primary text-white shadow-md shadow-primary/30"
+      : "text-gray-400 hover:bg-gray-800 hover:text-white"
     } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
 
   return (
-    <nav className="space-y-2 p-4 flex flex-col h-full bg-gray-900 shadow-xl border-r border-gray-800">
+    <nav
+      className="
+    relative overflow-hidden
+    space-y-2 p-4 flex flex-col h-full
+    bg-gradient-to-b from-primary via-primary/90 to-primary/70
+    backdrop-blur-xl
+    border-r border-white/20
+    shadow-2xl
+  "
+    >
+
+      <div className="absolute inset-0 pointer-events-none">
+  <div className="absolute -top-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+  <div className="absolute bottom-0 right-0 w-56 h-56 bg-white/10 rounded-full blur-3xl" />
+</div>
+
+<div className="relative z-10 flex flex-col h-full"></div>
       {/* ✅ Dashboard (exact match only) */}
       <NavLink to="/superadmin" end onClick={handleLinkClick} className={navLinkClass}>
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
@@ -219,7 +229,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         onLinkClick={handleLinkClick}
       />
 
-       <NavLink to="/superadmin/razerpay" onClick={handleLinkClick} className={navLinkClass}>
+      <NavLink to="/superadmin/razerpay" onClick={handleLinkClick} className={navLinkClass}>
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <FaKey />
         </span>
@@ -290,10 +300,9 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         to="/"
         onClick={handleLinkClick}
         className={({ isActive }) =>
-          `flex items-center font-medium rounded-xl transition-all duration-300 group mt-auto ${
-            isActive
-              ? "bg-gray-800 text-white"
-              : "text-gray-400 hover:bg-gray-800 hover:text-white"
+          `flex items-center font-medium rounded-xl transition-all duration-300 group mt-auto ${isActive
+            ? "bg-gray-800 text-white"
+            : "text-gray-400 hover:bg-gray-800 hover:text-white"
           } ${isExpanded ? "px-3 py-2.5 mb-10 md:mb-3" : "p-3 justify-center mb-10 md:mb-3"}`
         }
       >
@@ -302,6 +311,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         </span>
         {isExpanded && <span className="ml-3 flex-1 font-bold text-left tracking-wide">Back Home</span>}
       </NavLink>
+    
     </nav>
   );
 };
