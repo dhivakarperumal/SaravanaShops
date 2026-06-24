@@ -46,8 +46,8 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {/* Section Header */}
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-2xl transition-all duration-300 group ${open ? "bg-gradient-to-r from-cyan-500 to-sky-600 text-white shadow-lg shadow-cyan-500/20" : "text-slate-300 hover:bg-white/10 hover:text-white"
-          } ${isExpanded ? "justify-start" : "justify-center"
+        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${open ? "text-white" : "text-gray-400"
+          } hover:bg-gray-800 hover:text-white ${isExpanded ? "justify-start" : "justify-center"
           }`}
       >
         <span className={`w-5 h-5 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110 ${open ? "text-white" : ""}`}>
@@ -76,9 +76,9 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                 to={item.path}
                 onClick={() => onLinkClick?.()}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 py-3 px-3 rounded-2xl transition-all duration-300 ${isActive
-                    ? "bg-gradient-to-r from-cyan-500 to-sky-600 text-white font-bold shadow-lg shadow-cyan-500/25 translate-x-1"
-                    : "text-slate-300 font-semibold hover:text-white hover:bg-white/10 hover:translate-x-1"
+                  `flex items-center gap-3 py-3 px-3 rounded-sm transition-all duration-300 ${isActive
+                    ? "bg-primary text-white font-bold shadow-md shadow-primary/30 translate-x-1"
+                    : "text-gray-400 font-bold hover:text-white hover:bg-gray-700 hover:translate-x-1"
                   }`
                 }
               >
@@ -169,9 +169,9 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
   };
 
   const navLinkClass = ({ isActive }) =>
-    `flex items-center font-medium rounded-2xl transition-all duration-300 group mb-2 ${isActive
-      ? "bg-gradient-to-r from-cyan-500 to-sky-600 text-white shadow-xl shadow-cyan-500/25"
-      : "text-slate-300 hover:bg-white/10 hover:text-white"
+    `flex items-center font-medium rounded-sm transition-all duration-300 group mb-2 ${isActive
+      ? "bg-primary text-white shadow-md shadow-primary/30"
+      : "text-gray-400 hover:bg-gray-800 hover:text-white"
     } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
 
   return (
@@ -179,20 +179,19 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
       className="
     relative overflow-hidden
     space-y-2 p-4 flex flex-col h-full
-    bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950
-    text-slate-100
+    bg-gradient-to-b from-primary via-primary/90 to-primary/70
     backdrop-blur-xl
-    border-r border-white/10
-    shadow-[0_20px_60px_-30px_rgba(15,23,42,0.9)]
+    border-r border-white/20
+    shadow-2xl
   "
     >
 
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-24 -left-24 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-4 right-4 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl" />
-      </div>
+  <div className="absolute -top-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+  <div className="absolute bottom-0 right-0 w-56 h-56 bg-white/10 rounded-full blur-3xl" />
+</div>
 
-      <div className="relative z-10 flex flex-col h-full"></div>
+<div className="relative z-10 flex flex-col h-full"></div>
       {/* ✅ Dashboard (exact match only) */}
       <NavLink to="/superadmin" end onClick={handleLinkClick} className={navLinkClass}>
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
