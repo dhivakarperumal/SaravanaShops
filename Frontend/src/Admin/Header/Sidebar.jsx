@@ -46,7 +46,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {/* Section Header */}
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${open ? "bg-gradient-to-r from-rose-600 via-orange-500 to-amber-400 text-white shadow-lg shadow-rose-500/20" : "text-white/80 hover:bg-white/10 hover:text-white"
+        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${open ? "bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 text-white shadow-lg shadow-purple-500/25" : "text-white/80 hover:bg-white/10 hover:text-white"
           } ${isExpanded ? "justify-start" : "justify-center"
           }`}
       >
@@ -66,7 +66,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
         <ul
           className={`text-sm space-y-1.5 mt-2 overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? "pl-8" : "pl-0"
             } ${!isExpanded
-              ? "absolute left-20 top-0 bg-gradient-to-b from-rose-700 via-orange-600 to-amber-500 shadow-2xl rounded-xl w-52 z-50 border border-white/10 py-2"
+              ? "absolute left-20 top-0 bg-gradient-to-b from-purple-700 via-purple-600 to-purple-800 shadow-2xl rounded-xl w-52 z-50 border border-white/10 py-2"
               : ""
             }`}
         >
@@ -77,7 +77,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                 onClick={() => onLinkClick?.()}
                 className={({ isActive }) =>
                   `flex items-center gap-3 py-3 px-3 rounded-sm transition-all duration-300 ${isActive
-                    ? "bg-gradient-to-r from-rose-600 via-orange-500 to-amber-400 text-white font-bold shadow-lg shadow-rose-500/20 translate-x-1"
+                    ? "bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 text-white font-bold shadow-lg shadow-purple-500/30 translate-x-1"
                     : "text-white/80 font-bold hover:text-white hover:bg-white/10 hover:translate-x-1"
                   }`
                 }
@@ -171,7 +171,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
   const navLinkClass = ({ isActive }) =>
     `flex items-center font-medium rounded-xl transition-all duration-300 group mb-2 ${
       isActive
-        ? "bg-gradient-to-r from-rose-600 via-orange-500 to-amber-400 text-white shadow-xl shadow-rose-500/20"
+        ? "bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 text-white shadow-xl shadow-purple-500/30"
         : "text-white/80 hover:bg-white/15 hover:text-white"
     } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
 
@@ -180,7 +180,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
       className="
     relative overflow-hidden
     space-y-2 p-4 flex flex-col h-full
-    bg-gradient-to-b from-rose-600 via-orange-500 to-amber-400
+    bg-gradient-to-b from-purple-700 via-purple-600 to-purple-800
     text-white
     backdrop-blur-xl
     border-r border-white/20
@@ -189,12 +189,12 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
     >
 
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-56 h-56 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-400/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-56 h-56 bg-purple-300/20 rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10 flex flex-col h-full">
-        <div className="mb-5 rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400 p-4 shadow-[0_20px_60px_-30px_rgba(251,113,133,0.75)]">
+        <div className="mb-5 rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 p-4 shadow-[0_20px_60px_-30px_rgba(168,85,247,0.5)]">
           <div className="text-[11px] uppercase tracking-[0.35em] text-white/80 font-semibold">
             Lorem Ipsum
           </div>
@@ -311,7 +311,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         onClick={handleLinkClick}
         className={({ isActive }) =>
           `flex items-center font-medium rounded-xl transition-all duration-300 group mt-auto ${isActive
-            ? "bg-gradient-to-r from-rose-600 via-orange-500 to-amber-400 text-white shadow-lg shadow-rose-500/20"
+            ? "bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 text-white shadow-lg shadow-purple-500/30"
             : "text-white/80 hover:bg-white/10 hover:text-white"
           } ${isExpanded ? "px-3 py-2.5 mb-10 md:mb-3" : "p-3 justify-center mb-10 md:mb-3"}`
         }
