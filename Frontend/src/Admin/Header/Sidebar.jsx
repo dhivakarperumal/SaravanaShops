@@ -46,7 +46,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {/* Section Header */}
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-2xl transition-all duration-300 group ${open ? "bg-gradient-to-r from-cyan-500 to-sky-600 text-white shadow-lg shadow-cyan-500/20" : "text-slate-300 hover:bg-white/10 hover:text-white"
+        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-2xl transition-all duration-300 group ${open ? "bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 text-slate-100 shadow-lg shadow-slate-900/40" : "text-slate-300 hover:bg-slate-700 hover:text-white"
           } ${isExpanded ? "justify-start" : "justify-center"
           }`}
       >
@@ -77,8 +77,8 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                 onClick={() => onLinkClick?.()}
                 className={({ isActive }) =>
                   `flex items-center gap-3 py-3 px-3 rounded-2xl transition-all duration-300 ${isActive
-                    ? "bg-gradient-to-r from-cyan-500 to-sky-600 text-white font-bold shadow-lg shadow-cyan-500/25 translate-x-1"
-                    : "text-slate-300 font-semibold hover:text-white hover:bg-white/10 hover:translate-x-1"
+                    ? "bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 text-slate-100 font-bold shadow-lg shadow-slate-900/35 translate-x-1"
+                    : "text-slate-300 font-semibold hover:text-white hover:bg-slate-700 hover:translate-x-1"
                   }`
                 }
               >
@@ -170,8 +170,8 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
 
   const navLinkClass = ({ isActive }) =>
     `flex items-center font-medium rounded-2xl transition-all duration-300 group mb-2 ${isActive
-      ? "bg-gradient-to-r from-cyan-500 to-sky-600 text-white shadow-xl shadow-cyan-500/25"
-      : "text-slate-300 hover:bg-white/10 hover:text-white"
+      ? "bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 text-slate-100 shadow-xl shadow-slate-900/35"
+      : "text-slate-300 hover:bg-slate-700 hover:text-white"
     } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
 
   return (
@@ -179,7 +179,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
       className="
     relative overflow-hidden
     space-y-2 p-4 flex flex-col h-full
-    bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950
+    bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950
     text-slate-100
     backdrop-blur-xl
     border-r border-white/10
@@ -302,8 +302,8 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         onClick={handleLinkClick}
         className={({ isActive }) =>
           `flex items-center font-medium rounded-xl transition-all duration-300 group mt-auto ${isActive
-            ? "bg-gray-800 text-white"
-            : "text-gray-400 hover:bg-gray-800 hover:text-white"
+            ? "bg-slate-800 text-slate-100 shadow-lg shadow-slate-900/30"
+            : "text-slate-400 hover:bg-slate-700 hover:text-white"
           } ${isExpanded ? "px-3 py-2.5 mb-10 md:mb-3" : "p-3 justify-center mb-10 md:mb-3"}`
         }
       >
