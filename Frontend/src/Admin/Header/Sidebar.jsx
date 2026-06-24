@@ -321,7 +321,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         </span>
         {isExpanded && <span className="ml-3 flex-1 font-bold text-left tracking-wide">Back Home</span>}
       </NavLink>
-    
+      </div>
     </nav>
   );
 };
