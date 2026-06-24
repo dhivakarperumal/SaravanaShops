@@ -178,7 +178,7 @@ const AdminPanel = () => {
       {/* Sidebar container (fixed so it slides in/out) */}
       <aside
         ref={sidebarRef}
-        className={`fixed top-0 left-0 z-50 h-screen shadow bg-gray-900 text-gray-300 transition-transform duration-300 ease-in-out ${sidebarWidth} ${mobileMenu ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        className={`fixed top-0 left-0 z-50 h-screen shadow bg-gradient-to-b from-purple-700 via-purple-600 to-purple-800 text-gray-300 transition-transform duration-300 ease-in-out ${sidebarWidth} ${mobileMenu ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           }`}
         onMouseEnter={() => setIsSidebarHovered(true)}
         onMouseLeave={() => setIsSidebarHovered(false)}
@@ -235,7 +235,7 @@ const AdminPanel = () => {
           </div>
 
           {/* Back Home fixed at bottom */}
-          <div className="p-3 border-t border-purple-400/20 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700">
+          <div className="p-3 border-t mt-5 border-purple-400/20 bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700">
             {isSidebarOpen && (
               <NavLink
                 to="/"

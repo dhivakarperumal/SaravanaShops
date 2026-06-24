@@ -192,15 +192,8 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         <div className="absolute bottom-0 right-0 w-56 h-56 bg-purple-300/20 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 flex flex-col h-full">
-        {/* <div className="mb-5 rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 p-4 shadow-[0_20px_60px_-30px_rgba(168,85,247,0.5)]">
-          <div className="text-[11px] uppercase tracking-[0.35em] text-white/80 font-semibold">
-            Lorem Ipsum
-          </div>
-          <div className="mt-4 text-lg font-bold text-white">
-            Dashboard
-          </div>
-        </div> */}
+      <div className="relative z-10 flex flex-col h-full min-h-0 bg-gradient-to-b from-purple-700 via-purple-600 to-purple-800">
+       
 
         <NavLink to="/superadmin" end onClick={handleLinkClick} className={navLinkClass}>
           <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
