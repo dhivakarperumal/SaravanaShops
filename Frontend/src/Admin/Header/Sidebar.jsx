@@ -169,16 +169,15 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
   };
 
   const navLinkClass = ({ isActive }) =>
-    `flex items-center font-medium rounded-xl transition-all duration-300 group mb-2 ${
-      isActive
-        ? "bg-gradient-to-r from-purple-500 to-purple-300 text-white shadow-xl shadow-purple-400/50 border border-purple-300/30"
-        : "text-white hover:bg-purple-500/25 hover:text-white"
+    `flex items-center font-medium rounded-xl transition-all duration-300 group mb-2 ${isActive
+      ? "bg-gradient-to-r from-purple-500 to-purple-300 text-white shadow-xl shadow-purple-400/50 border border-purple-300/30"
+      : "text-white hover:bg-purple-500/25 hover:text-white"
     } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
 
   return (
     <nav
       className="
-    relative overflow-hidden
+    relative 
     space-y-2 p-4 flex flex-col h-full
     bg-gradient-to-b from-purple-700 via-purple-600 to-purple-800
     text-white
@@ -224,89 +223,89 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
           onLinkClick={handleLinkClick}
         />
 
-      {/* Products */}
-      <SidebarSection
-        title="Products"
-        icon={<FaBoxOpen />}
-        items={[
-          { name: "All Products", path: "/superadmin/allproducts", icon: <FaBoxes /> },
-          // { name: "Add New Products", path: "/superadmin/addproducts", icon: <FaPlus /> },
-          { name: "Category", path: "/superadmin/category", icon: <FaTags /> },
-          // { name: "Add Product Stock", path: "/superadmin/stocks", icon: <FaLayerGroup /> },
-          { name: "Stock Details", path: "/superadmin/stockDetails", icon: <FaChartBar /> },
-        ]}
-        isExpanded={isExpanded}
-        onLinkClick={handleLinkClick}
-      />
+        {/* Products */}
+        <SidebarSection
+          title="Products"
+          icon={<FaBoxOpen />}
+          items={[
+            { name: "All Products", path: "/superadmin/allproducts", icon: <FaBoxes /> },
+            // { name: "Add New Products", path: "/superadmin/addproducts", icon: <FaPlus /> },
+            { name: "Category", path: "/superadmin/category", icon: <FaTags /> },
+            // { name: "Add Product Stock", path: "/superadmin/stocks", icon: <FaLayerGroup /> },
+            { name: "Stock Details", path: "/superadmin/stockDetails", icon: <FaChartBar /> },
+          ]}
+          isExpanded={isExpanded}
+          onLinkClick={handleLinkClick}
+        />
 
-      <NavLink to="/superadmin/razerpay" onClick={handleLinkClick} className={navLinkClass}>
-        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
-          <FaKey />
-        </span>
-        {isExpanded && <span className="ml-3 font-bold flex-1 text-left tracking-wide">Razerpay Key</span>}
-      </NavLink>
+        <NavLink to="/superadmin/razerpay" onClick={handleLinkClick} className={navLinkClass}>
+          <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
+            <FaKey />
+          </span>
+          {isExpanded && <span className="ml-3 font-bold flex-1 text-left tracking-wide">Razerpay Key</span>}
+        </NavLink>
 
-      {/* Users */}
-      <SidebarSection
-        title="Users"
-        icon={<FaUserFriends />}
-        items={[
-          { name: "New Users", path: "/superadmin/newusers", showCount: true, count: newUsersCount, icon: <FaUserPlus /> },
-          { name: "All Users", path: "/superadmin/allusers", icon: <FaUsers /> },
-        ]}
-        isExpanded={isExpanded}
-        onLinkClick={handleLinkClick}
-      />
+        {/* Users */}
+        <SidebarSection
+          title="Users"
+          icon={<FaUserFriends />}
+          items={[
+            { name: "New Users", path: "/superadmin/newusers", showCount: true, count: newUsersCount, icon: <FaUserPlus /> },
+            { name: "All Users", path: "/superadmin/allusers", icon: <FaUsers /> },
+          ]}
+          isExpanded={isExpanded}
+          onLinkClick={handleLinkClick}
+        />
 
-      {/* Dealers */}
-      <SidebarSection
-        title="Dealers"
-        icon={<FaStore />}
-        items={[
-          { name: "All Dealers", path: "/superadmin/dealers", icon: <FaHandshake /> },
-          { name: "Invoice", path: "/superadmin/invoice", icon: <FaFileInvoiceDollar /> },
-        ]}
-        isExpanded={isExpanded}
-        onLinkClick={handleLinkClick}
-      />
+        {/* Dealers */}
+        <SidebarSection
+          title="Dealers"
+          icon={<FaStore />}
+          items={[
+            { name: "All Dealers", path: "/superadmin/dealers", icon: <FaHandshake /> },
+            { name: "Invoice", path: "/superadmin/invoice", icon: <FaFileInvoiceDollar /> },
+          ]}
+          isExpanded={isExpanded}
+          onLinkClick={handleLinkClick}
+        />
 
-      {/* Billings */}
-      <NavLink to="/superadmin/billing" onClick={handleLinkClick} className={navLinkClass}>
-        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
-          <FaReceipt />
-        </span>
-        {isExpanded && <span className="ml-3 font-bold flex-1 text-left tracking-wide">Billings</span>}
-      </NavLink>
+        {/* Billings */}
+        <NavLink to="/superadmin/billing" onClick={handleLinkClick} className={navLinkClass}>
+          <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
+            <FaReceipt />
+          </span>
+          {isExpanded && <span className="ml-3 font-bold flex-1 text-left tracking-wide">Billings</span>}
+        </NavLink>
 
-      {/* Upload Videos */}
-      <NavLink to="/superadmin/videos" onClick={handleLinkClick} className={navLinkClass}>
-        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
-          <AiOutlineVideoCamera />
-        </span>
-        {isExpanded && <span className="ml-3 flex-1 font-bold text-left tracking-wide">Upload Videos</span>}
-      </NavLink>
+        {/* Upload Videos */}
+        <NavLink to="/superadmin/videos" onClick={handleLinkClick} className={navLinkClass}>
+          <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
+            <AiOutlineVideoCamera />
+          </span>
+          {isExpanded && <span className="ml-3 flex-1 font-bold text-left tracking-wide">Upload Videos</span>}
+        </NavLink>
 
-      {/* Reviews */}
-      <NavLink to="/superadmin/allreviews" onClick={handleLinkClick} className={navLinkClass}>
-        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
-          <FaStar />
-        </span>
-        {isExpanded && <span className="ml-3 flex-1 font-bold text-left tracking-wide">Reviews</span>}
-      </NavLink>
+        {/* Reviews */}
+        <NavLink to="/superadmin/allreviews" onClick={handleLinkClick} className={navLinkClass}>
+          <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
+            <FaStar />
+          </span>
+          {isExpanded && <span className="ml-3 flex-1 font-bold text-left tracking-wide">Reviews</span>}
+        </NavLink>
 
-      {/* Settings */}
-      {/* <NavLink to="/superadmin/settings" onClick={handleLinkClick} className={navLinkClass}>
+        {/* Settings */}
+        {/* <NavLink to="/superadmin/settings" onClick={handleLinkClick} className={navLinkClass}>
         <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
           <FaCog />
         </span>
         {isExpanded && <span className="ml-3 flex-1 text-left tracking-wide">Settings</span>}
       </NavLink> */}
 
-      {/* Spacer to push back home to bottom if needed */}
-      <div className="flex-grow"></div>
+        {/* Spacer to push back home to bottom if needed */}
+        <div className="flex-grow"></div>
 
-      {/* Back Home */}
-     
+        {/* Back Home */}
+
       </div>
     </nav>
   );
