@@ -191,10 +191,10 @@ const AdminPanel = () => {
           {isSidebarOpen ? <FaChevronLeft size={12} /> : <FaChevronRight size={12} />}
         </button>
 
-        <div className="flex items-center bg-gray-900 justify-between px-4 py-3 border-b border-gray-800 relative">
+        <div className="flex items-center bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700 justify-between px-4 py-3 border-b border-purple-400/20 relative shadow-lg shadow-purple-500/20">
           <div className="flex items-center w-full gap-3 overflow-hidden">
             {/* Logo Image with a crisp background plate */}
-            <div className="bg-white p-1 rounded-xl shadow-md flex-shrink-0 flex items-center justify-center">
+            <div className="bg-white p-1 rounded-xl shadow-lg shadow-purple-400/30 flex-shrink-0 flex items-center justify-center">
               <img
                 src={logo}
                 alt="Admin Logo"
@@ -208,7 +208,7 @@ const AdminPanel = () => {
                 <span className="text-white font-extrabold text-[15px] leading-tight tracking-wide truncate">
                   Sri Saravana
                 </span>
-                <span className="text-primary/80 text-[11px] font-bold tracking-[0.15em] uppercase mt-0.5 truncate">
+                <span className="text-purple-200 text-[11px] font-bold tracking-[0.15em] uppercase mt-0.5 truncate">
                   Shoppings
                 </span>
               </div>
