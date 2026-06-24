@@ -46,7 +46,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {/* Section Header */}
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${open ? "bg-gradient-to-r from-purple-500 to-purple-300 text-white shadow-lg shadow-purple-400/50 border border-purple-300/30" : "text-gray-700 hover:bg-primary/10 hover:text-primary"
+        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${open ? "bg-gradient-to-r from-purple-500 to-purple-300 text-white shadow-lg shadow-purple-400/50 border border-purple-300/30" : "text-primary "
           } ${isExpanded ? "justify-start" : "justify-center"
           }`}
       >
@@ -78,7 +78,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                 className={({ isActive }) =>
                   `flex items-center gap-3 py-3 px-3 rounded-sm transition-all duration-300 ${isActive
                     ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg font-bold shadow-purple-400/50 border border-purple-300/30 translate-x-1"
-                    : "text-white hover:text-white hover:bg-purple-500/25 hover:translate-x-1"
+                    : "text-primary hover:text-primary hover:bg-purple-500/25 hover:translate-x-1"
                   }`
                 }
               >
