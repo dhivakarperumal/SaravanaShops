@@ -46,7 +46,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {/* Section Header */}
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${open ? "bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 text-white shadow-lg shadow-purple-500/25" : "text-white/80 hover:bg-white/10 hover:text-white"
+        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${open ? "bg-gradient-to-r from-purple-500 to-purple-300 text-white shadow-lg shadow-purple-400/50 border border-purple-300/30" : "text-white hover:bg-purple-500/25 hover:text-white"
           } ${isExpanded ? "justify-start" : "justify-center"
           }`}
       >
@@ -77,8 +77,8 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                 onClick={() => onLinkClick?.()}
                 className={({ isActive }) =>
                   `flex items-center gap-3 py-3 px-3 rounded-sm transition-all duration-300 ${isActive
-                    ? "bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 text-white font-bold shadow-lg shadow-purple-500/30 translate-x-1"
-                    : "text-white/80 font-bold hover:text-white hover:bg-white/10 hover:translate-x-1"
+                    ? "bg-gradient-to-r from-purple-500 to-purple-300 text-white font-bold shadow-lg shadow-purple-400/50 border border-purple-300/30 translate-x-1"
+                    : "text-white hover:text-white hover:bg-purple-500/25 hover:translate-x-1"
                   }`
                 }
               >
@@ -171,8 +171,8 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
   const navLinkClass = ({ isActive }) =>
     `flex items-center font-medium rounded-xl transition-all duration-300 group mb-2 ${
       isActive
-        ? "bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 text-white shadow-xl shadow-purple-500/30"
-        : "text-white/80 hover:bg-white/15 hover:text-white"
+        ? "bg-gradient-to-r from-purple-500 to-purple-300 text-white shadow-xl shadow-purple-400/50 border border-purple-300/30"
+        : "text-white hover:bg-purple-500/25 hover:text-white"
     } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
 
   return (
