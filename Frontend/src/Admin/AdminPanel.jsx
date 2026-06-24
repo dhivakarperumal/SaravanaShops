@@ -250,7 +250,7 @@ const AdminPanel = () => {
                 <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center text-xl">
                   <FaHome />
                 </span>
-                <span className="ml-2 flex-1 text-left">Back</span>
+                <span className="ml-2 flex-1 text-left">Back Home</span>
               </NavLink>
             )}
           </div>
