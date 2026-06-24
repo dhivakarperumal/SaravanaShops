@@ -306,21 +306,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
       <div className="flex-grow"></div>
 
       {/* Back Home */}
-      <NavLink
-        to="/"
-        onClick={handleLinkClick}
-        className={({ isActive }) =>
-          `flex items-center font-medium rounded-xl transition-all duration-300 group mt-auto ${isActive
-            ? "bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 text-white shadow-lg shadow-purple-500/30"
-            : "text-white/80 hover:bg-white/10 hover:text-white"
-          } ${isExpanded ? "px-3 py-2.5 mb-10 md:mb-3" : "p-3 justify-center mb-10 md:mb-3"}`
-        }
-      >
-        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
-          <FaHome />
-        </span>
-        {isExpanded && <span className="ml-3 flex-1 font-bold text-left tracking-wide">Back Home</span>}
-      </NavLink>
+     
       </div>
     </nav>
   );

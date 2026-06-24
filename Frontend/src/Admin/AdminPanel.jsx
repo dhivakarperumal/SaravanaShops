@@ -223,36 +223,36 @@ const AdminPanel = () => {
           </button>
         </div>
 
-        <div className="h-full flex flex-col">
+        <div className="flex flex-col h-[calc(100vh-70px)]">
           {/* Scrollable sidebar links */}
-          <div className="flex-1 overflow-y-auto sidebar-scroll">
+          <div className="flex-1 overflow-hidden">
             <Sidebar
               isSidebarOpen={isSidebarOpen}
               isSidebarHovered={isSidebarHovered}
               setIsSidebarHovered={setIsSidebarHovered}
               setMobileMenu={setMobileMenu}
             />
-          </div>
 
-          {/* Back Home always at bottom */}
-          <div className="mt-auto p-3">
-            {isSidebarOpen && (
-              <NavLink
-                to="/"
-                onClick={() => setMobileMenu(false)}
-                className={({ isActive }) =>
-                  `flex items-center rounded font-bold hidden md:inline-flex hover:bg-bgcolor transition duration-200 ${isActive
-                    ? "bg-bgcolor text-gray font-bold"
-                    : "text-textcolor hover:bg-bgcolor hover:text-textcolor"
-                  } p-3`
-                }
-              >
-                <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center text-xl">
-                  <FaHome />
-                </span>
-                <span className="ml-2 flex-1 text-left">Back</span>
-              </NavLink>
-            )}
+            {/* Back Home scrolls with links */}
+            <div className="p-3">
+              {isSidebarOpen && (
+                <NavLink
+                  to="/"
+                  onClick={() => setMobileMenu(false)}
+                  className={({ isActive }) =>
+                    `flex items-center rounded font-bold hidden md:inline-flex hover:bg-bgcolor transition duration-200 ${isActive
+                      ? "bg-bgcolor text-gray font-bold"
+                      : "text-textcolor hover:bg-bgcolor hover:text-textcolor"
+                    } p-3`
+                  }
+                >
+                  <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center text-xl">
+                    <FaHome />
+                  </span>
+                  <span className="ml-2 flex-1 text-left">Back</span>
+                </NavLink>
+              )}
+            </div>
           </div>
         </div>
       </aside>
