@@ -46,8 +46,8 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {/* Section Header */}
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${open ? "text-white" : "text-gray-400"
-          } hover:bg-gray-800 hover:text-white ${isExpanded ? "justify-start" : "justify-center"
+        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${open ? "bg-gradient-to-r from-rose-600 via-orange-500 to-amber-400 text-white shadow-lg shadow-rose-500/20" : "text-white/80 hover:bg-white/10 hover:text-white"
+          } ${isExpanded ? "justify-start" : "justify-center"
           }`}
       >
         <span className={`w-5 h-5 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110 ${open ? "text-white" : ""}`}>
@@ -66,7 +66,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
         <ul
           className={`text-sm space-y-1.5 mt-2 overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? "pl-8" : "pl-0"
             } ${!isExpanded
-              ? "absolute left-20 top-0 bg-gray-800 shadow-2xl rounded-xl w-52 z-50 border border-gray-700 py-2"
+              ? "absolute left-20 top-0 bg-gradient-to-b from-rose-700 via-orange-600 to-amber-500 shadow-2xl rounded-xl w-52 z-50 border border-white/10 py-2"
               : ""
             }`}
         >
@@ -77,8 +77,8 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                 onClick={() => onLinkClick?.()}
                 className={({ isActive }) =>
                   `flex items-center gap-3 py-3 px-3 rounded-sm transition-all duration-300 ${isActive
-                    ? "bg-black/40 text-white font-bold shadow-lg border border-white/10 translate-x-1"
-                    : "text-gray-400 font-bold hover:text-white hover:bg-gray-700 hover:translate-x-1"
+                    ? "bg-gradient-to-r from-rose-600 via-orange-500 to-amber-400 text-white font-bold shadow-lg shadow-rose-500/20 translate-x-1"
+                    : "text-white/80 font-bold hover:text-white hover:bg-white/10 hover:translate-x-1"
                   }`
                 }
               >
@@ -168,19 +168,20 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
     }
   };
 
-const navLinkClass = ({ isActive }) =>
-  `flex items-center font-medium rounded-xl transition-all duration-300 group mb-2 ${
-    isActive
-      ? "bg-black/40 backdrop-blur-md text-white shadow-lg border border-white/10"
-      : "text-white/80 hover:bg-white/10 hover:text-white"
-  } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
+  const navLinkClass = ({ isActive }) =>
+    `flex items-center font-medium rounded-xl transition-all duration-300 group mb-2 ${
+      isActive
+        ? "bg-gradient-to-r from-rose-600 via-orange-500 to-amber-400 text-white shadow-xl shadow-rose-500/20"
+        : "text-white/80 hover:bg-white/15 hover:text-white"
+    } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
 
   return (
     <nav
       className="
     relative overflow-hidden
     space-y-2 p-4 flex flex-col h-full
-    bg-gradient-to-b from-primary via-primary/90 to-primary/70
+    bg-gradient-to-b from-rose-600 via-orange-500 to-amber-400
+    text-white
     backdrop-blur-xl
     border-r border-white/20
     shadow-2xl
@@ -188,32 +189,40 @@ const navLinkClass = ({ isActive }) =>
     >
 
       <div className="absolute inset-0 pointer-events-none">
-  <div className="absolute -top-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-  <div className="absolute bottom-0 right-0 w-56 h-56 bg-white/10 rounded-full blur-3xl" />
-</div>
+        <div className="absolute -top-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-56 h-56 bg-white/10 rounded-full blur-3xl" />
+      </div>
 
-<div className="relative z-10 flex flex-col h-full"></div>
-      {/* ✅ Dashboard (exact match only) */}
-      <NavLink to="/superadmin" end onClick={handleLinkClick} className={navLinkClass}>
-        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
-          <AiFillDashboard />
-        </span>
-        {isExpanded && <span className="ml-3 font-bold flex-1 text-left tracking-wide">Dashboard</span>}
-      </NavLink>
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="mb-5 rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400 p-4 shadow-[0_20px_60px_-30px_rgba(251,113,133,0.75)]">
+          <div className="text-[11px] uppercase tracking-[0.35em] text-white/80 font-semibold">
+            Lorem Ipsum
+          </div>
+          <div className="mt-4 text-lg font-bold text-white">
+            Dashboard
+          </div>
+        </div>
 
-      {/* Orders */}
-      <SidebarSection
-        title="Orders"
-        icon={<FaListAlt />}
-        items={[
-          { name: "New Orders", path: "/superadmin/newOrders", showCount: true, count: todayOrdersCount, icon: <FaShoppingCart /> },
-          { name: "All Orders", path: "/superadmin/allOrders", icon: <FaClipboardList /> },
-          { name: "Delivered", path: "/superadmin/deliveryOrder", icon: <FaCheckCircle /> },
-          { name: "Cancelled", path: "/superadmin/cancleOrders", icon: <FaTimesCircle /> },
-        ]}
-        isExpanded={isExpanded}
-        onLinkClick={handleLinkClick}
-      />
+        <NavLink to="/superadmin" end onClick={handleLinkClick} className={navLinkClass}>
+          <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
+            <AiFillDashboard />
+          </span>
+          {isExpanded && <span className="ml-3 font-bold flex-1 text-left tracking-wide">Dashboard</span>}
+        </NavLink>
+
+        {/* Orders */}
+        <SidebarSection
+          title="Orders"
+          icon={<FaListAlt />}
+          items={[
+            { name: "New Orders", path: "/superadmin/newOrders", showCount: true, count: todayOrdersCount, icon: <FaShoppingCart /> },
+            { name: "All Orders", path: "/superadmin/allOrders", icon: <FaClipboardList /> },
+            { name: "Delivered", path: "/superadmin/deliveryOrder", icon: <FaCheckCircle /> },
+            { name: "Cancelled", path: "/superadmin/cancleOrders", icon: <FaTimesCircle /> },
+          ]}
+          isExpanded={isExpanded}
+          onLinkClick={handleLinkClick}
+        />
 
       {/* Products */}
       <SidebarSection
@@ -302,8 +311,8 @@ const navLinkClass = ({ isActive }) =>
         onClick={handleLinkClick}
         className={({ isActive }) =>
           `flex items-center font-medium rounded-xl transition-all duration-300 group mt-auto ${isActive
-            ? "bg-gray-800 text-white"
-            : "text-gray-400 hover:bg-gray-800 hover:text-white"
+            ? "bg-gradient-to-r from-rose-600 via-orange-500 to-amber-400 text-white shadow-lg shadow-rose-500/20"
+            : "text-white/80 hover:bg-white/10 hover:text-white"
           } ${isExpanded ? "px-3 py-2.5 mb-10 md:mb-3" : "p-3 justify-center mb-10 md:mb-3"}`
         }
       >
