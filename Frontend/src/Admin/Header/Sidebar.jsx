@@ -77,7 +77,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                 onClick={() => onLinkClick?.()}
                 className={({ isActive }) =>
                   `flex items-center gap-3 py-3 px-3 rounded-sm transition-all duration-300 ${isActive
-                    ? "bg-primary text-white font-bold shadow-md shadow-primary/30 translate-x-1"
+                    ? "bg-black/40 text-white font-bold shadow-lg border border-white/10 translate-x-1"
                     : "text-gray-400 font-bold hover:text-white hover:bg-gray-700 hover:translate-x-1"
                   }`
                 }
@@ -168,11 +168,12 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
     }
   };
 
-  const navLinkClass = ({ isActive }) =>
-    `flex items-center font-medium rounded-sm transition-all duration-300 group mb-2 ${isActive
-      ? "bg-primary text-white shadow-md shadow-primary/30"
-      : "text-gray-400 hover:bg-gray-800 hover:text-white"
-    } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
+const navLinkClass = ({ isActive }) =>
+  `flex items-center font-medium rounded-xl transition-all duration-300 group mb-2 ${
+    isActive
+      ? "bg-black/40 backdrop-blur-md text-white shadow-lg border border-white/10"
+      : "text-white/80 hover:bg-white/10 hover:text-white"
+  } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
 
   return (
     <nav
