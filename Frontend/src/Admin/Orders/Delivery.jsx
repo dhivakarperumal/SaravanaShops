@@ -20,15 +20,16 @@ const DATE_OPTIONS = [
 export default function Delivery() {
   const navigate = useNavigate();
 
-  const [orders, setOrders]                     = useState([]);
-  const [searchText, setSearchText]             = useState("");
-  const [dateFilter, setDateFilter]             = useState("All");
-  const [customFrom, setCustomFrom]             = useState("");
-  const [customTo, setCustomTo]                 = useState("");
-  const [viewMode, setViewMode]                 = useState("table");
+  const [orders, setOrders] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const [dateFilter, setDateFilter] = useState("All");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const [viewMode, setViewMode] = useState("table");
   const [showDateDropdown, setShowDateDropdown] = useState(false);
-  const [currentPage, setCurrentPage]           = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 20;
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // Fetch delivered orders
   useEffect(() => {
@@ -50,6 +51,24 @@ export default function Delivery() {
     })();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+
+      setIsMobile(mobile);
+
+      if (mobile) {
+        setViewMode("card");
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const parseDate = (o) => new Date(o.createdAt || o.date || null);
 
   const matchesDate = (o) => {
@@ -64,13 +83,13 @@ export default function Delivery() {
         return d.toDateString() === y.toDateString();
       }
       case "ThisWeek": {
-        const s = new Date(now); s.setDate(now.getDate() - now.getDay()); s.setHours(0,0,0,0);
-        const e = new Date(s); e.setDate(s.getDate() + 6); e.setHours(23,59,59,999);
+        const s = new Date(now); s.setDate(now.getDate() - now.getDay()); s.setHours(0, 0, 0, 0);
+        const e = new Date(s); e.setDate(s.getDate() + 6); e.setHours(23, 59, 59, 999);
         return d >= s && d <= e;
       }
       case "LastWeek": {
-        const s = new Date(now); s.setDate(now.getDate() - now.getDay() - 7); s.setHours(0,0,0,0);
-        const e = new Date(s); e.setDate(s.getDate() + 6); e.setHours(23,59,59,999);
+        const s = new Date(now); s.setDate(now.getDate() - now.getDay() - 7); s.setHours(0, 0, 0, 0);
+        const e = new Date(s); e.setDate(s.getDate() + 6); e.setHours(23, 59, 59, 999);
         return d >= s && d <= e;
       }
       case "ThisMonth":
@@ -81,8 +100,8 @@ export default function Delivery() {
       }
       case "Custom": {
         if (!customFrom || !customTo) return true;
-        const from = new Date(customFrom); from.setHours(0,0,0,0);
-        const to   = new Date(customTo);   to.setHours(23,59,59,999);
+        const from = new Date(customFrom); from.setHours(0, 0, 0, 0);
+        const to = new Date(customTo); to.setHours(23, 59, 59, 999);
         return d >= from && d <= to;
       }
       default: return true;
@@ -100,7 +119,7 @@ export default function Delivery() {
     });
   }, [orders, searchText, dateFilter, customFrom, customTo]);
 
-  const totalPages    = Math.ceil(filteredOrders.length / ordersPerPage);
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const currentOrders = filteredOrders.slice((currentPage - 1) * ordersPerPage, currentPage * ordersPerPage);
 
   // Print
@@ -165,7 +184,7 @@ export default function Delivery() {
     </div>`;
 
     const iframe = document.createElement("iframe");
-    Object.assign(iframe.style, { position:"fixed", right:"0", bottom:"0", width:"0", height:"0", border:"0", visibility:"hidden" });
+    Object.assign(iframe.style, { position: "fixed", right: "0", bottom: "0", width: "0", height: "0", border: "0", visibility: "hidden" });
     document.body.appendChild(iframe);
     const doc = iframe.contentWindow?.document || iframe.contentDocument;
     doc.open(); doc.write(html); doc.close();
@@ -238,23 +257,25 @@ export default function Delivery() {
             </div>
           )}
 
-          <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
-            <button onClick={() => setViewMode("card")} title="Card View"
-              className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}>
-              <FaTh className="text-sm" />
-            </button>
-            <button onClick={() => setViewMode("table")} title="Table View"
-              className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}>
-              <FaList className="text-sm" />
-            </button>
-          </div>
+          {!isMobile && (
+            <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+              <button onClick={() => setViewMode("card")} title="Card View"
+                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}>
+                <FaTh className="text-sm" />
+              </button>
+              <button onClick={() => setViewMode("table")} title="Table View"
+                className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}>
+                <FaList className="text-sm" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {showDateDropdown && <div className="fixed inset-0 z-40" onClick={() => setShowDateDropdown(false)} />}
 
       {/* ── TABLE VIEW ─────────────────────────────── */}
-      {viewMode === "table" && (
+      {!isMobile && viewMode === "table" && (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
@@ -288,7 +309,7 @@ export default function Delivery() {
                     </td>
                     <td className="px-4 py-3 text-gray-700 text-sm">{order.shipping?.name || "—"}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
-                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" }) : "—"}
+                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                     </td>
                     <td className="px-4 py-3 text-gray-600 text-sm">{order.ordertype || "—"}</td>
                     <td className="px-4 py-3 font-semibold text-emerald-600 text-sm">₹{Number(order.total || 0).toLocaleString("en-IN")}</td>
@@ -313,7 +334,7 @@ export default function Delivery() {
       )}
 
       {/* ── CARD VIEW ─────────────────────────────── */}
-      {viewMode === "card" && (
+      {(isMobile || viewMode === "card") && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {currentOrders.length === 0 ? (
             <div className="col-span-full py-16 text-center text-gray-400">
@@ -327,7 +348,7 @@ export default function Delivery() {
                   <button onClick={() => navigate(`/superadmin/orders/${order.docId}`)}
                     className="text-primary font-bold text-sm hover:underline">{order.orderId}</button>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" }) : "—"}
+                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                   </p>
                 </div>
                 <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium bg-emerald-100 text-emerald-700 border border-emerald-300">

@@ -10,10 +10,11 @@ export default function StockDetails() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
-  
+
   // New States
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("table");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(12);
@@ -36,7 +37,7 @@ export default function StockDetails() {
 
   const getImg = (p) =>
     p?.images?.[0] || p?.image?.[0] || p?.image ||
-    (p?.colors && Object.values(p.colors)?.[0]?.images?.[0]) || 
+    (p?.colors && Object.values(p.colors)?.[0]?.images?.[0]) ||
     (p?.colors && Object.values(p.colors)?.[0]?.image) || "/placeholder.jpg";
 
   useEffect(() => {
@@ -57,11 +58,29 @@ export default function StockDetails() {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+
+      setIsMobile(mobile);
+
+      if (mobile) {
+        setViewMode("card");
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // Filter & Search logic
   const displayed = products.filter((p) => {
-    if (searchQuery && 
-        !p.name?.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !p.productId?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery &&
+      !p.name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !p.productId?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (filters.category && p.productType !== filters.category && p.category !== filters.category) return false;
     return true;
   });
@@ -87,13 +106,13 @@ export default function StockDetails() {
   if (loading) return <div className="p-10 text-center">Loading stock...</div>;
 
   return (
-    <div className="max-w-7xl mx-auto mt-2 p-10 sm:p-6  ">
-      
+    <div className="max-w-7xl mx-auto mt-2 px-3 py-4 sm:px-6">
 
-     
+
+
       <div className="flex flex-wrap items-center gap-3 mb-6 bg-white shadow-sm rounded-2xl px-4 py-3 border border-gray-100">
         {/* Search */}
-        <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm bg-white border border-gray-200 rounded-xl px-3 py-2 focus-within:border-primary transition-all">
+        <div className="flex items-center gap-2 flex-1 min-w-0 w-full sm:max-w-sm bg-white border border-gray-200 rounded-xl px-3 py-2 focus-within:border-primary transition-all">
           <FaSearch className="text-gray-400 text-sm flex-shrink-0" />
           <input
             type="text"
@@ -111,14 +130,13 @@ export default function StockDetails() {
           {displayed.length} item{displayed.length !== 1 ? "s" : ""}
         </span>
 
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto flex-wrap justify-end">
           {/* Filters toggle */}
           <div className="relative">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold border transition-all cursor-pointer ${
-                showFilters ? "bg-primary text-white border-primary" : "bg-white text-gray-600 border-gray-200 hover:border-primary"
-              }`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold border transition-all cursor-pointer ${showFilters ? "bg-primary text-white border-primary" : "bg-white text-gray-600 border-gray-200 hover:border-primary"
+                }`}
             >
               <FaFilter className="text-xs" />
               <span className="hidden sm:inline">Filter</span>
@@ -126,21 +144,21 @@ export default function StockDetails() {
                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">1</span>
               )}
             </button>
-            
+
             {showFilters && (
               <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 p-4 z-50">
                 <div className="flex justify-between items-center mb-3">
                   <h4 className="font-bold text-sm">Categories</h4>
-                  <button onClick={() => { setFilters({category:""}); setCurrentPage(1); }} className="text-xs text-red-500 hover:underline cursor-pointer">Clear</button>
+                  <button onClick={() => { setFilters({ category: "" }); setCurrentPage(1); }} className="text-xs text-red-500 hover:underline cursor-pointer">Clear</button>
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="cat" checked={!filters.category} onChange={() => {setFilters({category:""}); setCurrentPage(1);}} className="accent-primary"/>
+                    <input type="radio" name="cat" checked={!filters.category} onChange={() => { setFilters({ category: "" }); setCurrentPage(1); }} className="accent-primary" />
                     <span className="text-sm text-gray-700">All</span>
                   </label>
                   {categories.map(c => (
                     <label key={c} className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="cat" checked={filters.category === c} onChange={() => {setFilters({category:c}); setCurrentPage(1);}} className="accent-primary"/>
+                      <input type="radio" name="cat" checked={filters.category === c} onChange={() => { setFilters({ category: c }); setCurrentPage(1); }} className="accent-primary" />
                       <span className="text-sm text-gray-700">{c}</span>
                     </label>
                   ))}
@@ -150,6 +168,7 @@ export default function StockDetails() {
           </div>
 
           {/* View Mode */}
+          {!isMobile && (
           <div className="flex items-center bg-gray-200 rounded-xl p-1">
             <button onClick={() => setViewMode("card")} className={`p-1.5 sm:p-2 rounded-lg transition-all cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-500"}`}>
               <FaTh />
@@ -158,6 +177,7 @@ export default function StockDetails() {
               <FaList />
             </button>
           </div>
+          )}  
 
            <button
           className="bg-primary cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-primary/90 shadow whitespace-nowrap"
@@ -173,7 +193,7 @@ export default function StockDetails() {
         <div className="text-center py-20 text-gray-400">
           <p className="text-lg">No stock details found.</p>
         </div>
-      ) : viewMode === "table" ? (
+      ) : !isMobile && viewMode === "table" ? (
         /* TABLE MODE */
         <div className="bg-white shadow rounded-lg overflow-x-auto border border-gray-100">
           <table className="min-w-full text-sm text-left">
@@ -217,7 +237,7 @@ export default function StockDetails() {
                         </button>
                       </td>
                     </tr>
-                    
+
                     {/* Expanded row nested logic */}
                     {expandedId === p.productId && (
                       <tr className="bg-gray-50/50">
@@ -232,7 +252,7 @@ export default function StockDetails() {
                                   <tr key={c.color} className="border-t border-gray-100 text-center">
                                     <td className="px-3 py-3">
                                       <div className="flex items-center justify-center gap-2">
-                                        <div className="w-4 h-4 rounded-full shadow-sm border border-gray-200" style={{backgroundColor: c.color}} title={c.color}></div>
+                                        <div className="w-4 h-4 rounded-full shadow-sm border border-gray-200" style={{ backgroundColor: c.color }} title={c.color}></div>
                                         <span className="font-medium">{c.color}</span>
                                       </div>
                                     </td>
@@ -271,12 +291,12 @@ export default function StockDetails() {
             </tbody>
           </table>
         </div>
-      ) : (
+      ) : (isMobile || viewMode === "card") && (
         /* CARD MODE */
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {currentItems.map(p => (
             <div key={p.productId} className="border border-gray-100 rounded-2xl shadow-sm bg-white overflow-hidden hover:shadow-md transition-shadow">
-              <div className="h-40 bg-gray-50 relative">
+              <div className="h-44 sm:h-40 bg-gray-50 relative">
                 <img src={getImg(p)} alt="product" className="w-full h-full object-cover" />
                 <div className="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-primary shadow-sm">
                   Stock: {calculateTotalStock(p)}
@@ -286,15 +306,15 @@ export default function StockDetails() {
                 <div className="text-xs text-gray-500 mb-1">{p.productId}</div>
                 <h3 className="font-semibold text-gray-800 text-sm truncate mb-1">{p.name}</h3>
                 <div className="text-xs bg-gray-100 text-gray-600 inline-block px-2 py-0.5 rounded mb-3">{p.productType || p.category}</div>
-                
-                <button 
+
+                <button
                   onClick={() => setExpandedId(expandedId === p.productId ? null : p.productId)}
                   className="w-full py-1.5 text-xs font-semibold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
                 >
                   {expandedId === p.productId ? "Hide Details" : "View Breakdown"}
                 </button>
 
-                <button 
+                <button
                   onClick={(e) => { e.stopPropagation(); navigate(`/superadmin/stocks/${p.productId}`); }}
                   className="w-full py-1.5 mt-2 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                 >
@@ -307,7 +327,7 @@ export default function StockDetails() {
                     {p.productType === "Bangles" && p.count === "SingleColor" && p.colors?.map(c => (
                       <div key={c.color} className="bg-gray-50 p-2 rounded text-xs">
                         <div className="flex items-center gap-1.5 font-semibold mb-1">
-                          <div className="w-3 h-3 rounded-full border border-gray-300" style={{backgroundColor: c.color}}></div>
+                          <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: c.color }}></div>
                           <span>{c.color}</span>
                           <span className="ml-auto text-primary">Total: {calculateColorStock(c)}</span>
                         </div>
@@ -347,7 +367,7 @@ export default function StockDetails() {
           >
             <MdOutlineArrowBackIosNew className="text-xs" />
           </button>
-          
+
           {getPageNumbers().map((page, i) =>
             page === "…" ? (
               <span key={`ell-${i}`} className="text-gray-400">…</span>
@@ -355,9 +375,8 @@ export default function StockDetails() {
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`w-8 h-8 rounded-lg text-sm font-semibold border cursor-pointer transition-colors ${
-                  currentPage === page ? "bg-primary text-white border-primary" : "bg-white text-gray-600 border-gray-200 hover:border-primary"
-                }`}
+                className={`w-8 h-8 rounded-lg text-sm font-semibold border cursor-pointer transition-colors ${currentPage === page ? "bg-primary text-white border-primary" : "bg-white text-gray-600 border-gray-200 hover:border-primary"
+                  }`}
               >
                 {page}
               </button>

@@ -20,17 +20,17 @@ const DATE_OPTIONS = [
 const STATUS_ORDER = ["Placed", "Packing", "Shipped", "Delivered", "Cancelled"];
 
 const STATUS_STYLES = {
-  Placed:    "bg-amber-100 text-amber-700 border border-amber-300",
-  Packing:   "bg-blue-100 text-blue-700 border border-blue-300",
-  Shipped:   "bg-purple-100 text-purple-700 border border-purple-300",
+  Placed: "bg-amber-100 text-amber-700 border border-amber-300",
+  Packing: "bg-blue-100 text-blue-700 border border-blue-300",
+  Shipped: "bg-purple-100 text-purple-700 border border-purple-300",
   Delivered: "bg-emerald-100 text-emerald-700 border border-emerald-300",
   Cancelled: "bg-red-100 text-red-700 border border-red-300",
 };
 
 const STATUS_DOT = {
-  Placed:    "bg-amber-500",
-  Packing:   "bg-blue-500",
-  Shipped:   "bg-purple-500",
+  Placed: "bg-amber-500",
+  Packing: "bg-blue-500",
+  Shipped: "bg-purple-500",
   Delivered: "bg-emerald-500",
   Cancelled: "bg-red-500",
 };
@@ -40,22 +40,23 @@ const safeIndex = (arr, val) => Array.isArray(arr) ? arr.indexOf(val) : -1;
 export default function NewOrders() {
   const navigate = useNavigate();
 
-  const [orders, setOrders]                     = useState([]);
-  const [searchText, setSearchText]             = useState("");
-  const [dateFilter, setDateFilter]             = useState("Today");
-  const [customFrom, setCustomFrom]             = useState("");
-  const [customTo, setCustomTo]                 = useState("");
-  const [viewMode, setViewMode]                 = useState("table");
+  const [orders, setOrders] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const [dateFilter, setDateFilter] = useState("Today");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const [viewMode, setViewMode] = useState("table");
   const [showDateDropdown, setShowDateDropdown] = useState(false);
-  const [currentPage, setCurrentPage]           = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
   // Status update states
-  const [cancelReason, setCancelReason]   = useState("");
+  const [cancelReason, setCancelReason] = useState("");
   const [showCancelInput, setShowCancelInput] = useState(null);
   const [showDocketInput, setShowDocketInput] = useState(null);
-  const [docketNumber, setDocketNumber]   = useState("");
-  const [qname, setQname]                 = useState("");
+  const [docketNumber, setDocketNumber] = useState("");
+  const [qname, setQname] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // Fetch orders — only active (not Delivered / Cancelled)
   useEffect(() => {
@@ -77,6 +78,24 @@ export default function NewOrders() {
     })();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+
+      setIsMobile(mobile);
+
+      if (mobile) {
+        setViewMode("card");
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // Date helpers
   const parseDate = (o) => new Date(o.createdAt || o.date || null);
 
@@ -93,13 +112,13 @@ export default function NewOrders() {
         return d.toDateString() === y.toDateString();
       }
       case "ThisWeek": {
-        const start = new Date(now); start.setDate(now.getDate() - now.getDay()); start.setHours(0,0,0,0);
-        const end   = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999);
+        const start = new Date(now); start.setDate(now.getDate() - now.getDay()); start.setHours(0, 0, 0, 0);
+        const end = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23, 59, 59, 999);
         return d >= start && d <= end;
       }
       case "LastWeek": {
-        const start = new Date(now); start.setDate(now.getDate() - now.getDay() - 7); start.setHours(0,0,0,0);
-        const end   = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999);
+        const start = new Date(now); start.setDate(now.getDate() - now.getDay() - 7); start.setHours(0, 0, 0, 0);
+        const end = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23, 59, 59, 999);
         return d >= start && d <= end;
       }
       case "ThisMonth":
@@ -110,8 +129,8 @@ export default function NewOrders() {
       }
       case "Custom": {
         if (!customFrom || !customTo) return true;
-        const from = new Date(customFrom); from.setHours(0,0,0,0);
-        const to   = new Date(customTo);   to.setHours(23,59,59,999);
+        const from = new Date(customFrom); from.setHours(0, 0, 0, 0);
+        const to = new Date(customTo); to.setHours(23, 59, 59, 999);
         return d >= from && d <= to;
       }
       default: return true;
@@ -130,14 +149,14 @@ export default function NewOrders() {
   }, [orders, searchText, dateFilter, customFrom, customTo]);
 
   // Pagination
-  const totalPages    = Math.ceil(filteredOrders.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
   const currentOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Status update
   const handleStatusUpdate = async (order, newStatus) => {
     if (!order) return;
     if (newStatus === "Cancelled") { setShowCancelInput(order.docId); setShowDocketInput(null); return; }
-    if (newStatus === "Shipped")   { setShowDocketInput(order.docId); setShowCancelInput(null); return; }
+    if (newStatus === "Shipped") { setShowDocketInput(order.docId); setShowCancelInput(null); return; }
     try {
       const now = new Date().toISOString();
       await api.put(`/orders/${order.docId}/status`, { status: newStatus, statusUpdatedAt: now });
@@ -328,22 +347,31 @@ export default function NewOrders() {
           )}
 
           {/* View mode toggle */}
-          <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
-            <button
-              onClick={() => setViewMode("card")}
-              title="Card View"
-              className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
-            >
-              <FaTh className="text-sm" />
-            </button>
-            <button
-              onClick={() => setViewMode("table")}
-              title="Table View"
-              className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
-            >
-              <FaList className="text-sm" />
-            </button>
-          </div>
+          {!isMobile && (
+            <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+              <button
+                onClick={() => setViewMode("card")}
+                title="Card View"
+                className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "card"
+                    ? "bg-white shadow text-primary"
+                    : "text-gray-400 hover:text-gray-600"
+                  }`}
+              >
+                <FaTh className="text-sm" />
+              </button>
+
+              <button
+                onClick={() => setViewMode("table")}
+                title="Table View"
+                className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "table"
+                    ? "bg-white shadow text-primary"
+                    : "text-gray-400 hover:text-gray-600"
+                  }`}
+              >
+                <FaList className="text-sm" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -353,7 +381,7 @@ export default function NewOrders() {
       )}
 
       {/* ── TABLE VIEW ────────────────────────────────── */}
-      {viewMode === "table" && (
+      {!isMobile && viewMode === "table" && (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
@@ -447,7 +475,7 @@ export default function NewOrders() {
       )}
 
       {/* ── CARD VIEW ─────────────────────────────────── */}
-      {viewMode === "card" && (
+      {(isMobile || viewMode === "card") && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {currentOrders.length === 0 ? (
             <div className="col-span-full py-16 text-center text-gray-400">

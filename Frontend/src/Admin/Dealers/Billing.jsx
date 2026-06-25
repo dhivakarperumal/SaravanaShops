@@ -15,6 +15,7 @@ const Billing = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("card");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showDateDropdown, setShowDateDropdown] = useState(false);
 
   const [dateFilter, setDateFilter] = useState("All");
@@ -29,7 +30,7 @@ const Billing = () => {
     setCurrentPage(1);
   }, [searchQuery, dateFilter, customStartDate, customEndDate]);
 
-  
+
 
   // Fetch delivered orders
   useEffect(() => {
@@ -51,9 +52,27 @@ const Billing = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+
+      setIsMobile(mobile);
+
+      if (mobile) {
+        setViewMode("card");
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const displayed = orders.filter((order) => {
     const q = searchQuery.toLowerCase();
-    const matchesSearch = 
+    const matchesSearch =
       order.orderId?.toLowerCase().includes(q) ||
       order.shipping?.name?.toLowerCase().includes(q) ||
       order.shipping?.phone?.toLowerCase().includes(q) ||
@@ -64,17 +83,17 @@ const Billing = () => {
 
     if (dateFilter === "All") return true;
     if (!order.createdAt && !order.date) return false;
-    
+
     const orderDate = new Date(order.createdAt || order.date);
-    orderDate.setHours(0,0,0,0);
-    
+    orderDate.setHours(0, 0, 0, 0);
+
     const today = new Date();
-    today.setHours(0,0,0,0);
-    
+    today.setHours(0, 0, 0, 0);
+
     if (dateFilter === "Today") {
       return orderDate.getTime() === today.getTime();
     }
-    
+
     const getStartOfWeek = (d) => {
       const date = new Date(d);
       const day = date.getDay();
@@ -86,18 +105,18 @@ const Billing = () => {
       const startOfWeek = getStartOfWeek(today);
       return orderDate >= startOfWeek;
     }
-    
+
     if (dateFilter === "Last Week") {
       const startOfThisWeek = getStartOfWeek(today);
       const startOfLastWeek = new Date(startOfThisWeek);
       startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
       return orderDate >= startOfLastWeek && orderDate < startOfThisWeek;
     }
-    
+
     if (dateFilter === "This Month") {
       return orderDate.getMonth() === today.getMonth() && orderDate.getFullYear() === today.getFullYear();
     }
-    
+
     if (dateFilter === "Last Month") {
       let lastMonth = today.getMonth() - 1;
       let year = today.getFullYear();
@@ -107,13 +126,13 @@ const Billing = () => {
       }
       return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === year;
     }
-    
+
     if (dateFilter === "Custom Range") {
       if (!customStartDate || !customEndDate) return true;
       const start = new Date(customStartDate);
-      start.setHours(0,0,0,0);
+      start.setHours(0, 0, 0, 0);
       const end = new Date(customEndDate);
-      end.setHours(23,59,59,999);
+      end.setHours(23, 59, 59, 999);
       return orderDate >= start && orderDate <= end;
     }
 
@@ -127,7 +146,7 @@ const Billing = () => {
   );
 
   return (
-    <div className="p-8">
+    <div className="px-3 py-4 sm:px-6">
       <div className="flex flex-wrap items-center gap-3 mb-6 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100">
 
         <div className="flex items-center gap-2 flex-1 max-w-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
@@ -141,11 +160,11 @@ const Billing = () => {
           />
         </div>
 
-        <div className="flex items-center gap-3 ml-auto">
-          
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:ml-auto">
+
 
           <div className="relative">
-            <div 
+            <div
               onClick={() => setShowDateDropdown(!showDateDropdown)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:bg-gray-50 transition-all select-none"
             >
@@ -158,8 +177,8 @@ const Billing = () => {
 
             {showDateDropdown && (
               <>
-                <div 
-                  className="fixed inset-0 z-40" 
+                <div
+                  className="fixed inset-0 z-40"
                   onClick={() => setShowDateDropdown(false)}
                 ></div>
                 <div className="absolute top-full mt-2 right-0 w-48 bg-white border border-gray-100 rounded-xl shadow-xl z-50 py-2 animate-fade-in-down overflow-hidden">
@@ -170,11 +189,10 @@ const Billing = () => {
                         setDateFilter(option);
                         setShowDateDropdown(false);
                       }}
-                      className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${
-                        dateFilter === option 
-                          ? "bg-primary/10 text-primary font-semibold" 
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
+                      className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${dateFilter === option
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        }`}
                     >
                       {option === "All" ? "All Dates" : option === "Custom Range" ? "Custom" : option}
                     </div>
@@ -184,25 +202,27 @@ const Billing = () => {
             )}
           </div>
 
-          <div className="flex items-center bg-gray-100 rounded-xl p-1">
-            <button
-              onClick={() => setViewMode("card")}
-              className={`p-2 rounded-lg cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : ""}`}
-            >
-              <FaTh />
-            </button>
+          {!isMobile && (
+            <div className="flex items-center bg-gray-100 rounded-xl p-1">
+              <button
+                onClick={() => setViewMode("card")}
+                className={`p-2 rounded-lg cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : ""}`}
+              >
+                <FaTh />
+              </button>
 
-            <button
-              onClick={() => setViewMode("table")}
-              className={`p-2 rounded-lg cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : ""}`}
-            >
-              <FaList />
-            </button>
-          </div>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`p-2 rounded-lg cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : ""}`}
+              >
+                <FaList />
+              </button>
+            </div>
+          )}
 
           <button
             onClick={() => navigate("/superadmin/addbilling")}
-            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl cursor-pointer"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto bg-primary text-white px-4 py-2 rounded-xl cursor-pointer"
           >
             <FaPlus />
             Add Bill
@@ -214,8 +234,8 @@ const Billing = () => {
         <div className="mb-6 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-wrap gap-4 items-end animate-fade-in-down">
           <div className="flex flex-col gap-1">
             <label className="text-sm text-gray-500 font-medium">Start Date</label>
-            <input 
-              type="date" 
+            <input
+              type="date"
               value={customStartDate}
               onChange={(e) => setCustomStartDate(e.target.value)}
               className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-primary"
@@ -223,8 +243,8 @@ const Billing = () => {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-sm text-gray-500 font-medium">End Date</label>
-            <input 
-              type="date" 
+            <input
+              type="date"
               value={customEndDate}
               onChange={(e) => setCustomEndDate(e.target.value)}
               className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-primary"
@@ -233,7 +253,7 @@ const Billing = () => {
         </div>
       )}
 
-      {viewMode === "card" && (
+      {isMobile ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {paginatedDisplayed.map((order) => (
             <div
@@ -298,13 +318,81 @@ const Billing = () => {
                 </div>
 
               </div>
-            </div> 
-          ))} 
+            </div>
+          ))}
+        </div>
+      ) : viewMode === "card" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {paginatedDisplayed.map((order) => (
+            <div
+              key={order.id}
+              className="group bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+            >
+              <div className="bg-gradient-to-r from-primary to-secondary p-4 text-white">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-xs opacity-80">Order ID</p>
+                    <h3 className="font-bold text-lg">
+                      {order.orderId}
+                    </h3>
+                  </div>
+
+                  <span className="px-3 py-1 bg-white/20 backdrop-blur rounded-full text-xs font-semibold">
+                    {order.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-5">
+                <div className="space-y-3">
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Customer</span>
+                    <span className="font-semibold">
+                      {order.shipping?.name || order.customerName || order.name || "-"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Mobile</span>
+                    <span className="font-medium">
+                      {order.shipping?.phone || order.mobile || "-"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Items</span>
+                    <span className="font-medium">
+                      {order.items?.length || 0}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Amount</span>
+                    <span className="font-bold text-primary text-lg">
+                      ₹{order.total || order.totalAmount || 0}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Date</span>
+                    <span>
+                      {order.createdAt
+                        ? new Date(order.createdAt).toLocaleDateString()
+                        : "-"}
+                    </span>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {viewMode === "table" && (
-         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      {!isMobile && viewMode === "table" && (
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead className="bg-primary text-white">
@@ -374,11 +462,11 @@ const Billing = () => {
           >
             Previous
           </button>
-          
+
           <span className="text-gray-600 font-medium px-4">
             Page {currentPage} of {totalPages}
           </span>
-          
+
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
