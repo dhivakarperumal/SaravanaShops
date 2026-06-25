@@ -784,16 +784,16 @@ export default function AddProducts() {
 
                   {/* Desktop Table */}
                   <div className="hidden lg:block bg-white shadow rounded-2xl overflow-x-auto">
-                    <table className="min-w-full table-fixed text-sm rounded-lg overflow-hidden">
+                        <table className="min-w-full table-auto text-sm rounded-lg overflow-hidden">
                       <thead className="bg-primary text-white">
                         <tr>
-                          <th className="px-3 py-4 w-24">Color</th>
-                          <th className="px-3 py-4 w-48">Product Name</th>
-                          <th className="px-3 py-4 w-56">Sizes</th>
+                            <th className="px-3 py-4">Color</th>
+                            <th className="px-3 py-4">Product Name</th>
+                            <th className="px-3 py-4">Sizes</th>
 
-                          <th className="px-3 py-4 w-40">Image</th>
+                          <th className="px-3 py-4">Image</th>
 
-                          <th className="px-3 py-4 w-20">Action</th>
+                          <th className="px-3 py-4">Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -881,7 +881,7 @@ export default function AddProducts() {
                                     <img
                                       src={img}
                                       alt="bangle"
-                                      className="w-16 h-16 object-cover rounded"
+                                      className="w-16 sm:w-20 md:w-24 h-auto max-h-24 object-cover rounded"
                                     />
                                     <button
                                       type="button"
@@ -940,6 +940,7 @@ export default function AddProducts() {
                               )
                             }
                             className="w-16 h-8 border rounded"
+                             className="border border-gray-300 p-1 min-w-[56px]"
                           />
                         </div>
 
@@ -987,7 +988,7 @@ export default function AddProducts() {
                                 onChange={(e) =>
                                   handleBangleStockChange(row.id, s, e.target.value)
                                 }
-                                className="border p-1 w-16"
+                                className="border p-1 min-w-[56px]"
                               />
                             ))}
                           </div>
@@ -996,29 +997,30 @@ export default function AddProducts() {
                         <div>
                           <span className="font-semibold">Image:</span>
                           <input
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            onChange={async (e) => {
-                              const files = Array.from(e.target.files);
-                              if (!files.length) return;
-                              const urls = await Promise.all(files.map(f => compressAndUpload(f)));
-                              setBanglesColorTable((prev) =>
-                                prev.map((r) =>
-                                  r.id === row.id ? { ...r, images: [...(r.images || []), ...urls] } : r
-                                )
-                              );
-                            }}
+                                  <input
+                                    type="color"
+                                    value={row.color || "#ffffff"}
+                                    onChange={(e) =>
+                                      setBanglesColorTable((prev) =>
+                                        prev.map((r) =>
+                                          r.id === row.id
+                                            ? { ...r, color: e.target.value }
+                                            : r
+                                        )
+                                      )
+                                    }
+                                    className="w-12 sm:w-16 h-8 border rounded"
+                                  />
                             className="mt-1"
                           />
                           <div className="flex flex-wrap gap-2 mt-2">
                             {row.images && row.images.map((img, idx) => (
                               <div key={idx} className="relative group">
-                                <img
-                                  src={img}
-                                  alt="bangle"
-                                  className="w-24 h-24 object-cover rounded"
-                                />
+                                    <img
+                                      src={img}
+                                      alt="bangle"
+                                      className="w-24 sm:w-28 md:w-32 h-auto object-cover rounded max-w-full"
+                                    />
                                 <button
                                   type="button"
                                   onClick={() => setBanglesColorTable((prev) =>
@@ -1082,7 +1084,7 @@ export default function AddProducts() {
                           <img
                             src={img}
                             alt="bangle"
-                            className="w-24 h-24 object-cover"
+                            className="w-24 sm:w-28 md:w-32 h-auto object-cover max-w-full"
                           />
                           <button
                             type="button"
