@@ -542,9 +542,9 @@ export default function AddProducts() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50 px-3 py-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="max-w-6xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">
             {productId ? "Edit Product" : "Add New Product"}
@@ -682,7 +682,7 @@ export default function AddProducts() {
               </h2>
             </div> */}
 
-            <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
                   MRP (₹) <span className="text-red-500">*</span>
@@ -783,7 +783,7 @@ export default function AddProducts() {
                   </h3>
 
                   {/* Desktop Table */}
-                  <div className="hidden sm:block bg-white shadow rounded-2xl overflow-x-auto">
+                  <div className="hidden md:block bg-white shadow rounded-2xl overflow-x-auto">
                     <table className="min-w-full table-fixed text-sm rounded-lg overflow-hidden">
                       <thead className="bg-primary text-white">
                         <tr>
@@ -919,7 +919,7 @@ export default function AddProducts() {
                   </div>
 
                   {/* Mobile Cards */}
-                  <div className="md:hidden flex flex-col gap-2">
+                  <div className="sm:hidden flex flex-col gap-4">
                     {banglesColorTable.map((row) => (
                       <div
                         key={row.id}
@@ -1064,7 +1064,7 @@ export default function AddProducts() {
 
               {/* Multi Color */}
               {banglesCountType === "MultiColor" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                   <div>
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
                       Upload Images
@@ -1120,7 +1120,7 @@ export default function AddProducts() {
             <div className="bg-primary border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
               <h2 className="text-base font-bold text-white">Saree Specifics</h2>
             </div>
-            <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Fabric Type</label>
                 <input
@@ -1201,7 +1201,7 @@ export default function AddProducts() {
                     + Add Item
                   </button>
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {jewelListItems.map((item, idx) => (
                     <div key={idx} className="flex gap-2 items-center">
                       <input
@@ -1231,7 +1231,7 @@ export default function AddProducts() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Upload Images</label>
                   <input
@@ -1273,17 +1273,17 @@ export default function AddProducts() {
         )}
 
         {/* Submit Section */}
-        <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6">
           <button
             onClick={() => navigate("/superadmin/allproducts")}
-            className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all cursor-pointer"
+            className="w-full md:w-auto px-6 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full sm:w-auto px-10 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-bold shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full md:w-auto px-10 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-bold shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? "Saving..." : "Save Product"}
           </button>

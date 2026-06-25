@@ -9,13 +9,14 @@ import {
 import { MdOutlineArrowBackIosNew, MdOutlineArrowForwardIos } from "react-icons/md";
 
 export default function ProductList() {
-  const [products, setProducts]       = useState([]);
+  const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode]       = useState("card");
+  const [viewMode, setViewMode] = useState("card");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewProduct, setViewProduct] = useState(null);
-  const [productsPerPage]             = useState(10);
+  const [productsPerPage] = useState(10);
   const navigate = useNavigate();
 
   const [filters, setFilters] = useState({
@@ -50,21 +51,39 @@ export default function ProductList() {
     return () => { document.body.style.overflow = ""; };
   }, [showFilters]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+
+      setIsMobile(mobile);
+
+      if (mobile) {
+        setViewMode("card");
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // ── Handlers ──────────────────────────────────────
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
-    try { 
+    try {
       await api.delete(`/products/${id}`);
-      toast.success("Deleted!"); 
+      toast.success("Deleted!");
       fetchProducts();
-    } catch (e) { 
-      toast.error("Error deleting."); 
+    } catch (e) {
+      toast.error("Error deleting.");
     }
   };
   const handleEdit = (p) => navigate(`/superadmin/addproducts/${p.id}`, { state: { product: p } });
 
   // ── Filter helpers ─────────────────────────────────
-  const categories    = [...new Set(products.map((p) => p.category))];
+  const categories = [...new Set(products.map((p) => p.category))];
   const subcategories = filters.category
     ? [...new Set(products.filter((p) => p.category === filters.category).map((p) => p.subcategory))].filter(Boolean)
     : [];
@@ -80,10 +99,10 @@ export default function ProductList() {
   };
 
   const allColors = [...new Set(products.flatMap(extractColors))].filter(Boolean);
-  const allSizes  = [...new Set(products.flatMap(extractSizes))].filter(Boolean);
+  const allSizes = [...new Set(products.flatMap(extractSizes))].filter(Boolean);
 
-  const setFilter    = (key, val) => { setFilters((prev) => ({ ...prev, [key]: val })); setCurrentPage(1); };
-  const toggleMulti  = (key, val) => {
+  const setFilter = (key, val) => { setFilters((prev) => ({ ...prev, [key]: val })); setCurrentPage(1); };
+  const toggleMulti = (key, val) => {
     setFilters((prev) => {
       const arr = prev[key];
       return { ...prev, [key]: arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val] };
@@ -106,17 +125,17 @@ export default function ProductList() {
   // ── Filtered & searched ────────────────────────────
   const displayed = products.filter((p) => {
     if (searchQuery && !p.name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (filters.category   && p.category    !== filters.category)   return false;
+    if (filters.category && p.category !== filters.category) return false;
     if (filters.subcategory && p.subcategory !== filters.subcategory) return false;
     if (filters.color.length && !filters.color.some((c) => extractColors(p).includes(c))) return false;
-    if (filters.size.length  && !filters.size.some((s)  => extractSizes(p).includes(s))) return false;
+    if (filters.size.length && !filters.size.some((s) => extractSizes(p).includes(s))) return false;
     if (filters.rating && (p.rating || 0) < Number(filters.rating)) return false;
     const price = p.sellingprice || p.price || 0;
     if (price < filters.price[0] || price > filters.price[1]) return false;
     return true;
   });
 
-  const totalPages   = Math.ceil(displayed.length / productsPerPage);
+  const totalPages = Math.ceil(displayed.length / productsPerPage);
   const currentItems = displayed.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
 
   // Smart pagination: show at most 5 page buttons with ellipsis
@@ -273,9 +292,8 @@ export default function ProductList() {
           {/* Filter toggle */}
           <button
             onClick={() => setShowFilters((p) => !p)}
-            className={`relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all duration-200 cursor-pointer ${
-              showFilters ? "bg-primary text-white border-primary shadow-md" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
-            }`}
+            className={`relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all duration-200 cursor-pointer ${showFilters ? "bg-primary text-white border-primary shadow-md" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
+              }`}
           >
             <FaFilter className="text-xs" />
             <span className="hidden xs:inline sm:inline">Filters</span>
@@ -287,20 +305,22 @@ export default function ProductList() {
           </button>
 
           {/* View mode toggle */}
-          <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
-            <button
-              onClick={() => setViewMode("card")} title="Card View"
-              className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
-            >
-              <FaTh className="text-xs sm:text-sm" />
-            </button>
-            <button
-              onClick={() => setViewMode("table")} title="Table View"
-              className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
-            >
-              <FaList className="text-xs sm:text-sm" />
-            </button>
-          </div>
+          {!isMobile && (
+            <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+              <button
+                onClick={() => setViewMode("card")} title="Card View"
+                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
+              >
+                <FaTh className="text-xs sm:text-sm" />
+              </button>
+              <button
+                onClick={() => setViewMode("table")} title="Table View"
+                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
+              >
+                <FaList className="text-xs sm:text-sm" />
+              </button>
+            </div>
+          )}
 
           {/* Add product */}
           <button
@@ -358,13 +378,12 @@ export default function ProductList() {
               <p className="text-base sm:text-lg font-semibold">No products found</p>
               <p className="text-xs sm:text-sm mt-1">Try adjusting your search or filters</p>
             </div>
-          ) : viewMode === "card" ? (
+          ) : (isMobile || viewMode === "card") ? (
             /* ── CARD MODE ── */
-            <div className={`grid gap-3 sm:gap-4 lg:gap-5 ${
-              showFilters
-                ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-            }`}>
+            <div className={`grid gap-3 sm:gap-4 lg:gap-5 ${showFilters
+              ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+              }`}>
               {currentItems.map((product) => (
                 <div key={product.id}
                   className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
@@ -416,7 +435,7 @@ export default function ProductList() {
                 </div>
               ))}
             </div>
-          ) : (
+          ) :  !isMobile && (
             /* ── TABLE MODE ── */
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="overflow-x-auto w-full">
@@ -503,11 +522,10 @@ export default function ProductList() {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
-                      currentPage === page
-                        ? "bg-gradient-to-br from-primary to-secondary text-white border-primary shadow-md"
-                        : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
-                    }`}
+                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${currentPage === page
+                      ? "bg-gradient-to-br from-primary to-secondary text-white border-primary shadow-md"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
+                      }`}
                   >
                     {page}
                   </button>
