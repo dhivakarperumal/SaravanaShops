@@ -26,6 +26,7 @@ export default function VideoForm() {
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("table");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -64,6 +65,26 @@ export default function VideoForm() {
       setForm((prev) => ({ ...prev, id: newId }));
     }
   }, [videos, isEditing]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+
+      setIsMobile(mobile);
+
+      if (mobile) {
+        setViewMode("card");
+      } else {
+        setViewMode("table");
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -163,7 +184,7 @@ export default function VideoForm() {
     });
 
     setIsEditing(true);
-    setShowModal(true); 
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -219,7 +240,7 @@ export default function VideoForm() {
 
         {/* Search */}
 
-        <div className="flex items-center gap-2 flex-1 max-w-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0 w-full sm:max-w-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
           <FaSearch className="text-gray-400" />
 
           <input
@@ -237,35 +258,37 @@ export default function VideoForm() {
           {filteredVideos.length} videos
         </span>
 
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:ml-auto">
 
-          <div className="flex bg-gray-100 rounded-xl p-1">
+          {!isMobile && (
+            <div className="flex bg-gray-100 rounded-xl p-1">
 
-            <button
-              onClick={() => setViewMode("card")}
-              className={`p-2 rounded-lg ${viewMode === "card"
-                ? "bg-white shadow text-primary"
-                : ""
-                }`}
-            >
-              <FaTh />
-            </button>
+              <button
+                onClick={() => setViewMode("card")}
+                className={`p-2 rounded-lg ${viewMode === "card"
+                  ? "bg-white shadow text-primary"
+                  : ""
+                  }`}
+              >
+                <FaTh />
+              </button>
 
-            <button
-              onClick={() => setViewMode("table")}
-              className={`p-2 rounded-lg ${viewMode === "table"
-                ? "bg-white shadow text-primary"
-                : ""
-                }`}
-            >
-              <FaList />
-            </button>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`p-2 rounded-lg ${viewMode === "table"
+                  ? "bg-white shadow text-primary"
+                  : ""
+                  }`}
+              >
+                <FaList />
+              </button>
 
-          </div>
+            </div>
+          )}
 
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-xl"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-xl"
           >
             <FaPlus />
             Add Video
@@ -276,9 +299,9 @@ export default function VideoForm() {
 
       {/* FORM */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-3 overflow-y-auto">
 
-          <div className="bg-white w-full max-w-3xl rounded-2xl p-6">
+          <div className="bg-white w-full max-w-lg sm:max-w-3xl rounded-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
 
             <div className="flex justify-between items-center border-b border-gray-200 pb-3">
 
@@ -371,29 +394,29 @@ export default function VideoForm() {
       {/* LIST */}
 
       <div className="mt-4">
-        {viewMode === "table" && (
+        {!isMobile && viewMode === "table" && (
           <div className="bg-white shadow rounded-2xl overflow-x-auto">
-              <table className="min-w-full text-sm rounded-lg overflow-hidden">
-                <thead>
-                  <tr className="bg-gradient-to-r from-primary to-secondary text-white">
-                    <th className="px-4 py-3">S.No.</th>
-                    <th className="px-4 py-3">Name</th>
-                    <th className="px-4 py-3">Videos</th>
-                    <th className="px-4 py-3">Actions</th>
+            <table className="min-w-full text-sm rounded-lg overflow-hidden">
+              <thead>
+                <tr className="bg-gradient-to-r from-primary to-secondary text-white">
+                  <th className="px-4 py-3">S.No.</th>
+                  <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3">Videos</th>
+                  <th className="px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredVideos.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="px-4 py-12 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="text-4xl">🎬</span>
+                        <p className="text-gray-500 font-medium">No videos added yet.</p>
+                        <p className="text-gray-400 text-xs">Click "Add Video" to upload your first video.</p>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredVideos.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className="px-4 py-12 text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          <span className="text-4xl">🎬</span>
-                          <p className="text-gray-500 font-medium">No videos added yet.</p>
-                          <p className="text-gray-400 text-xs">Click "Add Video" to upload your first video.</p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
+                ) : (
                   filteredVideos.map((video, index) => (
                     <tr key={video.dbId} className="text-center border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="px-3 py-4">{index + 1}.</td>
@@ -431,14 +454,14 @@ export default function VideoForm() {
                       </td>
                     </tr>
                   ))
-                  )}
-                </tbody>
-              </table>
+                )}
+              </tbody>
+            </table>
           </div>
         )}
 
         {/* Mobile Cards */}
-        {viewMode === "card" && (
+        {(isMobile || viewMode === "card") && (
           <div>
             {filteredVideos.length === 0 ? (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
@@ -449,7 +472,7 @@ export default function VideoForm() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredVideos.map((video, index) => (
                   <div
                     key={video.dbId}
