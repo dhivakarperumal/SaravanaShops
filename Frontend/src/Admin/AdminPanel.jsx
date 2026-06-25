@@ -369,7 +369,19 @@ const AdminPanel = () => {
               </button>
 
               {activePanel === "notifications" && (
-                <div className="absolute right-0 top-12 w-[90vw] max-w-sm bg-white rounded-2xl border border-gray-100 shadow-2xl z-50 overflow-hidden">
+                <div
+                  className="
+    absolute top-12
+    left-1 -translate-x-1/2
+    md:right-0 md:left-auto md:translate-x-0
+    w-[92vw] max-w-sm
+    bg-white rounded-2xl
+    border border-gray-100
+    shadow-2xl
+    z-[9999]
+    overflow-hidden
+  "
+                >
                   <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-primary/5 to-secondary/5">
                     <h3 className="font-bold text-gray-800 text-sm">🔔 Notifications</h3>
                   </div>
@@ -464,7 +476,19 @@ const AdminPanel = () => {
               </button>
 
               {activePanel === "stock" && (
-                <div className="absolute right-0 top-12 w-[90vw] max-w-xs sm:max-w-sm bg-white rounded-2xl border border-gray-100 shadow-2xl z-50 overflow-hidden">
+                <div
+                  className="
+      absolute top-12
+     -translate-x-3/4 left-1/1
+      md:left-auto md:right-0 md:translate-x-0
+      w-[92vw] max-w-[360px]
+      bg-white rounded-2xl
+      border border-gray-100
+      shadow-2xl
+      z-[9999]
+      overflow-hidden
+    "
+                >
                   <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-yellow-50">
                     <h2 className="text-sm font-bold text-orange-600 flex items-center gap-2">⚠️ Low Stock</h2>
                   </div>
