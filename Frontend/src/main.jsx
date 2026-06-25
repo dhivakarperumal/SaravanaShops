@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createHashRouter, RouterProvider } from "react-router-dom";
 import Home from "./Home/Home.jsx";
 import AllProducts from "./Products/AllProducts.jsx";
 import ProductDetails from "./Products/ProductDetails.jsx";
@@ -50,7 +50,7 @@ import About from "./Components/About.jsx";
 import TermsAndConditions from "./Components/TermsAndConditions.jsx";
 import PrivacyPolicy from "./Components/PrivacyPolicy.jsx";
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "/",
     element: <App />,

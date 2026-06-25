@@ -57,6 +57,23 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      // If the site was opened using a hash route (e.g. #/allproducts),
+      // convert it to a clean path so the browser-history router can handle it.
+      (function(){
+        try{
+          const h = window.location.hash;
+          if(h && h.startsWith('#/')){
+            const path = h.slice(1); // remove leading '#'
+            const search = window.location.search || '';
+            const newUrl = window.location.pathname.replace(/#.*$/, '') + path + search;
+            history.replaceState(null, '', newUrl);
+          }
+        }catch(e){
+          // ignore
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
