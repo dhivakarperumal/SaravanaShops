@@ -753,7 +753,7 @@ export default function AddProducts() {
               <h2 className="text-base font-bold text-white">Bangles Specifics</h2>
             </div>
 
-            <div className="p-6 sm:p-8">
+            <div className="p-4 sm:p-6 lg:p-8 w-full overflow-x-hidden">
               <div className="mb-6 max-w-sm">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
                   Count Type
@@ -771,7 +771,7 @@ export default function AddProducts() {
               {/* Single Color Table */}
               {banglesCountType === "SingleColor" && (
                 <div>
-                  <h3 className="font-bold text-gray-800 mb-4 flex items-center justify-between">
+                  <h3 className="font-bold text-gray-800 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <span>Colors & Stock Inventory</span>
                     <button
                       type="button"
@@ -783,7 +783,7 @@ export default function AddProducts() {
                   </h3>
 
                   {/* Desktop Table */}
-                  <div className="hidden md:block bg-white shadow rounded-2xl overflow-x-auto">
+                  <div className="hidden lg:block bg-white shadow rounded-2xl overflow-x-auto">
                     <table className="min-w-full table-fixed text-sm rounded-lg overflow-hidden">
                       <thead className="bg-primary text-white">
                         <tr>
@@ -919,7 +919,7 @@ export default function AddProducts() {
                   </div>
 
                   {/* Mobile Cards */}
-                  <div className="sm:hidden flex flex-col gap-4">
+                  <div className="block lg:hidden space-y-4">
                     {banglesColorTable.map((row) => (
                       <div
                         key={row.id}
@@ -1050,7 +1050,7 @@ export default function AddProducts() {
                     ))}
                   </div>
 
-                  <div className="mt-4 flex justify-end md:hidden">
+                  <div className="mt-4 flex justify-end lg:hidden">
                     <button
                       type="button"
                       onClick={handleAddBangleRow}
@@ -1116,7 +1116,7 @@ export default function AddProducts() {
 
         {/* SAREES */}
         {productType === "Sarees" && (
-          <div className="bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
+          <div className="w-full max-w-full bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
             <div className="bg-primary border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
               <h2 className="text-base font-bold text-white">Saree Specifics</h2>
             </div>
