@@ -242,16 +242,19 @@ const AdminPanel = () => {
                 to="/"
                 onClick={() => setMobileMenu(false)}
                 className={({ isActive }) =>
-                  `flex items-center rounded font-bold hidden md:inline-flex hover:bg-bgcolor transition duration-200 ${isActive
-                    ? "bg-bgcolor text-gray font-bold"
-                    : "text-textcolor hover:bg-bgcolor hover:text-textcolor"
-                  } p-3`
+                  `flex items-center w-full rounded-lg font-bold transition duration-200 p-3 ${isActive
+                    ? "bg-bgcolor text-white"
+                    : "text-white hover:bg-bgcolor"
+                  }`
                 }
               >
-                <span className="w-6 h-6 flex-shrink-0 text-white flex items-center justify-center text-xl">
+                <span className="w-6 h-6 flex items-center justify-center">
                   <FaHome />
                 </span>
-                <span className="ml-2 flex-1 text-white text-left">Back Home</span>
+
+                <span className="ml-3">
+                  Back Home
+                </span>
               </NavLink>
             )}
           </div>
