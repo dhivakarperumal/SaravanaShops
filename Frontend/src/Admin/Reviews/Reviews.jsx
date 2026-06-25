@@ -15,6 +15,7 @@ const AddReviews = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("card");
   const [showFilters, setShowFilters] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
 
   const [products, setProducts] = useState([]);
@@ -111,6 +112,24 @@ const AddReviews = () => {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+
+      setIsMobile(mobile);
+
+      if (mobile) {
+        setViewMode("card");
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const fetchCategories = async () => {
     try {
@@ -231,12 +250,12 @@ const AddReviews = () => {
   };
 
   return (
-    <div className="min-h-screen py-10 md:p-6 lg:p-0">
-      <div className="max-w-7xl mx-auto black p-5">
+    <div className="min-h-screen px-3 py-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto p-0 sm:p-2">
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6 bg-white rounded-2xl px-3 sm:px-4 py-3 shadow-sm border border-gray-100">
 
           {/* Search */}
-          <div className="flex items-center gap-2 flex-1 min-w-0 max-w-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0 w-full sm:max-w-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
             <FaSearch className="text-gray-400 text-sm flex-shrink-0" />
 
             <input
@@ -253,7 +272,7 @@ const AddReviews = () => {
             {displayedReviews.length} reviews
           </span>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-auto justify-between sm:justify-end">
 
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -274,27 +293,29 @@ const AddReviews = () => {
             </button>
 
             {/* View Toggle */}
-            <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
-              <button
-                onClick={() => setViewMode("card")}
-                className={`p-2 rounded-lg ${viewMode === "card"
-                  ? "bg-white shadow text-primary"
-                  : "text-gray-400"
-                  }`}
-              >
-                <FaTh />
-              </button>
+            {!isMobile && (
+              <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+                <button
+                  onClick={() => setViewMode("card")}
+                  className={`p-2 rounded-lg ${viewMode === "card"
+                    ? "bg-white shadow text-primary"
+                    : "text-gray-400"
+                    }`}
+                >
+                  <FaTh />
+                </button>
 
-              <button
-                onClick={() => setViewMode("table")}
-                className={`p-2 rounded-lg ${viewMode === "table"
-                  ? "bg-white shadow text-primary"
-                  : "text-gray-400"
-                  }`}
-              >
-                <FaList />
-              </button>
-            </div>
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`p-2 rounded-lg ${viewMode === "table"
+                    ? "bg-white shadow text-primary"
+                    : "text-gray-400"
+                    }`}
+                >
+                  <FaList />
+                </button>
+              </div>
+            )}
 
             {/* Add Review */}
             <button
@@ -423,8 +444,8 @@ const AddReviews = () => {
           {/* CONTENT */}
           <div className="flex-1 min-w-0">
 
-            {viewMode === "card" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {(isMobile || viewMode === "card") ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {displayedReviews.map((item) => (
                   <div
                     key={item.id}
@@ -467,7 +488,7 @@ const AddReviews = () => {
                               }
                             />
                           ))}
-                          
+
                         </div>
                       </div>
 
@@ -475,7 +496,7 @@ const AddReviews = () => {
                         {item.desc}
                       </p>
 
-                     
+
 
                       {/* Actions */}
                       <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-100">
@@ -499,7 +520,7 @@ const AddReviews = () => {
                         >
                           {item.tick ? (
                             <TiTick size={22} className="text-green-600" />
-                          ) : (
+                          ) : !isMobile && (
                             <TiTickOutline size={22} className="text-red-500" />
                           )}
                         </button>
@@ -598,9 +619,9 @@ const AddReviews = () => {
 
         {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center px-4">
-            <div className="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 space-y-6">
-              <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+            <div className="bg-white w-full max-w-lg sm:max-w-3xl rounded-2xl shadow-xl max-h-[90vh] flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between border-b border-gray-200 px-4 sm:px-6 py-4 flex-shrink-0">
                 <h2 className="text-2xl font-bold text-gray-800">
                   {editMode ? "Edit Review" : "Add New Review"}
                 </h2>
@@ -613,122 +634,124 @@ const AddReviews = () => {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Inputs */}
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">
-                    Category
-                  </label>
+              <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  {/* Inputs */}
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">
+                      Category
+                    </label>
 
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => {
-                      setSelectedCategory(e.target.value);
-                      setNewReview({
-                        ...newReview,
-                        category: e.target.value,
-                        title: "",
-                      });
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                  >
-                    <option value="">Select Category</option>
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => {
+                        setSelectedCategory(e.target.value);
+                        setNewReview({
+                          ...newReview,
+                          category: e.target.value,
+                          title: "",
+                        });
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    >
+                      <option value="">Select Category</option>
 
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.cname}>
-                        {cat.cname}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">
-                    Product
-                  </label>
-
-                  <select
-                    value={newReview.title}
-                    onChange={(e) =>
-                      setNewReview({
-                        ...newReview,
-                        title: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                  >
-                    <option value="">Select Product</option>
-
-                    {products
-                      .filter((p) => p.category === selectedCategory)
-                      .map((product) => (
-                        <option key={product.id} value={product.name}>
-                          {product.name}
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.cname}>
+                          {cat.cname}
                         </option>
                       ))}
-                  </select>
-                </div>
+                    </select>
+                  </div>
 
-                <InputField placeholder="Enter Your Name" label="Reviewer Name" value={newReview.user} onChange={(e) => setNewReview({ ...newReview, user: e.target.value })} />
-                <InputField label="Rating (1 to 5)" type="number" min="1" max="5" value={newReview.rating} onChange={(e) => setNewReview({ ...newReview, rating: e.target.value })} />
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">
+                      Product
+                    </label>
 
-                {/* Image Upload */}
-                <div className="col-span-1 md:col-span-2">
-                  <label className="block font-semibold text-gray-700 mb-1">
-                    Upload Image
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setNewReview({ ...newReview, image: reader.result });
-                        };
-                        reader.readAsDataURL(file);
+                    <select
+                      value={newReview.title}
+                      onChange={(e) =>
+                        setNewReview({
+                          ...newReview,
+                          title: e.target.value,
+                        })
                       }
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                  />
-                  {newReview.image && (
-                    <img
-                      src={newReview.image}
-                      alt="Preview"
-                      className="mt-3 w-25 h-20 object-cover rounded shadow"
-                    />
-                  )}
-                </div>
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    >
+                      <option value="">Select Product</option>
 
-                {/* Description */}
-                <div className="col-span-1 md:col-span-2">
-                  <label className="block font-semibold text-gray-700 mb-1">
-                    Review Description
-                  </label>
-                  <textarea
-                    rows="4"
-                    value={newReview.desc}
-                    onChange={(e) =>
-                      setNewReview({ ...newReview, desc: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    placeholder="Write something about the clothing..."
-                  />
+                      {products
+                        .filter((p) => p.category === selectedCategory)
+                        .map((product) => (
+                          <option key={product.id} value={product.name}>
+                            {product.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  <InputField placeholder="Enter Your Name" label="Reviewer Name" value={newReview.user} onChange={(e) => setNewReview({ ...newReview, user: e.target.value })} />
+                  <InputField label="Rating (1 to 5)" type="number" min="1" max="5" value={newReview.rating} onChange={(e) => setNewReview({ ...newReview, rating: e.target.value })} />
+
+                  {/* Image Upload */}
+                  <div className="col-span-1 md:col-span-2">
+                    <label className="block font-semibold text-gray-700 mb-1">
+                      Upload Image
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setNewReview({ ...newReview, image: reader.result });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    />
+                    {newReview.image && (
+                      <img
+                        src={newReview.image}
+                        alt="Preview"
+                        className="mt-3 w-24 h-20 sm:w-28 sm:h-24 object-cover rounded-lg shadow"
+                      />
+                    )}
+                  </div>
+
+                  {/* Description */}
+                  <div className="col-span-1 md:col-span-2">
+                    <label className="block font-semibold text-gray-700 mb-1">
+                      Review Description
+                    </label>
+                    <textarea
+                      rows="4"
+                      value={newReview.desc}
+                      onChange={(e) =>
+                        setNewReview({ ...newReview, desc: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      placeholder="Write something about the clothing..."
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Modal Actions */}
-              <div className="flex justify-end gap-4 pt-4">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 border-t border-gray-200 px-4 sm:px-6 py-4 flex-shrink-0">
                 <button
                   onClick={resetForm}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100"
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleAddReview}
-                  className="px-6 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700"
+                  className="w-full sm:w-auto px-6 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700"
                 >
                   {editMode ? "Update Review" : "Add Review"}
                 </button>
