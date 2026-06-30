@@ -180,31 +180,40 @@ function CollectionCard({ title, description, imgSrc, btnText }) {
       data-aos="fade-up"
     >
       {/* Image */}
-      <div className="relative w-full h-56 -mb-12 md:mb-0 ">
-        <img src={imgSrc} alt={title} className="w-full h-null md:h-full  object-contain md:object-cover" />
+      <div className="w-full h-52 sm:h-56 md:h-60 overflow-hidden">
+        <img
+          src={imgSrc}
+          alt={title}
+          className="w-full h-full object-cover md:object-cover"
+        />
       </div>
 
-      {/* Text + Button */}
-      <div className="p-6 flex flex-col flex-1 justify-between">
-        <div>
-          <h3 className="text-lg sm:text-xl font-semibold text-[#4B0082]">{title}</h3>
-          <p className="mt-3 text-sm sm:text-base leading-relaxed text-[#5E2A84]">
-            {description}
-          </p>
-        </div>
+      {/* Content */}
+      <div className="flex flex-col flex-1 p-5 sm:p-6">
+        <h3 className="text-lg sm:text-xl font-semibold text-[#4B0082]">
+          {title}
+        </h3>
+
+        <p className="mt-3 text-sm sm:text-base leading-7 text-[#5E2A84] flex-1">
+          {description}
+        </p>
 
         <Link
           to="/category"
           state={{
-            selectedCategory: btnText.includes("Saree") ? "Saree" :
-              btnText.includes("Bangle") ? "Bangle" :
-                btnText.includes("Jewels") ? "Jewelset" : ""
+            selectedCategory:
+              btnText.includes("Saree")
+                ? "Saree"
+                : btnText.includes("Bangle")
+                  ? "Bangle"
+                  : btnText.includes("Jewels")
+                    ? "Jewelset"
+                    : "",
           }}
-          className="mt-4 inline-block bg-primary text-white text-sm sm:text-base px-4 sm:px-5 py-2 rounded-xl hover:opacity-90 transition w-fit"
+          className="mt-5 inline-flex items-center justify-center bg-primary text-white px-5 py-2.5 rounded-xl hover:opacity-90 transition w-fit"
         >
           {btnText}
         </Link>
-
       </div>
     </article>
   );
