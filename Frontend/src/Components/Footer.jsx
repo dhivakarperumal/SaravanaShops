@@ -75,9 +75,9 @@ const Footer = () => {
               <h2 className="text-lg font-bold mb-5 text-gray-900">Contact Us</h2>
               <p className="flex items-start gap-2">
                 <FaMapMarkerAlt className="text-primary mt-1 shrink-0" />
-                <span>78/3, chetty Street Tirupattur Near AVS Mahal and Jain Temple </span>
+                <span>78/3, Chetty Street Tirupattur Near AVS Mahal and Jain Temple </span>
               </p>
-              <p className="flex  items-center gap-2">
+              <p className="flex  items-center gap-1">
                 <FaPhoneAlt className="text-primary shrink-0" />
                 <span>6379208198</span>
                 <span>,</span>
@@ -97,7 +97,7 @@ const Footer = () => {
                 { name: "Home", path: "/" },
                 { name: "About Us", path: "/about" },
                 { name: "Shopping", path: "/allproducts" },
-                { name: "Category", path: "/category" },
+                // { name: "Category", path: "/category" },
                 { name: "Terms & Conditions", path: "/termsandconditions" },
                 { name: "Privacy Policy", path: "/privacypolicy" },
                 { name: "Contact Us", path: "/contact" },
