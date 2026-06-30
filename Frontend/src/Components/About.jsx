@@ -116,7 +116,7 @@ export default function About() {
                 At Sri Saravana Shoppings, You’ll Find best collections with affordable price range. We safely pack your orders with love and care. You don’t worry about packing after ordering products with us.
               </p>
 
-              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-2">
                 <CollectionCard
                   title="Most Unique Imitation Jewelry"
                   description="We have more varieties of Jewel collections like Bridal, Semi Bridal, Ad Stone, Combo Sets, Bangles, Earrings, Jada Set, Hip Belt, Choker, and Haram Collections."
@@ -131,12 +131,12 @@ export default function About() {
                   btnText="Shop Bangles"
                 />
 
-                <CollectionCard
+                {/* <CollectionCard
                   title="Saree Collections"
                   description="Our Saree Collections aren’t just pretty — they’re also price-worthy. We have Silk, Cotton, Designer, Work, Bridal, Daily Wear, and Office Wear Sarees."
                   imgSrc="/Image/About_sarees.png"
                   btnText="Shop Sarees"
-                />
+                /> */}
 
               </div>
             </section>
@@ -184,7 +184,7 @@ function CollectionCard({ title, description, imgSrc, btnText }) {
         <img
           src={imgSrc}
           alt={title}
-          className="w-full h-full object-cover md:object-cover"
+          className="w-full h-full object-top object-cover md:object-cover"
         />
       </div>
 
