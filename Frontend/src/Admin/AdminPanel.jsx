@@ -58,8 +58,8 @@ const AdminPanel = () => {
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
   const isExpanded = isSidebarOpen || isSidebarHovered;
-  const sidebarWidth = isExpanded ? "w-74" : "w-20";
-  const contentMargin = isExpanded ? "md:ml-72" : "md:ml-20";
+  const sidebarWidth = isExpanded ? "w-[296px]" : "w-20";
+  const contentMargin = isExpanded ? "md:ml-[296px]" : "md:ml-20";
 
   const [userName, setUserName] = useState("");
 
@@ -178,9 +178,8 @@ const AdminPanel = () => {
       {/* Sidebar container (fixed so it slides in/out) */}
       <aside
         ref={sidebarRef}
-        className={`fixed top-0 left-0 z-50 h-screen shadow
-  bg-slate-300
-  text-primary transition-transform duration-300 ease-in-out
+        className={`fixed top-0 left-0 z-50 h-screen shadow-2xl
+  bg-slate-950/95 text-white transition-transform duration-300 ease-in-out
   ${sidebarWidth}
   ${mobileMenu ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
@@ -192,10 +191,10 @@ const AdminPanel = () => {
           {isSidebarOpen ? <FaChevronLeft size={12} /> : <FaChevronRight size={12} />}
         </button>
 
-        <div className="flex items-center bg-primary/70 justify-between px-4 py-3 border-b border-purple-400/20 relative shadow-lg shadow-purple-500/20">
+        <div className="flex items-center bg-slate-900/95 justify-between px-4 py-3 border-b border-white/10 relative shadow-2xl shadow-slate-950/50">
           <div className="flex items-center w-full gap-3 overflow-hidden">
             {/* Logo Image with a crisp background plate */}
-            <div className="bg-white p-1 rounded-xl shadow-lg shadow-purple-400/30 flex-shrink-0 flex items-center justify-center">
+            <div className="bg-slate-800/90 p-1 rounded-2xl shadow-[0_15px_50px_rgba(15,23,42,0.45)] flex-shrink-0 flex items-center justify-center">
               <img
                 src={logo}
                 alt="Admin Logo"
@@ -236,15 +235,15 @@ const AdminPanel = () => {
           </div>
 
           {/* Back Home fixed at bottom */}
-          <div className="p-3 border-t mt-5 border-purple-400/20 bg-primary/70">
+          <div className="p-3 border-t mt-5 border-white/10 bg-slate-900/80">
             {isSidebarOpen && (
               <NavLink
                 to="/"
                 onClick={() => setMobileMenu(false)}
                 className={({ isActive }) =>
-                  `flex items-center w-full rounded-lg font-bold transition duration-200 p-3 ${isActive
-                    ? "bg-bgcolor text-white"
-                    : "text-white hover:bg-bgcolor"
+                  `flex items-center w-full rounded-3xl font-bold transition duration-200 p-3 ${isActive
+                    ? "bg-primary text-white"
+                    : "text-white hover:bg-primary/90"
                   }`
                 }
               >
@@ -365,7 +364,7 @@ const AdminPanel = () => {
               >
                 <FaBell className="text-[17px]" />
                 {notifications.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-rose-600 text-white text-[10px] w-4.5 h-4.5 min-w-[18px] min-h-[18px] flex items-center justify-center rounded-full font-bold shadow-md">
+                  <span className="absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-rose-600 text-white text-[10px] w-[18px] h-[18px] min-w-[18px] min-h-[18px] flex items-center justify-center rounded-full font-bold shadow-md">
                     {notifications.length}
                   </span>
                 )}
@@ -472,7 +471,7 @@ const AdminPanel = () => {
               >
                 <AiOutlineStock className="text-[19px]" />
                 {lowStockProducts.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gradient-to-br from-orange-400 to-orange-600 text-white text-[10px] min-w-[18px] min-h-[18px] flex items-center justify-center rounded-full font-bold shadow-md">
+                  <span className="absolute -top-1 -right-1 bg-gradient-to-br from-orange-400 to-orange-600 text-white text-[10px] w-[18px] h-[18px] min-w-[18px] min-h-[18px] flex items-center justify-center rounded-full font-bold shadow-md">
                     {lowStockProducts.length}
                   </span>
                 )}
@@ -482,7 +481,7 @@ const AdminPanel = () => {
                 <div
                   className="
       absolute top-12
-     -translate-x-3/4 left-1/1
+      left-1/2 -translate-x-1/2
       md:left-auto md:right-0 md:translate-x-0
       w-[92vw] max-w-[360px]
       bg-white rounded-2xl
@@ -588,7 +587,7 @@ const AdminPanel = () => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 bg-gray-50 mt-15 px-2 md:px-2 py-6 overflow-y-auto">
+        <main className="flex-1 bg-gray-50 mt-[72px] px-2 md:px-2 py-6 overflow-y-auto">
           <Outlet />
         </main>
 

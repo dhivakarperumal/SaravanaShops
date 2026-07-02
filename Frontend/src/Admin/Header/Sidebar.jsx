@@ -42,11 +42,11 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
   }, [isExpanded]);
 
   return (
-    <div className="mb-2">
+    <div className="mb-2 relative">
       {/* Section Header */}
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center w-full py-3 px-3 cursor-pointer font-bold rounded-xl transition-all duration-300 group ${open ? "bg-gradient-to-r from-purple-500 to-purple-300 text-white shadow-lg shadow-purple-400/50 border border-purple-300/30" : "text-primary"
+        className={`flex items-center w-full py-3 px-3 cursor-pointer font-semibold rounded-3xl transition-all duration-300 group ${open ? "bg-slate-800/95 text-white shadow-xl shadow-slate-900/40 border border-white/10" : "text-slate-200 hover:text-white hover:bg-slate-800/70"
           } ${isExpanded ? "justify-start" : "justify-center"
           }`}
       >
@@ -64,9 +64,9 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {/* Dropdown Items */}
       {open && (
         <ul
-          className={`text-sm space-y-1.5 mt-2 overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? "pl-8" : "pl-0"
+          className={`text-sm space-y-2 mt-3 overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? "pl-8" : "pl-0"
             } ${!isExpanded
-              ? "absolute left-20 top-0 bg-gradient-to-b from-slate-200 via-gray-100 to-slate-300 shadow-2xl rounded-xl w-52 z-50 border border-white/10 py-2"
+              ? "absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-slate-950 shadow-[0_40px_80px_rgba(15,23,42,0.45)] rounded-3xl min-w-[220px] w-[220px] z-50 border border-white/10 py-3"
               : ""
             }`}
         >
@@ -76,9 +76,9 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
                 to={item.path}
                 onClick={() => onLinkClick?.()}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 py-3 px-3 rounded-sm font-semibold transition-all duration-300 ${isActive
-                    ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg font-bold shadow-purple-400/50 border border-purple-300/30 translate-x-1"
-                    : "text-primary hover:text-primary hover:bg-purple-500/25 hover:translate-x-1"
+                  `flex items-center gap-3 py-3 px-3 rounded-xl font-semibold transition-all duration-300 ${isActive
+                    ? "bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/30 border border-white/10 translate-x-1"
+              : "text-slate-200 hover:text-white hover:bg-slate-800/70 hover:translate-x-1"
                   }`
                 }
               >
@@ -169,22 +169,16 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
   };
 
   const navLinkClass = ({ isActive }) =>
-    `flex items-center font-medium rounded-xl transition-all duration-300 group mb-2 ${isActive
-      ? "bg-gradient-to-r from-primary to-secondary text-white shadow-xl"
-      : "text-primary hover:bg-primary/10 hover:text-primary"
+    `flex items-center font-medium rounded-3xl transition-all duration-300 group mb-2 ${isActive
+      ? "bg-gradient-to-r from-primary to-secondary text-white shadow-xl shadow-primary/20"
+      : "text-slate-200 hover:bg-slate-800/70 hover:text-white"
     } ${isExpanded ? "px-3 py-3" : "p-3 justify-center"}`;
 
   return (
     <nav
-      className="
-    relative 
-    space-y-2 p-4 flex flex-col h-full
-    bg-gradient-to-b from-slate-200 via-gray-100 to-slate-300
-    text-white
-    backdrop-blur-xl
-    border-r border-white/20
-    
-  "
+      onMouseEnter={() => setIsSidebarHovered(true)}
+      onMouseLeave={() => setIsSidebarHovered(false)}
+      className="relative space-y-4 p-4 flex flex-col min-h-screen h-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white backdrop-blur-2xl border-r border-white/10 shadow-2xl overflow-x-visible overflow-y-auto"
     >
 
       <div className="absolute inset-0 pointer-events-none">
@@ -192,8 +186,20 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
         <div className="absolute bottom-0 right-0 w-56 h-56 bg-purple-300/20 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 flex flex-col h-full min-h-0 bg-gradient-to-b from-slate-200 via-gray-100 to-slate-300">
-
+      <div className="relative z-10 flex flex-col h-full min-h-0 bg-transparent">
+        <div className={`mb-6 rounded-3xl p-4 border transition-all duration-300 ${isExpanded ? "border-white/10 bg-slate-900/90 shadow-[0_24px_80px_rgba(15,23,42,0.35)]" : "border-white/5 bg-slate-950/95"}`}>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-3xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-xl shadow-primary/30">
+              <FaStore className="text-xl" />
+            </div>
+            {isExpanded && (
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Sri Saravana</p>
+                <h2 className="text-lg font-semibold text-white tracking-tight">Admin Portal</h2>
+              </div>
+            )}
+          </div>
+        </div>
 
         <NavLink to="/superadmin" end onClick={handleLinkClick} className={navLinkClass}>
           <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
