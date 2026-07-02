@@ -399,13 +399,14 @@ export default function ProductList() {
                     )}
                     <div
                       className="
+    hidden md:flex
     absolute inset-0
-    bg-black/20 md:bg-black/40
-    flex items-center justify-center
-    gap-1.5 sm:gap-3
+    bg-black/40
+    items-center justify-center
+    gap-3
 
-    opacity-100 md:opacity-0
-    md:group-hover:opacity-100
+    opacity-0
+    group-hover:opacity-100
 
     transition-opacity duration-300
   "
@@ -450,6 +451,29 @@ export default function ProductList() {
                         <span className="text-[10px] sm:text-xs text-gray-600">{product.rating}</span>
                       </div>
                     )}
+                    {/* Mobile Actions */}
+                    <div className="flex md:hidden items-center justify-center gap-2 mt-2">
+                      <button
+                        onClick={() => setViewProduct(product)}
+                        className="w-7 h-7 rounded-lg bg-white text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all flex items-center justify-center"
+                      >
+                        <FaEye className="text-[10px]" />
+                      </button>
+
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="w-7 h-7 rounded-lg bg-white text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all flex items-center justify-center"
+                      >
+                        <FaEdit className="text-[10px]" />
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="w-7 h-7 rounded-lg bg-white text-primary border border-primary/20 hover:bg-red-500 hover:border-red-500 hover:text-white transition-all flex items-center justify-center"
+                      >
+                        <FaTrash className="text-[10px]" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
