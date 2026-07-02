@@ -397,19 +397,38 @@ export default function ProductList() {
                         {product.offer}% OFF
                       </span>
                     )}
-                    {/* Hover actions */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 sm:gap-3">
-                      <button onClick={() => setViewProduct(product)}
-                        className="w-8 h-8 sm:w-9 sm:h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-primary shadow-md hover:scale-110 transition-all cursor-pointer">
-                        <FaEye className="text-xs sm:text-sm" />
+                    <div
+                      className="
+    absolute inset-0
+    bg-black/20 md:bg-black/40
+    flex items-center justify-center
+    gap-1.5 sm:gap-3
+
+    opacity-100 md:opacity-0
+    md:group-hover:opacity-100
+
+    transition-opacity duration-300
+  "
+                    >
+                      <button
+                        onClick={() => setViewProduct(product)}
+                        className="w-7 h-7 md:w-9 md:h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-primary shadow-md hover:scale-110 transition-all"
+                      >
+                        <FaEye className="text-[10px] md:text-sm" />
                       </button>
-                      <button onClick={() => handleEdit(product)}
-                        className="w-8 h-8 sm:w-9 sm:h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-green-600 shadow-md hover:scale-110 transition-all cursor-pointer">
-                        <FaEdit className="text-xs sm:text-sm" />
+
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="w-7 h-7 md:w-9 md:h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-green-600 shadow-md hover:scale-110 transition-all"
+                      >
+                        <FaEdit className="text-[10px] md:text-sm" />
                       </button>
-                      <button onClick={() => handleDelete(product.id)}
-                        className="w-8 h-8 sm:w-9 sm:h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-red-600 shadow-md hover:scale-110 transition-all cursor-pointer">
-                        <FaTrash className="text-xs sm:text-sm" />
+
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="w-7 h-7 md:w-9 md:h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-red-600 shadow-md hover:scale-110 transition-all"
+                      >
+                        <FaTrash className="text-[10px] md:text-sm" />
                       </button>
                     </div>
                   </div>
@@ -435,7 +454,7 @@ export default function ProductList() {
                 </div>
               ))}
             </div>
-          ) :  !isMobile && (
+          ) : !isMobile && (
             /* ── TABLE MODE ── */
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="overflow-x-auto w-full">
