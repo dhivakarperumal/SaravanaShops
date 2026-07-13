@@ -64,7 +64,7 @@ const SidebarSection = ({ title, icon, items, isExpanded, onLinkClick }) => {
       {/* Dropdown Items */}
       {open && (
         <ul
-          className={`text-sm space-y-2 mt-3 overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? "pl-8" : "pl-0"
+          className={`text-sm space-y-2 mt-3 transition-all duration-500 ease-in-out ${isExpanded ? "pl-8 pr-4" : "pl-0"
             } ${!isExpanded
               ? "absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-slate-950 shadow-[0_40px_80px_rgba(15,23,42,0.45)] rounded-3xl min-w-[220px] w-[220px] z-50 border border-white/10 py-3"
               : ""
