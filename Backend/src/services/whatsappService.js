@@ -24,8 +24,9 @@ function formatPhoneForApi(phone) {
 async function sendOtpMessage(phone, otp) {
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+  const mockMode = process.env.WHATSAPP_MOCK_MODE === 'true';
 
-  if (!phoneNumberId || !accessToken) {
+  if (!phoneNumberId || !accessToken || mockMode) {
     console.warn(`[WhatsApp Mock] Would send OTP ${otp} to ${phone}`);
     return true; // Mock mode
   }
@@ -37,10 +38,34 @@ async function sendOtpMessage(phone, otp) {
     messaging_product: 'whatsapp',
     recipient_type: 'individual',
     to: formattedPhone,
-    type: 'text',
-    text: {
-      preview_url: false,
-      body: `Your Q Techx login OTP is: *${otp}*. It is valid for 5 minutes. Do not share it with anyone.`
+    type: 'template',
+    template: {
+      name: 'otp',
+      language: {
+        code: 'en_US' // Adjust to 'en' if your template language is just English
+      },
+      components: [
+        {
+          type: 'body',
+          parameters: [
+            {
+              type: 'text',
+              text: otp
+            }
+          ]
+        },
+        {
+          type: 'button',
+          sub_type: 'url',
+          index: '0',
+          parameters: [
+            {
+              type: 'text',
+              text: otp
+            }
+          ]
+        }
+      ]
     }
   };
 

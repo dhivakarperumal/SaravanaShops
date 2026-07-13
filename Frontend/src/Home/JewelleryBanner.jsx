@@ -23,7 +23,7 @@ const JewelleryBanner = () => {
         </h1>
 
         <div className="flex justify-center items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full text-gray-700 mx-auto w-fit mb-3 shadow-sm">
-          <button onClick={navigate(`/allproducts`)} className="cursor-pointer"> 500+ new items </button>
+          <button onClick={() => navigate(`/allproducts`)} className="cursor-pointer"> 500+ new items </button>
         </div>
 
         {/* Images */}
