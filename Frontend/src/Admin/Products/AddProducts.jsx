@@ -58,7 +58,17 @@ export default function AddProducts() {
   const [jewelImages, setJewelImages] = useState([]);
   const [jewelStock, setJewelStock] = useState("");
 
-  const bangleSizes = [2.2, 2.4, 2.6, 2.8, 2.10, 2.12];
+  const bangleSizes = [
+    "2.0",
+    "2.2",
+    "2.4",
+    "2.6",
+    "2.8",
+    "2.10",
+    "2.12",
+    "2.14",
+    "3.0"
+  ];
 
   const ensureFlatArray = (val) => {
     if (val == null) return [];
