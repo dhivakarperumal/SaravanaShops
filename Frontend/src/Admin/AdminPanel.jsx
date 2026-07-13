@@ -12,6 +12,7 @@ import {
   FaHome,
   FaChevronLeft,
   FaChevronRight,
+  FaStore,
 } from "react-icons/fa";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -234,28 +235,44 @@ const AdminPanel = () => {
             />
           </div>
 
-          {/* Back Home fixed at bottom */}
-          <div className="p-3 border-t mt-5 border-white/10 bg-slate-900/80">
-            {isSidebarOpen && (
-              <NavLink
-                to="/"
-                onClick={() => setMobileMenu(false)}
-                className={({ isActive }) =>
-                  `flex items-center w-full rounded-3xl font-bold transition duration-200 p-3 ${isActive
-                    ? "bg-primary text-white"
-                    : "text-white hover:bg-primary/90"
-                  }`
-                }
-              >
-                <span className="w-6 h-6 flex items-center justify-center">
-                  <FaHome />
-                </span>
+          {/* Fixed bottom section */}
+          <div className="p-3 border-t border-white/10 bg-slate-900/80">
+            {/* Admin Portal Card */}
+            <div className={`mb-3 rounded-3xl border transition-all duration-300 ${isExpanded ? "p-4 border-white/10 bg-slate-900/90 shadow-[0_24px_80px_rgba(15,23,42,0.35)]" : "p-2 border-white/5 bg-slate-950/95"}`}>
+              <div className={`flex items-center ${isExpanded ? "gap-3" : "justify-center"}`}>
+                <div className="w-12 h-12 flex-shrink-0 rounded-3xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-xl shadow-primary/30">
+                  <FaStore className="text-xl" />
+                </div>
+                {isExpanded && (
+                  <div className="min-w-0">
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Sri Saravana</p>
+                    <h2 className="text-lg font-semibold text-white tracking-tight">Admin Portal</h2>
+                  </div>
+                )}
+              </div>
+            </div>
 
-                <span className="ml-3">
+            {/* Back Home */}
+            <NavLink
+              to="/"
+              onClick={() => setMobileMenu(false)}
+              className={({ isActive }) =>
+                `flex items-center w-full rounded-3xl font-bold transition duration-200 p-3 ${isActive
+                  ? "bg-primary text-white"
+                  : "text-white hover:bg-slate-800"
+                } ${!isExpanded ? "justify-center" : ""}`
+              }
+            >
+              <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center">
+                <FaHome className="text-xl" />
+              </span>
+
+              {isExpanded && (
+                <span className="ml-3 truncate">
                   Back Home
                 </span>
-              </NavLink>
-            )}
+              )}
+            </NavLink>
           </div>
         </div>
       </aside>

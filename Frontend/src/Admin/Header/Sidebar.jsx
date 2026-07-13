@@ -187,20 +187,6 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
       </div>
 
       <div className="relative z-10 flex flex-col h-full min-h-0 bg-transparent">
-        <div className={`mb-6 rounded-3xl p-4 border transition-all duration-300 ${isExpanded ? "border-white/10 bg-slate-900/90 shadow-[0_24px_80px_rgba(15,23,42,0.35)]" : "border-white/5 bg-slate-950/95"}`}>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-3xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-xl shadow-primary/30">
-              <FaStore className="text-xl" />
-            </div>
-            {isExpanded && (
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Sri Saravana</p>
-                <h2 className="text-lg font-semibold text-white tracking-tight">Admin Portal</h2>
-              </div>
-            )}
-          </div>
-        </div>
-
         <NavLink to="/superadmin" end onClick={handleLinkClick} className={navLinkClass}>
           <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110">
             <AiFillDashboard />
