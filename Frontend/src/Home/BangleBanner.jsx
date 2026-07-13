@@ -62,8 +62,8 @@ const BangleBanner = () => {
           ))}
         </div>
       </div>
-      </PageContainer>
-      );
+    </PageContainer>
+  );
 };
 
-      export default BangleBanner;
+export default BangleBanner;
