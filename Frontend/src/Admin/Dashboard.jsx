@@ -324,13 +324,13 @@ const Dashboard = () => {
               <div className="space-y-4">
                 {topSellingProducts.length > 0 ? (
                   topSellingProducts.map((item) => (
-                    <div key={item.name} className="rounded-3xl bg-slate-950/90 p-4 shadow-[0_12px_35px_rgba(15,23,42,0.18)] border border-slate-700/60">
+                    <div key={item.name} className="rounded-3xl bg-slate-950/90 p-4 shadow-[0_12px_35px_rgba(15,23,42,0.18)] border border-slate-700/60 overflow-hidden">
                       <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <p className="font-semibold text-white">{item.name}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-white truncate">{item.name}</p>
                           <p className="text-sm text-slate-400">Sales ₹ {item.sales}</p>
                         </div>
-                        <div className="text-sm font-semibold text-cyan-300">{item.progress}%</div>
+                        <div className="text-sm font-semibold text-cyan-300 flex-shrink-0">{item.progress}%</div>
                       </div>
                       <div className="mt-3 h-2 rounded-full bg-slate-800 overflow-hidden">
                         <div className="h-full rounded-full bg-cyan-400" style={{ width: `${item.progress}%` }} />
@@ -354,13 +354,13 @@ const Dashboard = () => {
               <div className="space-y-4">
                 {lowStockAlerts.length > 0 ? (
                   lowStockAlerts.map((item) => (
-                    <div key={item.id || item.name} className="rounded-3xl bg-slate-950/90 p-4 shadow-[0_12px_35px_rgba(15,23,42,0.18)] border border-slate-700/60">
+                    <div key={item.id || item.name} className="rounded-3xl bg-slate-950/90 p-4 shadow-[0_12px_35px_rgba(15,23,42,0.18)] border border-slate-700/60 overflow-hidden">
                       <div className="flex items-center justify-between gap-3">
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <p className="font-semibold text-white truncate">{item.name}</p>
                           <p className="text-sm text-slate-400">Stock left: {item.stock}</p>
                         </div>
-                        <span className="rounded-full bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-300">{item.stock <= 5 ? "Critical" : "Low"}</span>
+                        <span className="rounded-full bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-300 flex-shrink-0 whitespace-nowrap">{item.stock <= 5 ? "Critical" : "Low"}</span>
                       </div>
                     </div>
                   ))
