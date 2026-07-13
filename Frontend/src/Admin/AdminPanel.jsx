@@ -179,8 +179,8 @@ const AdminPanel = () => {
       {/* Sidebar container (fixed so it slides in/out) */}
       <aside
         ref={sidebarRef}
-        className={`fixed top-0 left-0 z-50 h-screen shadow-2xl
-  bg-slate-950/95 text-white transition-transform duration-300 ease-in-out
+        className={`fixed top-0 left-0 z-50 h-screen
+  bg-slate-950/95 text-white transition-transform duration-300 ease-in-out border-r border-white/5
   ${sidebarWidth}
   ${mobileMenu ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
