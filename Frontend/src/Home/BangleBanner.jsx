@@ -61,9 +61,9 @@ const BangleBanner = () => {
         {/* Right Section - 4 Image Grid */}
         <div className="md:w-1/2 w-full grid grid-cols-2 gap-4">
           {categories.map((item, index) => (
-            <Link
-              to="/allproducts"
+            <div
               key={index}
+              onClick={handleBabyShowerClick}
               className="relative rounded-xl overflow-hidden group shadow-md cursor-pointer"
             >
 
@@ -77,7 +77,7 @@ const BangleBanner = () => {
               <h3 className="absolute bottom-3 w-full text-center  left-1/2 transform -translate-x-1/2 text-white text-sm md:text-lg font-semibold tracking-wide">
                 {item.name}
               </h3>
-            </Link>
+            </div>
           ))}
         </div>
       </div>
