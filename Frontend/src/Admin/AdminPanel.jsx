@@ -58,8 +58,8 @@ const AdminPanel = () => {
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
   const isExpanded = isSidebarOpen || isSidebarHovered;
-  const sidebarWidth = isExpanded ? "w-[296px]" : "w-20";
-  const contentMargin = isExpanded ? "md:ml-[296px]" : "md:ml-20";
+  const sidebarWidth = isExpanded ? "w-[330px]" : "w-20";
+  const contentMargin = isExpanded ? "md:ml-[330px]" : "md:ml-20";
 
   const [userName, setUserName] = useState("");
 

@@ -178,7 +178,7 @@ const Sidebar = ({ isSidebarOpen, isSidebarHovered, setIsSidebarHovered, setMobi
     <nav
       onMouseEnter={() => setIsSidebarHovered(true)}
       onMouseLeave={() => setIsSidebarHovered(false)}
-      className="relative space-y-4 p-4 flex flex-col min-h-screen h-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white backdrop-blur-2xl border-r border-white/10 shadow-2xl overflow-x-visible overflow-y-auto"
+      className="relative space-y-4 p-4 flex flex-col min-h-screen h-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white backdrop-blur-2xl border-r border-white/10 shadow-2xl overflow-x-visible overflow-y-auto sidebar-scroll"
     >
 
       <div className="absolute inset-0 pointer-events-none">
