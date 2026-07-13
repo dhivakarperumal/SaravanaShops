@@ -58,7 +58,17 @@ export default function AddProducts() {
   const [jewelImages, setJewelImages] = useState([]);
   const [jewelStock, setJewelStock] = useState("");
 
-  const bangleSizes = [2.2, 2.4, 2.6, 2.8, 2.10, 2.12];
+  const bangleSizes = [
+    "2.0",
+    "2.2",
+    "2.4",
+    "2.6",
+    "2.8",
+    "2.10",
+    "2.12",
+    "2.14",
+    "3.0"
+  ];
 
   const ensureFlatArray = (val) => {
     if (val == null) return [];
@@ -386,8 +396,7 @@ export default function AddProducts() {
     if (initialData.productType === "Bangles") {
       setBanglesCountType(initialData.count || "SingleColor");
 
-      // SingleColor: restore colors table with sizes and stock
-      if (initialData.count === "SingleColor" && Array.isArray(initialData.colors)) {
+      if (Array.isArray(initialData.colors)) {
         const restoreColorTable = initialData.colors.map((color, idx) => ({
           id: idx + 1,
           color: color.color || "#ffffff",
@@ -402,11 +411,15 @@ export default function AddProducts() {
         }));
         setBanglesColorTable(restoreColorTable);
       } else if (initialData.count === "MultiColor") {
-        // MultiColor: restore multi images and stock
-        if (Array.isArray(initialData.images)) {
-          setBanglesMultiImages(initialData.images);
-        }
-        setBanglesStock(initialData.stock || "");
+        // Fallback for old MultiColor data format
+        setBanglesColorTable([{
+          id: 1,
+          color: "#ffffff",
+          size: [],
+          stock: {},
+          images: Array.isArray(initialData.images) ? initialData.images : [],
+          productName: "",
+        }]);
       }
     }
 
@@ -457,17 +470,12 @@ export default function AddProducts() {
       // product-type specific mapping (convert stocks etc.)
       if (productType === "Bangles") {
         data.count = banglesCountType;
-        if (banglesCountType === "SingleColor") {
-          data.colors = banglesColorTable.map((row) => ({
-            ...row,
-            stock: Object.fromEntries(
-              Object.entries(row.stock || {}).map(([size, val]) => [size, Number(val) || 0])
-            ),
-          }));
-        } else {
-          data.images = ensureFlatArray(banglesMultiImages);
-          data.stock = Number(banglesStock) || 0;
-        }
+        data.colors = banglesColorTable.map((row) => ({
+          ...row,
+          stock: Object.fromEntries(
+            Object.entries(row.stock || {}).map(([size, val]) => [size, Number(val) || 0])
+          ),
+        }));
       }
       if (productType === "Sarees") {
         data.fabricdetails = [sareeFabricType, sareeBlouseAvailable];
@@ -768,8 +776,8 @@ export default function AddProducts() {
                 </select>
               </div>
 
-              {/* Single Color Table */}
-              {banglesCountType === "SingleColor" && (
+              {/* Color Table for both Single and Multi Color */}
+              {(banglesCountType === "SingleColor" || banglesCountType === "MultiColor") && (
                 <div>
                   <h3 className="font-bold text-gray-800 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <span>Colors & Stock Inventory</span>
@@ -1062,54 +1070,7 @@ export default function AddProducts() {
                 </div>
               )}
 
-              {/* Multi Color */}
-              {banglesCountType === "MultiColor" && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
-                      Upload Images
-                    </label>
-                    <input
-                      type="file"
-                      multiple
-                      ref={fileInputRefs.Bangles}
-                      onChange={(e) => handleFiles(e, "Bangles")}
-                      className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
-                    />
-                    <div className="flex gap-3 flex-wrap mt-4">
-                      {banglesMultiImages.map((img, idx) => (
-                        <div key={idx} className="relative group rounded-md overflow-hidden shadow-sm border border-gray-100">
-                          <img
-                            src={img}
-                            alt="bangle"
-                            className="w-24 h-24 object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(idx, "Bangles")}
-                            className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xl cursor-pointer"
-                          >
-                            &times;
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
-                      Total Stock
-                    </label>
-                    <input
-                      type="number"
-                      value={banglesStock}
-                      onChange={(e) => setBanglesStock(Number(e.target.value))}
-                      placeholder="0"
-                      className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
-                    />
-                  </div>
-                </div>
-              )}
+              {/* Removed old Multi Color UI because we now use the color table for both */}
             </div>
           </div>
         )}
