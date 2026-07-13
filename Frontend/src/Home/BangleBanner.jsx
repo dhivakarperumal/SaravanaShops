@@ -9,7 +9,7 @@ const BangleBanner = () => {
   const handleBabyShowerClick = () => {
     navigate("/category", {
       state: {
-        selectedCategory: "Baby shower",
+        selectedCategory: "Baby Shower Combo 🎁",
       },
     });
   };
