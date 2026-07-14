@@ -234,9 +234,23 @@ const ProductModal = ({ product, onClose }) => {
       (c) => String(c.color).toLowerCase() === String(colorName).toLowerCase()
     );
     if (!colorObj) return 0;
-    const stockMap = colorObj.stock || {};
-    const raw = stockMap?.[sizeVal] ?? stockMap?.[String(sizeVal)] ?? 0;
-    const n = Number(raw);
+
+    const stockValue = colorObj.stock;
+    if (stockValue == null) return 0;
+
+    if (typeof stockValue === "object") {
+      if (sizeVal) {
+        const raw = stockValue?.[sizeVal] ?? stockValue?.[String(sizeVal)];
+        const n = Number(raw);
+        return Number.isNaN(n) ? 0 : n;
+      }
+      return Object.values(stockValue).reduce(
+        (sum, val) => sum + (Number(val) || 0),
+        0
+      );
+    }
+
+    const n = Number(stockValue);
     return Number.isNaN(n) ? 0 : n;
   };
 
@@ -248,10 +262,15 @@ const ProductModal = ({ product, onClose }) => {
 
   // Calculate max stock for current selection
   const maxStock = (() => {
-    if (isBangleSingleColor && selectedColor && selectedSize) {
+    if (selectedColor && selectedSize) {
       return getStockFor(selectedColor, selectedSize);
     }
-    return product?.stock || 0;
+    const rawStock = product?.stock;
+    if (rawStock != null && rawStock !== "") {
+      const n = Number(rawStock);
+      return Number.isNaN(n) ? 0 : n;
+    }
+    return 0;
   })();
 
   // Reset quantity to 1 when size or color changes
@@ -295,8 +314,8 @@ const ProductModal = ({ product, onClose }) => {
       setIsProcessing(false);
       return;
     }
-    if (isBangleSingleColor) {
-      if (!selectedSize) {
+    if (product?.colors?.length > 0) {
+      if (allSizes.length > 0 && !selectedSize) {
         toast.error("Please select a size.");
         setIsProcessing(false);
         return;

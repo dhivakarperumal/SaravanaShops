@@ -186,24 +186,74 @@ const ProductDetails = () => {
     return arr;
   }, [product]);
 
+  useEffect(() => {
+    if (!product?.colors?.length || !allSizes.length) return;
+    if (selectedSize && selectedColor) return;
+
+    const defaultVariant = getDefaultVariant();
+    if (defaultVariant) {
+      if (!selectedSize) setSelectedSize(defaultVariant.size);
+      if (!selectedColor) setSelectedColor(defaultVariant.color);
+      setStockForSelection(getStockFor(defaultVariant.color, defaultVariant.size));
+    }
+  }, [product, allSizes, selectedSize, selectedColor]);
+
+
   const getStockFor = (colorName, sizeVal) => {
     if (!product?.colors) return 0;
     const colorObj = product.colors.find(
       (c) => String(c.color).toLowerCase() === String(colorName).toLowerCase()
     );
     if (!colorObj) return 0;
-    const stockMap = colorObj.stock || {};
-    const raw = stockMap?.[sizeVal] ?? stockMap?.[String(sizeVal)] ?? 0;
-    const n = Number(raw);
+
+    const stockValue = colorObj.stock;
+    if (stockValue == null) return 0;
+
+    if (typeof stockValue === "object") {
+      if (sizeVal) {
+        const raw = stockValue?.[sizeVal] ?? stockValue?.[String(sizeVal)];
+        const n = Number(raw);
+        return Number.isNaN(n) ? 0 : n;
+      }
+      return Object.values(stockValue).reduce(
+        (sum, val) => sum + (Number(val) || 0),
+        0
+      );
+    }
+
+    const n = Number(stockValue);
     return Number.isNaN(n) ? 0 : n;
+  };
+
+  const getDefaultVariant = () => {
+    if (!product?.colors?.length || !allSizes.length) return null;
+    for (const sz of allSizes) {
+      for (const c of product.colors) {
+        if (getStockFor(c.color, sz) > 0) {
+          return { color: c.color, size: sz };
+        }
+      }
+    }
+    return null;
   };
 
   // Calculate max stock for current selection
   const maxStock = (() => {
-    if (isBangleSingleColor && selectedColor && selectedSize) {
+    if (selectedColor && selectedSize) {
       return getStockFor(selectedColor, selectedSize);
     }
-    return product?.stock || 0;
+    if (selectedColor) {
+      return getStockFor(selectedColor);
+    }
+    if (product?.colors?.length) {
+      return product.colors.reduce((sum, c) => sum + getStockFor(c.color), 0);
+    }
+    const rawStock = product?.stock;
+    if (rawStock != null && rawStock !== "") {
+      const n = Number(rawStock);
+      return Number.isNaN(n) ? 0 : n;
+    }
+    return 0;
   })();
 
   // Reset quantity to 1 when size or color changes
@@ -233,8 +283,8 @@ const ProductDetails = () => {
       toast.error(`Only ${maxStock} item(s) available.`);
       return false;
     }
-    if (isBangleSingleColor) {
-      if (!selectedSize) {
+    if (product?.colors?.length > 0) {
+      if (allSizes.length > 0 && !selectedSize) {
         toast.error("Please select a size.");
         return false;
       }
