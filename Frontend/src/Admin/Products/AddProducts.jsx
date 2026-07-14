@@ -795,48 +795,50 @@ export default function AddProducts() {
                     <table className="min-w-full table-fixed text-sm rounded-lg overflow-hidden">
                       <thead className="bg-primary text-white">
                         <tr>
-                          <th className="px-3 py-4 w-24">Color</th>
-                          <th className="px-3 py-4 w-48">Product Name</th>
+                          {banglesCountType === "SingleColor" && <th className="px-3 py-4 w-24">Color</th>}
+                          {banglesCountType === "SingleColor" && <th className="px-3 py-4 w-48">Product Name</th>}
                           <th className="px-3 py-4 w-56">Sizes</th>
-
                           <th className="px-3 py-4 w-40">Image</th>
-
                           <th className="px-3 py-4 w-20">Action</th>
                         </tr>
                       </thead>
                       <tbody>
                         {banglesColorTable.map((row) => (
                           <tr key={row.id}>
-                            <td className="border border-gray-200  p-2 align-middle">
-                              <input
-                                type="color"
-                                value={row.color || "#ffffff"}
-                                onChange={(e) =>
-                                  setBanglesColorTable((prev) =>
-                                    prev.map((r) =>
-                                      r.id === row.id
-                                        ? { ...r, color: e.target.value }
-                                        : r
+                            {banglesCountType === "SingleColor" && (
+                              <td className="border border-gray-200  p-2 align-middle">
+                                <input
+                                  type="color"
+                                  value={row.color || "#ffffff"}
+                                  onChange={(e) =>
+                                    setBanglesColorTable((prev) =>
+                                      prev.map((r) =>
+                                        r.id === row.id
+                                          ? { ...r, color: e.target.value }
+                                          : r
+                                      )
                                     )
-                                  )
-                                }
-                                className="w-16 h-8 border border-gray-300 rounded"
-                              />
-                            </td>
-                            <td className="border border-gray-300 p-2 align-middle">
-                              <input
-                                type="text"
-                                value={row.productName || ""}
-                                onChange={(e) =>
-                                  setBanglesColorTable((prev) =>
-                                    prev.map((r) =>
-                                      r.id === row.id ? { ...r, productName: e.target.value } : r
+                                  }
+                                  className="w-16 h-8 border border-gray-300 rounded"
+                                />
+                              </td>
+                            )}
+                            {banglesCountType === "SingleColor" && (
+                              <td className="border border-gray-300 p-2 align-middle">
+                                <input
+                                  type="text"
+                                  value={row.productName || ""}
+                                  onChange={(e) =>
+                                    setBanglesColorTable((prev) =>
+                                      prev.map((r) =>
+                                        r.id === row.id ? { ...r, productName: e.target.value } : r
+                                      )
                                     )
-                                  )
-                                }
-                                className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded px-2 py-1"
-                              />
-                            </td>
+                                  }
+                                  className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded px-2 py-1"
+                                />
+                              </td>
+                            )}
                             <td className="border border-gray-300 p-2 flex flex-wrap gap-1 align-top">
                               {bangleSizes.map((s) => (
                                 <label key={s} className="flex items-center gap-1">
@@ -933,40 +935,42 @@ export default function AddProducts() {
                         key={row.id}
                         className="border rounded p-2 shadow flex flex-col gap-2"
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold">Color</span>
-                          <input
-                            type="color"
-                            value={row.color || "#ffffff"}
-                            onChange={(e) =>
-                              setBanglesColorTable((prev) =>
-                                prev.map((r) =>
-                                  r.id === row.id
-                                    ? { ...r, color: e.target.value }
-                                    : r
-                                )
-                              )
-                            }
-                            className="w-16 h-8 border rounded"
-                          />
-                        </div>
-
-                        <div>
-                          <span className="font-semibold">Product Name:</span>
-                          <input
-                            type="text"
-                            value={row.productName || ""}
-                            onChange={(e) =>
-                              setBanglesColorTable((prev) =>
-                                prev.map((r) =>
-                                  r.id === row.id ? { ...r, productName: e.target.value } : r
-                                )
-                              )
-                            }
-                            className="w-full border rounded px-2 py-1 mt-1"
-                          />
-                        </div>
-
+                        {banglesCountType === "SingleColor" && (
+                          <>
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold">Color</span>
+                              <input
+                                type="color"
+                                value={row.color || "#ffffff"}
+                                onChange={(e) =>
+                                  setBanglesColorTable((prev) =>
+                                    prev.map((r) =>
+                                      r.id === row.id
+                                        ? { ...r, color: e.target.value }
+                                        : r
+                                    )
+                                  )
+                                }
+                                className="w-16 h-8 border rounded"
+                              />
+                            </div>
+                            <div>
+                              <span className="font-semibold">Product Name:</span>
+                              <input
+                                type="text"
+                                value={row.productName || ""}
+                                onChange={(e) =>
+                                  setBanglesColorTable((prev) =>
+                                    prev.map((r) =>
+                                      r.id === row.id ? { ...r, productName: e.target.value } : r
+                                    )
+                                  )
+                                }
+                                className="w-full border rounded px-2 py-1 mt-1"
+                              />
+                            </div>
+                          </>
+                        )}
                         <div>
                           <span className="font-semibold">Sizes:</span>
                           <div className="flex flex-wrap gap-1 mt-1">
