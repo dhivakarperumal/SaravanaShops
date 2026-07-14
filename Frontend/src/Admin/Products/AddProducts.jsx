@@ -781,13 +781,15 @@ export default function AddProducts() {
                 <div>
                   <h3 className="font-bold text-gray-800 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <span>Colors & Stock Inventory</span>
-                    <button
-                      type="button"
-                      onClick={handleAddBangleRow}
-                      className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-md hover:bg-primary hover:text-white transition-all cursor-pointer"
-                    >
-                      + Add New Color
-                    </button>
+                    {banglesCountType === "SingleColor" && (
+                      <button
+                        type="button"
+                        onClick={handleAddBangleRow}
+                        className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-md hover:bg-primary hover:text-white transition-all cursor-pointer"
+                      >
+                        + Add New Color
+                      </button>
+                    )}
                   </h3>
 
                   {/* Desktop Table */}
@@ -1062,15 +1064,17 @@ export default function AddProducts() {
                     ))}
                   </div>
 
-                  <div className="mt-4 flex justify-end lg:hidden">
-                    <button
-                      type="button"
-                      onClick={handleAddBangleRow}
-                      className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary hover:text-white transition-all cursor-pointer"
-                    >
-                      + Add New Color
-                    </button>
-                  </div>
+                  {banglesCountType === "SingleColor" && (
+                    <div className="mt-4 flex justify-end lg:hidden">
+                      <button
+                        type="button"
+                        onClick={handleAddBangleRow}
+                        className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary hover:text-white transition-all cursor-pointer"
+                      >
+                        + Add New Color
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
