@@ -23,16 +23,25 @@ export default function StockDetails() {
   const navigate = useNavigate();
 
   const calculateColorStock = (c) => {
-    if (!c.stock) return 0;
-    return Object.values(c.stock).reduce((sum, val) => sum + (Number(val) || 0), 0);
+    if (!c || typeof c !== "object") return 0;
+
+    if (c.stock && typeof c.stock === "object") {
+      return Object.values(c.stock).reduce((sum, val) => sum + (Number(val) || 0), 0);
+    }
+
+    return Number(c.stock) || 0;
   };
 
   const calculateTotalStock = (p) => {
-    if (p.productType === "Bangles" && p.count === "SingleColor") {
-      if (!p.colors || !Array.isArray(p.colors)) return 0;
+    if (p?.productType === "Bangles" && Array.isArray(p?.colors) && p.colors.length > 0) {
       return p.colors.reduce((total, c) => total + calculateColorStock(c), 0);
     }
-    return p.stock || 0;
+
+    if (Number.isFinite(Number(p?.stock))) {
+      return Number(p.stock) || 0;
+    }
+
+    return 0;
   };
 
   const getImg = (p) =>
@@ -267,7 +276,26 @@ export default function StockDetails() {
                                   </tr>
                                 ))}
                                 {p.productType === "Bangles" && p.count === "MultiColor" && (
-                                  <tr className="text-center"><td className="px-3 py-3 font-medium">Bangles</td><td className="px-3 py-3">{p.stock}</td></tr>
+                                  <>
+                                    {p.colors?.map(c => (
+                                      <tr key={`${p.productId}-${c.id || c.color}`} className="border-t border-gray-100 text-center">
+                                        <td className="px-3 py-3">
+                                          <div className="flex items-center justify-center gap-2">
+                                            <div className="w-4 h-4 rounded-full shadow-sm border border-gray-200" style={{ backgroundColor: c.color }} title={c.color}></div>
+                                            <span className="font-medium">{c.color || "Default"}</span>
+                                          </div>
+                                        </td>
+                                        <td className="px-3 py-3 text-gray-600">
+                                          <div className="flex flex-wrap justify-center gap-2 mb-1">
+                                            {c.size?.map(sz => (
+                                              <span key={sz} className="bg-gray-100 px-2 py-0.5 rounded text-xs">{sz}: {c.stock?.[sz] ?? 0}</span>
+                                            ))}
+                                          </div>
+                                          <div className="font-semibold text-xs text-primary">Total for color: {calculateColorStock(c)}</div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </>
                                 )}
                                 {p.productType === "Sarees" && (
                                   <tr className="text-center"><td className="px-3 py-3 font-medium">Saree Stock</td><td className="px-3 py-3">{p.stock}</td></tr>
@@ -337,7 +365,20 @@ export default function StockDetails() {
                       </div>
                     ))}
                     {p.productType === "Bangles" && p.count === "MultiColor" && (
-                      <div className="text-xs">Bangles Total Stock: {p.stock}</div>
+                      <div className="space-y-2">
+                        {p.colors?.map(c => (
+                          <div key={`${p.productId}-${c.id || c.color}`} className="bg-gray-50 p-2 rounded text-xs">
+                            <div className="flex items-center gap-1.5 font-semibold mb-1">
+                              <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: c.color }}></div>
+                              <span>{c.color || "Default"}</span>
+                              <span className="ml-auto text-primary">Total: {calculateColorStock(c)}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1 text-[10px] text-gray-600">
+                              {c.size?.map(sz => <span key={sz} className="bg-white px-1 border border-gray-200 rounded">{sz}: {c.stock?.[sz] ?? 0}</span>)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                     {p.productType === "Sarees" && (
                       <div className="text-xs">Saree Stock: {p.stock}</div>
