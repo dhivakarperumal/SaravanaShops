@@ -56,18 +56,18 @@ exports.getDashboardStats = async (req, res) => {
 
     // Helper: compute true total stock for a product
     const computeTotalStock = (row) => {
-      if (row.productType === 'Bangles' && row.count === 'SingleColor') {
-        try {
-          const colors = typeof row.colors === 'string' ? JSON.parse(row.colors) : row.colors;
-          if (Array.isArray(colors)) {
-            return colors.reduce((total, c) => {
-              if (c.stock && typeof c.stock === 'object') {
-                return total + Object.values(c.stock).reduce((sum, v) => sum + (Number(v) || 0), 0);
-              }
-              return total;
-            }, 0);
-          }
-        } catch (e) { /* fallback to stock column */ }
+      try {
+        const colors = typeof row.colors === 'string' ? JSON.parse(row.colors) : row.colors;
+        if (Array.isArray(colors) && colors.length > 0) {
+          return colors.reduce((total, c) => {
+            if (c?.stock && typeof c.stock === 'object') {
+              return total + Object.values(c.stock).reduce((sum, v) => sum + (Number(v) || 0), 0);
+            }
+            return total + (Number(c?.stock) || 0);
+          }, 0);
+        }
+      } catch (e) {
+        // fallback to stock column
       }
       return Number(row.stock) || 0;
     };
@@ -165,18 +165,18 @@ exports.getHeaderStats = async (req, res) => {
 
     // Compute real total stock for each product and filter low stock
     const computeTotalStock = (row) => {
-      if (row.productType === 'Bangles' && row.count === 'SingleColor') {
-        try {
-          const colors = typeof row.colors === 'string' ? JSON.parse(row.colors) : row.colors;
-          if (Array.isArray(colors)) {
-            return colors.reduce((total, c) => {
-              if (c.stock && typeof c.stock === 'object') {
-                return total + Object.values(c.stock).reduce((sum, v) => sum + (Number(v) || 0), 0);
-              }
-              return total;
-            }, 0);
-          }
-        } catch (e) { /* fallback */ }
+      try {
+        const colors = typeof row.colors === 'string' ? JSON.parse(row.colors) : row.colors;
+        if (Array.isArray(colors) && colors.length > 0) {
+          return colors.reduce((total, c) => {
+            if (c?.stock && typeof c.stock === 'object') {
+              return total + Object.values(c.stock).reduce((sum, v) => sum + (Number(v) || 0), 0);
+            }
+            return total + (Number(c?.stock) || 0);
+          }, 0);
+        }
+      } catch (e) {
+        // fallback to stock column
       }
       return Number(row.stock) || 0;
     };
