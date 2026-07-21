@@ -275,32 +275,64 @@ const Checkout = () => {
 
   /* ------------------------- Shipping calculation ----------------------- */
   useEffect(() => {
-    // original logic: base cost depends on state + extra blocks for > 6 dozen
-    // Here we used totalQuantity directly; keep the old bucket logic
     const computeShipping = () => {
-      const totalDozen = Math.ceil(totalQuantity); // the original used Math.ceil(totalQuantity)
-      let baseCost = 0;
-      const southStates = ["Kerala", "Karnataka", "Andhra Pradesh", "Telangana"];
-      const tamilNadu = "Tamil Nadu";
-      const northStates = indianStates.filter(
-        (st) => ![...southStates, tamilNadu].includes(st)
-      );
+      const quantity = Math.max(1, Number(totalQuantity) || 0);
+      const state = (shipping.state || "").trim();
 
-      if (shipping.state === tamilNadu) baseCost = 60;
-      else if (southStates.includes(shipping.state)) baseCost = 80;
-      else if (northStates.includes(shipping.state)) baseCost = 200;
-      else baseCost = 0;
+      const getRegion = () => {
+        if (state === "Tamil Nadu") return "tamilnadu";
 
-      if (totalDozen <= 6) {
-        setShippingCost(baseCost);
-      } else {
-        const extraDozenBlocks = Math.ceil((totalDozen - 4) / 4);
-        setShippingCost(baseCost + extraDozenBlocks * 20);
-      }
+        const southStates = [
+          "Andhra Pradesh",
+          "Telangana",
+          "Karnataka",
+          "Kerala",
+        ];
+
+        if (southStates.includes(state)) {
+          return "south";
+        }
+
+        if (state) {
+          return "north";
+        }
+
+        return "default";
+      };
+
+      const getCostForRegion = (region) => {
+        if (region === "tamilnadu") {
+          if (quantity <= 5) return 60;
+          if (quantity <= 9) return 80;
+          if (quantity <= 15) return 100;
+          if (quantity <= 25) return 120;
+          return 150;
+        }
+
+        if (region === "south") {
+          if (quantity <= 5) return 100;
+          if (quantity <= 9) return 120;
+          if (quantity <= 15) return 150;
+          if (quantity <= 25) return 170;
+          return 220;
+        }
+
+        if (region === "north") {
+          if (quantity <= 5) return 190;
+          if (quantity <= 9) return 250;
+          if (quantity <= 15) return 300;
+          if (quantity <= 25) return 350;
+          return 400;
+        }
+
+        return 0;
+      };
+
+      setShippingCost(getCostForRegion(getRegion()));
     };
 
     computeShipping();
-  }, [totalQuantity, shipping.state]);
+  }, [totalQuantity, shipping.state, shipping.city]);
 
   /* ------------------------- Form handlers ----------------------------- */
   const handleChange = (e) => {
@@ -557,7 +589,7 @@ const Checkout = () => {
         country: prev.country || "India",
       }));
     }
-  }, [selectedAddressId, savedAddresses]); // eslint-disable-line
+  }, [selectedAddressId, savedAddresses]);
 
   /* ---------------------------- Render UI ------------------------------- */
   if (loading) {

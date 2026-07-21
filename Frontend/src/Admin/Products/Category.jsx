@@ -13,21 +13,22 @@ const EMPTY_FORM = { catId: "", cname: "", cdescription: "", cimgs: [], subcateg
 const Category = () => {
   // ── Data ─────────────────────────────────────────────
   const [categories, setCategories] = useState([]);
-  const [loading,    setLoading]    = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // ── Modal ─────────────────────────────────────────────
-  const [showModal,   setShowModal]   = useState(false);
-  const [editId,      setEditId]      = useState(null);
-  const [form,        setForm]        = useState(EMPTY_FORM);
+  const [showModal, setShowModal] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
   const [subcatInput, setSubcatInput] = useState("");
   const [previewImgs, setPreviewImgs] = useState([]);
   const fileRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // ── Toolbar ───────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode,    setViewMode]    = useState("card");
-  const [filterOpen,  setFilterOpen]  = useState(false);
-  const [filterSub,   setFilterSub]   = useState(""); // filter by subcategory
+  const [viewMode, setViewMode] = useState("card");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterSub, setFilterSub] = useState(""); // filter by subcategory
 
   // ── Fetch all ─────────────────────────────────────────
   const fetchCategories = async () => {
@@ -44,10 +45,28 @@ const Category = () => {
       const res = await api.get("/categories/nextid");
       if (res.data.success)
         setForm((prev) => ({ ...prev, catId: res.data.catId }));
-    } catch {/* silent */}
+    } catch {/* silent */ }
   };
 
   useEffect(() => { fetchCategories(); }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+
+      setIsMobile(mobile);
+
+      if (mobile) {
+        setViewMode("card");
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // ── Open modal for add ────────────────────────────────
   const openAddModal = async () => {
@@ -62,12 +81,12 @@ const Category = () => {
   // ── Open modal for edit ───────────────────────────────
   const openEditModal = (cat) => {
     setForm({
-      catId:         cat.catId,
-      cname:         cat.cname,
-      cdescription:  cat.cdescription,
-      cimgs:         cat.cimgs || [],
+      catId: cat.catId,
+      cname: cat.cname,
+      cdescription: cat.cdescription,
+      cimgs: cat.cimgs || [],
       subcategories: cat.subcategories || [],
-      productType:   cat.productType || "Bangles",
+      productType: cat.productType || "Bangles",
     });
     setSubcatInput("");
     setPreviewImgs(cat.cimgs || []);
@@ -98,7 +117,7 @@ const Category = () => {
           (f) =>
             new Promise((res, rej) => {
               const reader = new FileReader();
-              reader.onload  = () => res(reader.result);
+              reader.onload = () => res(reader.result);
               reader.onerror = rej;
               reader.readAsDataURL(f);
             })
@@ -207,11 +226,10 @@ const Category = () => {
           <div className="relative">
             <button
               onClick={() => setFilterOpen((p) => !p)}
-              className={`relative flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all duration-200 cursor-pointer ${
-                filterOpen || activeFilterCount > 0
-                  ? "bg-primary text-white border-primary shadow-md"
-                  : "bg-gray-50 text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
-              }`}
+              className={`relative flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all duration-200 cursor-pointer ${filterOpen || activeFilterCount > 0
+                ? "bg-primary text-white border-primary shadow-md"
+                : "bg-gray-50 text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
+                }`}
             >
               <FaFilter className="text-xs" />
               <span className="hidden sm:inline">Filter</span>
@@ -241,11 +259,10 @@ const Category = () => {
                       <button
                         key={s}
                         onClick={() => { setFilterSub(s === filterSub ? "" : s); setFilterOpen(false); }}
-                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                          filterSub === s
-                            ? "bg-primary/10 text-primary font-semibold"
-                            : "text-gray-700 hover:bg-gray-50"
-                        }`}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${filterSub === s
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "text-gray-700 hover:bg-gray-50"
+                          }`}
                       >
                         {s}
                       </button>
@@ -257,20 +274,22 @@ const Category = () => {
           </div>
 
           {/* View mode */}
-          <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
-            <button
-              onClick={() => setViewMode("card")} title="Card View"
-              className={`p-1.5 sm:p-2 rounded-lg transition-all cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
-            >
-              <FaTh className="text-xs sm:text-sm" />
-            </button>
-            <button
-              onClick={() => setViewMode("table")} title="Table View"
-              className={`p-1.5 sm:p-2 rounded-lg transition-all cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
-            >
-              <FaList className="text-xs sm:text-sm" />
-            </button>
-          </div>
+          {!isMobile && (
+            <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+              <button
+                onClick={() => setViewMode("card")} title="Card View"
+                className={`p-1.5 sm:p-2 rounded-lg transition-all cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
+              >
+                <FaTh className="text-xs sm:text-sm" />
+              </button>
+              <button
+                onClick={() => setViewMode("table")} title="Table View"
+                className={`p-1.5 sm:p-2 rounded-lg transition-all cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"}`}
+              >
+                <FaList className="text-xs sm:text-sm" />
+              </button>
+            </div>
+          )}
 
           {/* Add Category */}
           <button
@@ -300,15 +319,15 @@ const Category = () => {
       )}
 
       {/* ── CARD MODE ─────────────────────────────────── */}
-      {viewMode === "card" && displayed.length > 0 && (
-        <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {(isMobile || viewMode === "card") && displayed.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {displayed.map((cat) => (
             <div
               key={cat.id}
               className="group bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-2 border-gray-200 overflow-hidden hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:border-primary/40 hover:-translate-y-1.5 transition-all duration-300 flex flex-col"
             >
               {/* Image Section */}
-              <div className="relative h-56 bg-gray-100 overflow-hidden">
+              <div className="relative h-44 sm:h-56 bg-gray-100 overflow-hidden">
                 {cat.cimgs?.[0] ? (
                   <img
                     src={cat.cimgs[0]}
@@ -320,7 +339,7 @@ const Category = () => {
                     <MdOutlineCategory className="text-6xl text-gray-200" />
                   </div>
                 )}
-                
+
                 {/* Floating ID Badge */}
                 <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg shadow-sm border border-white/20">
                   <span className="text-[10px] font-black text-gray-700 tracking-wider uppercase">{cat.catId}</span>
@@ -339,7 +358,7 @@ const Category = () => {
                     +{cat.cimgs.length - 1}
                   </div>
                 )}
-                
+
                 {/* Subtle gradient overlay at bottom of image for text contrast if needed */}
                 <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
@@ -349,7 +368,7 @@ const Category = () => {
                 <h3 className="font-extrabold text-gray-800 text-lg sm:text-xl truncate mb-1.5 group-hover:text-primary transition-colors">
                   {cat.cname}
                 </h3>
-                
+
                 {cat.cdescription && (
                   <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed mb-4">
                     {cat.cdescription}
@@ -398,7 +417,7 @@ const Category = () => {
       )}
 
       {/* ── TABLE MODE ────────────────────────────────── */}
-      {viewMode === "table" && displayed.length > 0 && (
+      {!isMobile && viewMode === "table" && displayed.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto w-full">
             <table className="w-full text-sm min-w-[680px]">
@@ -490,7 +509,7 @@ const Category = () => {
           />
 
           {/* Modal Panel */}
-          <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
+          <div className="relative w-full max-w-lg sm:max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
 
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-primary/10 flex-shrink-0">
@@ -517,7 +536,7 @@ const Category = () => {
 
             {/* Modal Body — scrollable */}
             <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
-              <div className="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="px-4 sm:px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-5">
 
                 {/* Cat ID */}
                 <div>

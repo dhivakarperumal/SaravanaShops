@@ -58,7 +58,17 @@ export default function AddProducts() {
   const [jewelImages, setJewelImages] = useState([]);
   const [jewelStock, setJewelStock] = useState("");
 
-  const bangleSizes = [2.2, 2.4, 2.6, 2.8, 2.10, 2.12];
+  const bangleSizes = [
+    "2.0",
+    "2.2",
+    "2.4",
+    "2.6",
+    "2.8",
+    "2.10",
+    "2.12",
+    "2.14",
+    "3.0"
+  ];
 
   const ensureFlatArray = (val) => {
     if (val == null) return [];
@@ -386,8 +396,7 @@ export default function AddProducts() {
     if (initialData.productType === "Bangles") {
       setBanglesCountType(initialData.count || "SingleColor");
 
-      // SingleColor: restore colors table with sizes and stock
-      if (initialData.count === "SingleColor" && Array.isArray(initialData.colors)) {
+      if (Array.isArray(initialData.colors)) {
         const restoreColorTable = initialData.colors.map((color, idx) => ({
           id: idx + 1,
           color: color.color || "#ffffff",
@@ -402,11 +411,15 @@ export default function AddProducts() {
         }));
         setBanglesColorTable(restoreColorTable);
       } else if (initialData.count === "MultiColor") {
-        // MultiColor: restore multi images and stock
-        if (Array.isArray(initialData.images)) {
-          setBanglesMultiImages(initialData.images);
-        }
-        setBanglesStock(initialData.stock || "");
+        // Fallback for old MultiColor data format
+        setBanglesColorTable([{
+          id: 1,
+          color: "#ffffff",
+          size: [],
+          stock: {},
+          images: Array.isArray(initialData.images) ? initialData.images : [],
+          productName: "",
+        }]);
       }
     }
 
@@ -457,17 +470,12 @@ export default function AddProducts() {
       // product-type specific mapping (convert stocks etc.)
       if (productType === "Bangles") {
         data.count = banglesCountType;
-        if (banglesCountType === "SingleColor") {
-          data.colors = banglesColorTable.map((row) => ({
-            ...row,
-            stock: Object.fromEntries(
-              Object.entries(row.stock || {}).map(([size, val]) => [size, Number(val) || 0])
-            ),
-          }));
-        } else {
-          data.images = ensureFlatArray(banglesMultiImages);
-          data.stock = Number(banglesStock) || 0;
-        }
+        data.colors = banglesColorTable.map((row) => ({
+          ...row,
+          stock: Object.fromEntries(
+            Object.entries(row.stock || {}).map(([size, val]) => [size, Number(val) || 0])
+          ),
+        }));
       }
       if (productType === "Sarees") {
         data.fabricdetails = [sareeFabricType, sareeBlouseAvailable];
@@ -542,11 +550,11 @@ export default function AddProducts() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50 px-2 py-3 sm:px-4 sm:py-5 lg:px-8 lg:py-8">
       {/* Header */}
-      <div className="max-w-6xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-gray-800 tracking-tight">
             {productId ? "Edit Product" : "Add New Product"}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -682,7 +690,7 @@ export default function AddProducts() {
               </h2>
             </div> */}
 
-            <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
                   MRP (₹) <span className="text-red-500">*</span>
@@ -753,7 +761,7 @@ export default function AddProducts() {
               <h2 className="text-base font-bold text-white">Bangles Specifics</h2>
             </div>
 
-            <div className="p-6 sm:p-8">
+            <div className="p-4 sm:p-6 lg:p-8 w-full overflow-x-hidden">
               <div className="mb-6 max-w-sm">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
                   Count Type
@@ -768,67 +776,71 @@ export default function AddProducts() {
                 </select>
               </div>
 
-              {/* Single Color Table */}
-              {banglesCountType === "SingleColor" && (
+              {/* Color Table for both Single and Multi Color */}
+              {(banglesCountType === "SingleColor" || banglesCountType === "MultiColor") && (
                 <div>
-                  <h3 className="font-bold text-gray-800 mb-4 flex items-center justify-between">
+                  <h3 className="font-bold text-gray-800 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <span>Colors & Stock Inventory</span>
-                    <button
-                      type="button"
-                      onClick={handleAddBangleRow}
-                      className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-md hover:bg-primary hover:text-white transition-all cursor-pointer"
-                    >
-                      + Add New Color
-                    </button>
+                    {banglesCountType === "SingleColor" && (
+                      <button
+                        type="button"
+                        onClick={handleAddBangleRow}
+                        className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-md hover:bg-primary hover:text-white transition-all cursor-pointer"
+                      >
+                        + Add New Color
+                      </button>
+                    )}
                   </h3>
 
                   {/* Desktop Table */}
-                  <div className="hidden sm:block bg-white shadow rounded-2xl overflow-x-auto">
+                  <div className="hidden lg:block bg-white shadow rounded-2xl overflow-x-auto">
                     <table className="min-w-full table-fixed text-sm rounded-lg overflow-hidden">
                       <thead className="bg-primary text-white">
                         <tr>
-                          <th className="px-3 py-4 w-24">Color</th>
-                          <th className="px-3 py-4 w-48">Product Name</th>
+                          {banglesCountType === "SingleColor" && <th className="px-3 py-4 w-24">Color</th>}
+                          {banglesCountType === "SingleColor" && <th className="px-3 py-4 w-48">Product Name</th>}
                           <th className="px-3 py-4 w-56">Sizes</th>
-
                           <th className="px-3 py-4 w-40">Image</th>
-
                           <th className="px-3 py-4 w-20">Action</th>
                         </tr>
                       </thead>
                       <tbody>
                         {banglesColorTable.map((row) => (
                           <tr key={row.id}>
-                            <td className="border border-gray-200  p-2 align-middle">
-                              <input
-                                type="color"
-                                value={row.color || "#ffffff"}
-                                onChange={(e) =>
-                                  setBanglesColorTable((prev) =>
-                                    prev.map((r) =>
-                                      r.id === row.id
-                                        ? { ...r, color: e.target.value }
-                                        : r
+                            {banglesCountType === "SingleColor" && (
+                              <td className="border border-gray-200  p-2 align-middle">
+                                <input
+                                  type="color"
+                                  value={row.color || "#ffffff"}
+                                  onChange={(e) =>
+                                    setBanglesColorTable((prev) =>
+                                      prev.map((r) =>
+                                        r.id === row.id
+                                          ? { ...r, color: e.target.value }
+                                          : r
+                                      )
                                     )
-                                  )
-                                }
-                                className="w-16 h-8 border border-gray-300 rounded"
-                              />
-                            </td>
-                            <td className="border border-gray-300 p-2 align-middle">
-                              <input
-                                type="text"
-                                value={row.productName || ""}
-                                onChange={(e) =>
-                                  setBanglesColorTable((prev) =>
-                                    prev.map((r) =>
-                                      r.id === row.id ? { ...r, productName: e.target.value } : r
+                                  }
+                                  className="w-16 h-8 border border-gray-300 rounded"
+                                />
+                              </td>
+                            )}
+                            {banglesCountType === "SingleColor" && (
+                              <td className="border border-gray-300 p-2 align-middle">
+                                <input
+                                  type="text"
+                                  value={row.productName || ""}
+                                  onChange={(e) =>
+                                    setBanglesColorTable((prev) =>
+                                      prev.map((r) =>
+                                        r.id === row.id ? { ...r, productName: e.target.value } : r
+                                      )
                                     )
-                                  )
-                                }
-                                className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded px-2 py-1"
-                              />
-                            </td>
+                                  }
+                                  className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded px-2 py-1"
+                                />
+                              </td>
+                            )}
                             <td className="border border-gray-300 p-2 flex flex-wrap gap-1 align-top">
                               {bangleSizes.map((s) => (
                                 <label key={s} className="flex items-center gap-1">
@@ -919,46 +931,48 @@ export default function AddProducts() {
                   </div>
 
                   {/* Mobile Cards */}
-                  <div className="md:hidden flex flex-col gap-2">
+                  <div className="block lg:hidden space-y-4">
                     {banglesColorTable.map((row) => (
                       <div
                         key={row.id}
                         className="border rounded p-2 shadow flex flex-col gap-2"
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold">Color</span>
-                          <input
-                            type="color"
-                            value={row.color || "#ffffff"}
-                            onChange={(e) =>
-                              setBanglesColorTable((prev) =>
-                                prev.map((r) =>
-                                  r.id === row.id
-                                    ? { ...r, color: e.target.value }
-                                    : r
-                                )
-                              )
-                            }
-                            className="w-16 h-8 border rounded"
-                          />
-                        </div>
-
-                        <div>
-                          <span className="font-semibold">Product Name:</span>
-                          <input
-                            type="text"
-                            value={row.productName || ""}
-                            onChange={(e) =>
-                              setBanglesColorTable((prev) =>
-                                prev.map((r) =>
-                                  r.id === row.id ? { ...r, productName: e.target.value } : r
-                                )
-                              )
-                            }
-                            className="w-full border rounded px-2 py-1 mt-1"
-                          />
-                        </div>
-
+                        {banglesCountType === "SingleColor" && (
+                          <>
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold">Color</span>
+                              <input
+                                type="color"
+                                value={row.color || "#ffffff"}
+                                onChange={(e) =>
+                                  setBanglesColorTable((prev) =>
+                                    prev.map((r) =>
+                                      r.id === row.id
+                                        ? { ...r, color: e.target.value }
+                                        : r
+                                    )
+                                  )
+                                }
+                                className="w-16 h-8 border rounded"
+                              />
+                            </div>
+                            <div>
+                              <span className="font-semibold">Product Name:</span>
+                              <input
+                                type="text"
+                                value={row.productName || ""}
+                                onChange={(e) =>
+                                  setBanglesColorTable((prev) =>
+                                    prev.map((r) =>
+                                      r.id === row.id ? { ...r, productName: e.target.value } : r
+                                    )
+                                  )
+                                }
+                                className="w-full border rounded px-2 py-1 mt-1"
+                              />
+                            </div>
+                          </>
+                        )}
                         <div>
                           <span className="font-semibold">Sizes:</span>
                           <div className="flex flex-wrap gap-1 mt-1">
@@ -1050,77 +1064,32 @@ export default function AddProducts() {
                     ))}
                   </div>
 
-                  <div className="mt-4 flex justify-end md:hidden">
-                    <button
-                      type="button"
-                      onClick={handleAddBangleRow}
-                      className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary hover:text-white transition-all cursor-pointer"
-                    >
-                      + Add New Color
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Multi Color */}
-              {banglesCountType === "MultiColor" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
-                      Upload Images
-                    </label>
-                    <input
-                      type="file"
-                      multiple
-                      ref={fileInputRefs.Bangles}
-                      onChange={(e) => handleFiles(e, "Bangles")}
-                      className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-md px-4 py-3 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
-                    />
-                    <div className="flex gap-3 flex-wrap mt-4">
-                      {banglesMultiImages.map((img, idx) => (
-                        <div key={idx} className="relative group rounded-md overflow-hidden shadow-sm border border-gray-100">
-                          <img
-                            src={img}
-                            alt="bangle"
-                            className="w-24 h-24 object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(idx, "Bangles")}
-                            className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xl cursor-pointer"
-                          >
-                            &times;
-                          </button>
-                        </div>
-                      ))}
+                  {banglesCountType === "SingleColor" && (
+                    <div className="mt-4 flex justify-end lg:hidden">
+                      <button
+                        type="button"
+                        onClick={handleAddBangleRow}
+                        className="px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary hover:text-white transition-all cursor-pointer"
+                      >
+                        + Add New Color
+                      </button>
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
-                      Total Stock
-                    </label>
-                    <input
-                      type="number"
-                      value={banglesStock}
-                      onChange={(e) => setBanglesStock(Number(e.target.value))}
-                      placeholder="0"
-                      className="w-full bg-white border-2 border-[#d7c1ff] rounded-xl px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-[#8c52ff] focus:ring-4 focus:ring-[#8c52ff]/15 outline-none transition-all rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
-                    />
-                  </div>
+                  )}
                 </div>
               )}
+
+              {/* Removed old Multi Color UI because we now use the color table for both */}
             </div>
           </div>
         )}
 
         {/* SAREES */}
         {productType === "Sarees" && (
-          <div className="bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
+          <div className="w-full max-w-full bg-[#f4edff] rounded-3xl border border-[#d9c2ff] shadow-lg shadow-purple-100/70 overflow-hidden">
             <div className="bg-primary border-b border-[#c8a8ff] px-6 sm:px-8 py-4">
               <h2 className="text-base font-bold text-white">Saree Specifics</h2>
             </div>
-            <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Fabric Type</label>
                 <input
@@ -1201,7 +1170,7 @@ export default function AddProducts() {
                     + Add Item
                   </button>
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {jewelListItems.map((item, idx) => (
                     <div key={idx} className="flex gap-2 items-center">
                       <input
@@ -1231,7 +1200,7 @@ export default function AddProducts() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Upload Images</label>
                   <input
@@ -1273,17 +1242,17 @@ export default function AddProducts() {
         )}
 
         {/* Submit Section */}
-        <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6">
           <button
             onClick={() => navigate("/superadmin/allproducts")}
-            className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all cursor-pointer"
+            className="w-full md:w-auto px-6 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full sm:w-auto px-10 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-bold shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full md:w-auto px-10 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-bold shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? "Saving..." : "Save Product"}
           </button>

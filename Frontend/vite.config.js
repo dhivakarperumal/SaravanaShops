@@ -10,12 +10,12 @@ export default defineConfig({
     proxy: {
       "/api": {
         // target: "http://localhost:5000",
-        target: "https://saravanashops.qtechx.com",
+        target: "https://saravanashoppings.qtechx.com",
         changeOrigin: true,
         secure: false,
       },
       '/proxy-uploads': {
-        target: 'https://saravanashops.qtechx.com/uploads',
+        target: 'https://saravanashoppings.qtechx.com/uploads',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/proxy-uploads/, '')
       }

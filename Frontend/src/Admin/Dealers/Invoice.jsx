@@ -38,17 +38,18 @@ const formFields = [
 ];
 
 const Invoice = () => {
-  const [invoiceList, setInvoiceList]   = useState([]);
-  const [invoiceData, setInvoiceData]   = useState(emptyForm);
-  const [editingId, setEditingId]       = useState(null);
-  const [showModal, setShowModal]       = useState(false);
-  const [loading, setLoading]           = useState(false);
+  const [invoiceList, setInvoiceList] = useState([]);
+  const [invoiceData, setInvoiceData] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Toolbar state
-  const [searchQuery, setSearchQuery]   = useState("");
-  const [viewMode, setViewMode]         = useState("table");
-  const [showFilters, setShowFilters]   = useState(false);
-  const [filters, setFilters]           = useState({
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState("table");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
     dateFrom: "",
     dateTo: "",
     minValue: "",
@@ -77,6 +78,24 @@ const Invoice = () => {
 
   useEffect(() => { fetchInvoices(); }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+
+      setIsMobile(mobile);
+
+      if (mobile) {
+        setViewMode("card");
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // ── Filter / search ────────────────────────────────────────────────────────
   const displayed = invoiceList.filter((inv) => {
     const q = searchQuery.toLowerCase();
@@ -87,7 +106,7 @@ const Invoice = () => {
 
     const invDate = (inv.invoiceDate || "").slice(0, 10);
     const matchFrom = !filters.dateFrom || invDate >= filters.dateFrom;
-    const matchTo   = !filters.dateTo   || invDate <= filters.dateTo;
+    const matchTo = !filters.dateTo || invDate <= filters.dateTo;
 
     const total = parseFloat(inv.invoiceTotalValue) || 0;
     const matchMin = !filters.minValue || total >= parseFloat(filters.minValue);
@@ -105,7 +124,7 @@ const Invoice = () => {
     const { name, value } = e.target;
     setInvoiceData((prev) => {
       const newData = { ...prev, [name]: value };
-      
+
       // Auto-calculate Total Value
       if (['invoiceValue', 'invoiceGSTValue', 'transportAmount'].includes(name)) {
         const val = parseFloat(newData.invoiceValue) || 0;
@@ -113,7 +132,7 @@ const Invoice = () => {
         const transport = parseFloat(newData.transportAmount) || 0;
         newData.invoiceTotalValue = Number((val + gst + transport).toFixed(2)).toString();
       }
-      
+
       return newData;
     });
   };
@@ -131,7 +150,7 @@ const Invoice = () => {
     reader.readAsDataURL(file);
   };
 
-  const resetForm    = () => { setInvoiceData(emptyForm); setEditingId(null); };
+  const resetForm = () => { setInvoiceData(emptyForm); setEditingId(null); };
 
   const generateInvoiceNo = () => {
     if (!invoiceList || invoiceList.length === 0) return "INV001";
@@ -146,22 +165,22 @@ const Invoice = () => {
     return `INV${String(max + 1).padStart(3, "0")}`;
   };
 
-  const openAddModal = () => { 
-    resetForm(); 
+  const openAddModal = () => {
+    resetForm();
     setInvoiceData((prev) => ({ ...prev, invoiceNo: generateInvoiceNo() }));
-    setShowModal(true); 
+    setShowModal(true);
   };
 
   const openEditModal = (inv) => {
     setInvoiceData({
-      invoiceNo:         inv.invoiceNo,
-      invoiceDate:       (inv.invoiceDate || "").slice(0, 10),
-      invoiceValue:      inv.invoiceValue ?? "",
-      invoiceGSTValue:   inv.invoiceGSTValue ?? "",
+      invoiceNo: inv.invoiceNo,
+      invoiceDate: (inv.invoiceDate || "").slice(0, 10),
+      invoiceValue: inv.invoiceValue ?? "",
+      invoiceGSTValue: inv.invoiceGSTValue ?? "",
       invoiceTotalValue: inv.invoiceTotalValue ?? "",
-      transportAmount:   inv.transportAmount ?? "",
-      billPdfBase64:     inv.billPdfBase64 || null,
-      billPdfName:       inv.billPdfName || "",
+      transportAmount: inv.transportAmount ?? "",
+      billPdfBase64: inv.billPdfBase64 || null,
+      billPdfName: inv.billPdfName || "",
     });
     setEditingId(inv.id);
     setShowModal(true);
@@ -221,13 +240,13 @@ const Invoice = () => {
   const downloadExcel = () => {
     if (displayed.length === 0) { toast.error("No invoices to export."); return; }
     const rows = displayed.map((inv, i) => ({
-      "#":                 i + 1,
-      "Invoice No":        inv.invoiceNo,
-      "Invoice Date":      (inv.invoiceDate || "").slice(0, 10),
+      "#": i + 1,
+      "Invoice No": inv.invoiceNo,
+      "Invoice Date": (inv.invoiceDate || "").slice(0, 10),
       "Invoice Value (₹)": inv.invoiceValue,
-      "GST Value (₹)":     inv.invoiceGSTValue,
-      "Transport (₹)":     inv.transportAmount,
-      "Total (₹)":         inv.invoiceTotalValue,
+      "GST Value (₹)": inv.invoiceGSTValue,
+      "Transport (₹)": inv.transportAmount,
+      "Total (₹)": inv.invoiceTotalValue,
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
@@ -272,11 +291,10 @@ const Invoice = () => {
           {/* Filters toggle */}
           <button
             onClick={() => setShowFilters((p) => !p)}
-            className={`relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all duration-200 cursor-pointer ${
-              showFilters
+            className={`relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all duration-200 cursor-pointer ${showFilters
                 ? "bg-primary text-white border-primary shadow-md"
                 : "bg-gray-50 text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
-            }`}
+              }`}
           >
             <FaFilter className="text-xs" />
             <span className="hidden xs:inline sm:inline">Filters</span>
@@ -288,26 +306,26 @@ const Invoice = () => {
           </button>
 
           {/* Grid / List toggle */}
-          <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
-            <button
-              onClick={() => setViewMode("card")}
-              title="Card View"
-              className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 cursor-pointer ${
-                viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              <FaTh className="text-xs sm:text-sm" />
-            </button>
-            <button
-              onClick={() => setViewMode("table")}
-              title="Table View"
-              className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 cursor-pointer ${
-                viewMode === "table" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              <FaList className="text-xs sm:text-sm" />
-            </button>
-          </div>
+          {!isMobile && (
+            <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
+              <button
+                onClick={() => setViewMode("card")}
+                title="Card View"
+                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "card" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"
+                  }`}
+              >
+                <FaTh className="text-xs sm:text-sm" />
+              </button>
+              <button
+                onClick={() => setViewMode("table")}
+                title="Table View"
+                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 cursor-pointer ${viewMode === "table" ? "bg-white shadow text-primary" : "text-gray-400 hover:text-gray-600"
+                  }`}
+              >
+                <FaList className="text-xs sm:text-sm" />
+              </button>
+            </div>
+          )}
 
           {/* Export Excel */}
           <button
@@ -518,8 +536,8 @@ const Invoice = () => {
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-xs mb-4">
                     {[
-                      { label: "Value",     value: `₹${item.invoiceValue}` },
-                      { label: "GST",       value: `₹${item.invoiceGSTValue}` },
+                      { label: "Value", value: `₹${item.invoiceValue}` },
+                      { label: "GST", value: `₹${item.invoiceGSTValue}` },
                       { label: "Transport", value: `₹${item.transportAmount}` },
                     ].map((r) => (
                       <div key={r.label} className="bg-gray-50 rounded-xl p-2 text-center">

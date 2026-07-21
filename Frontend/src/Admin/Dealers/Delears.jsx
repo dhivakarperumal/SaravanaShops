@@ -36,6 +36,7 @@ const Dealers = () => {
   // Toolbar state
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("table");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     invoiceNumber: "",
@@ -48,6 +49,24 @@ const Dealers = () => {
       document.body.style.overflow = "";
     };
   }, [showFilters]);
+
+  useEffect(() => {
+  const handleResize = () => {
+    const mobile = window.innerWidth < 768;
+
+    setIsMobile(mobile);
+
+    if (mobile) {
+      setViewMode("card");
+    }
+  };
+
+  handleResize();
+
+  window.addEventListener("resize", handleResize);
+
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
 
   // ── Fetch Dealers & Invoices via API ──────────────────────────────────────
   const fetchDealers = async () => {
@@ -197,7 +216,7 @@ const Dealers = () => {
       {/* ── Toolbar ──────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-5 bg-white rounded-2xl px-3 sm:px-4 py-3 shadow-sm border border-gray-100">
         {/* Search */}
-        <div className="flex items-center gap-2 flex-1 min-w-0 max-w-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(140,82,255,0.12)] transition-all duration-200">
+        <div className="flex items-center gap-2 flex-1 min-w-0 w-full sm:max-w-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(140,82,255,0.12)] transition-all duration-200">
           <FaSearch className="text-gray-400 text-sm flex-shrink-0" />
           <input
             type="text"
@@ -222,7 +241,7 @@ const Dealers = () => {
         </span>
 
         {/* Right actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 ml-auto flex-shrink-0">
+        <div className="flex flex-wrap items-center gap-2 ml-auto w-full sm:w-auto justify-between sm:justify-end">
           {/* Filters toggle */}
           <button
             onClick={() => setShowFilters((p) => !p)}
@@ -411,7 +430,7 @@ const Dealers = () => {
 
           {!loading && displayed.length > 0 && viewMode === "card" && (
             /* ── CARDS ────────────────────────────────────────────────── */
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {displayed.map((item, idx) => (
                 <div
                   key={item.id}
@@ -471,7 +490,7 @@ const Dealers = () => {
         >
           <div className="absolute inset-0" onClick={closeModal} />
           <div
-            className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            className="relative w-full max-w-lg sm:max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             style={{ animation: "modalIn 0.22s ease" }}
           >
             {/* Header */}
@@ -492,7 +511,7 @@ const Dealers = () => {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="p-6 overflow-y-auto flex-1">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Dealer Name *
@@ -580,17 +599,17 @@ const Dealers = () => {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-all cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-md cursor-pointer"
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-md cursor-pointer"
                 >
                   {editingId ? "Update Dealer" : "Save Dealer"}
                 </button>

@@ -116,14 +116,14 @@ function Hero() {
         </div>
 
         {/* ---------------- Right Side - Image Slider ---------------- */}
-        <div className="w-full md:w-1/2 flex justify-center items-center order-1 md:order-2">
+        <div className="w-full md:w-[60%] flex justify-center items-center order-1 md:order-2">
           <Slider {...settings} className="w-full">
             {slides.map((slide, index) => (
               <div key={index} className="flex justify-center">
                 <img
                   src={slide.image}
                   alt={slide.title}
-                  className="w-full max-w-[400px] sm:max-w-[500px] md:max-w-none h-[350px] md:h-[450px] object-contain"
+                  className="w-full max-w-[500px] sm:max-w-[500px] md:max-w-none h-[350px] md:h-[450px] object-contain"
                 />
               </div>
             ))}

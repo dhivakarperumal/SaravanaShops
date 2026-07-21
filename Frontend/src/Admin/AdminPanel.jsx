@@ -12,6 +12,7 @@ import {
   FaHome,
   FaChevronLeft,
   FaChevronRight,
+  FaStore,
 } from "react-icons/fa";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -34,32 +35,32 @@ const AdminPanel = () => {
   const [searchFocused, setSearchFocused] = useState(false);
 
   const quickLinks = [
-    { label: "New Orders",   path: "/superadmin/newOrders" },
-    { label: "All Orders",   path: "/superadmin/allOrders" },
+    { label: "New Orders", path: "/superadmin/newOrders" },
+    { label: "All Orders", path: "/superadmin/allOrders" },
     { label: "All Products", path: "/superadmin/allproducts" },
-    { label: "Add Product",  path: "/superadmin/addproducts" },
+    { label: "Add Product", path: "/superadmin/addproducts" },
     { label: "Add Category", path: "/superadmin/category" },
-    { label: "New Users",    path: "/superadmin/newusers" },
-    { label: "All Users",    path: "/superadmin/allusers" },
-    { label: "Billings",     path: "/superadmin/billing" },
-    { label: "Dealers",      path: "/superadmin/dealers" },
-    { label: "Reviews",      path: "/superadmin/allreviews" },
-    { label: "Stock Details",path: "/superadmin/stockDetails" },
+    { label: "New Users", path: "/superadmin/newusers" },
+    { label: "All Users", path: "/superadmin/allusers" },
+    { label: "Billings", path: "/superadmin/billing" },
+    { label: "Dealers", path: "/superadmin/dealers" },
+    { label: "Reviews", path: "/superadmin/allreviews" },
+    { label: "Stock Details", path: "/superadmin/stockDetails" },
     { label: "Razerpay Key", path: "/superadmin/razerpay" },
   ];
 
   const filteredLinks = searchQuery.trim()
     ? quickLinks.filter((l) =>
-        l.label.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      l.label.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : [];
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
   const isExpanded = isSidebarOpen || isSidebarHovered;
-  const sidebarWidth = isExpanded ? "w-74" : "w-20";
-  const contentMargin = isExpanded ? "md:ml-72" : "md:ml-20";
+  const sidebarWidth = isExpanded ? "w-[330px]" : "w-20";
+  const contentMargin = isExpanded ? "md:ml-[330px]" : "md:ml-20";
 
   const [userName, setUserName] = useState("");
 
@@ -111,26 +112,26 @@ const AdminPanel = () => {
       setActiveTab("Cancelled");
     else if (path.startsWith("/superadmin/newOrders"))
       setActiveTab("New Orders");
-   
-   
-   
+
+
+
     else if (path.startsWith("/superadmin/stocks"))
       setActiveTab("Add Product Stock");
-    
-    else if (path.startsWith("/superadmin/category")) 
+
+    else if (path.startsWith("/superadmin/category"))
       setActiveTab("Add Category");
-  
-    
+
+
 
     else if (path.startsWith("/superadmin/videos"))
       setActiveTab("Upload Videos");
-   
+
     else if (path.startsWith("/superadmin/newusers")) setActiveTab("New Users");
     else if (path.startsWith("/superadmin/allusers")) setActiveTab("All Users");
     else if (path.startsWith("/superadmin/billing")) setActiveTab("Billing");
     else if (path.startsWith("/superadmin/invoice")) setActiveTab("Invoice");
     else if (path.startsWith("/superadmin/dealer")) setActiveTab("Dealers");
-  
+
     else if (path.startsWith("/superadmin/allreviews")) setActiveTab("Reviews");
     else if (path.startsWith("/superadmin/stockDetails"))
       setActiveTab("StockDetails");
@@ -176,10 +177,10 @@ const AdminPanel = () => {
       {/* Sidebar container (fixed so it slides in/out) */}
       <aside
         ref={sidebarRef}
-        className={`fixed top-0 left-0 z-50 h-screen shadow bg-gray-900 text-gray-300 transition-transform duration-300 ease-in-out ${sidebarWidth} ${mobileMenu ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-          }`}
-        onMouseEnter={() => setIsSidebarHovered(true)}
-        onMouseLeave={() => setIsSidebarHovered(false)}
+        className={`fixed top-0 left-0 z-50 h-screen
+  bg-slate-950/95 text-white transition-transform duration-300 ease-in-out border-r border-white/5
+  ${sidebarWidth}
+  ${mobileMenu ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
         {/* Toggle Button at vertical center of right edge */}
         <button
@@ -189,24 +190,24 @@ const AdminPanel = () => {
           {isSidebarOpen ? <FaChevronLeft size={12} /> : <FaChevronRight size={12} />}
         </button>
 
-        <div className="flex items-center bg-gray-900 justify-between px-4 py-3 border-b border-gray-800 relative">
+        <div className="flex items-center bg-slate-900/95 justify-between px-4 py-3 border-b border-white/10 relative shadow-2xl shadow-slate-950/50">
           <div className="flex items-center w-full gap-3 overflow-hidden">
             {/* Logo Image with a crisp background plate */}
-            <div className="bg-white p-1 rounded-xl shadow-md flex-shrink-0 flex items-center justify-center">
+            <div className="bg-slate-800/90 p-1 rounded-2xl shadow-[0_15px_50px_rgba(15,23,42,0.45)] flex-shrink-0 flex items-center justify-center">
               <img
                 src={logo}
                 alt="Admin Logo"
                 className="w-12 h-12 object-contain"
               />
             </div>
-            
+
             {/* Stacked Shop Name */}
             {isExpanded && (
               <div className="flex flex-col flex-1 overflow-hidden transition-all duration-300">
                 <span className="text-white font-extrabold text-[15px] leading-tight tracking-wide truncate">
                   Sri Saravana
                 </span>
-                <span className="text-primary/80 text-[11px] font-bold tracking-[0.15em] uppercase mt-0.5 truncate">
+                <span className="text-purple-200 text-[11px] font-bold tracking-[0.15em] uppercase mt-0.5 truncate">
                   Shoppings
                 </span>
               </div>
@@ -221,9 +222,9 @@ const AdminPanel = () => {
           </button>
         </div>
 
-        <div className="h-full flex flex-col">
-          {/* Scrollable sidebar links */}
-          <div className="flex-1 overflow-y-auto sidebar-scroll">
+        <div className="flex flex-col h-[calc(100vh-70px)] min-h-0 bg-transparent">
+          {/* Scrollable sidebar links - center section */}
+          <div className="flex-1 min-h-0 overflow-y-auto sidebar-scroll">
             <Sidebar
               isSidebarOpen={isSidebarOpen}
               isSidebarHovered={isSidebarHovered}
@@ -232,25 +233,44 @@ const AdminPanel = () => {
             />
           </div>
 
-          {/* Back Home always at bottom */}
-          <div className="mt-auto p-3">
-            {isSidebarOpen && (
-              <NavLink
-                to="/"
-                onClick={() => setMobileMenu(false)}
-                className={({ isActive }) =>
-                  `flex items-center rounded font-bold hidden md:inline-flex hover:bg-bgcolor transition duration-200 ${isActive
-                    ? "bg-bgcolor text-gray font-bold"
-                    : "text-textcolor hover:bg-bgcolor hover:text-textcolor"
-                  } p-3`
-                }
-              >
-                <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center text-xl">
-                  <FaHome />
+          {/* Fixed bottom section */}
+          <div className="p-3 border-t border-white/10 bg-slate-900/80">
+            {/* Admin Portal Card */}
+            <div className={`mb-3 rounded-3xl border transition-all duration-300 ${isExpanded ? "p-4 border-white/10 bg-slate-900/90 shadow-[0_24px_80px_rgba(15,23,42,0.35)]" : "p-2 border-white/5 bg-slate-950/95"}`}>
+              <div className={`flex items-center ${isExpanded ? "gap-3" : "justify-center"}`}>
+                <div className="w-12 h-12 flex-shrink-0 rounded-3xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-xl shadow-primary/30">
+                  <FaStore className="text-xl" />
+                </div>
+                {isExpanded && (
+                  <div className="min-w-0">
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Sri Saravana</p>
+                    <h2 className="text-lg font-semibold text-white tracking-tight">Admin Portal</h2>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Back Home */}
+            <NavLink
+              to="/"
+              onClick={() => setMobileMenu(false)}
+              className={({ isActive }) =>
+                `flex items-center w-full rounded-3xl font-bold transition duration-200 p-3 ${isActive
+                  ? "bg-primary text-white"
+                  : "text-white hover:bg-slate-800"
+                } ${!isExpanded ? "justify-center" : ""}`
+              }
+            >
+              <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center">
+                <FaHome className="text-xl" />
+              </span>
+
+              {isExpanded && (
+                <span className="ml-3 truncate">
+                  Back Home
                 </span>
-                <span className="ml-2 flex-1 text-left">Back</span>
-              </NavLink>
-            )}
+              )}
+            </NavLink>
           </div>
         </div>
       </aside>
@@ -291,11 +311,10 @@ const AdminPanel = () => {
             {/* Search bar (right side) */}
             <div className="relative hidden sm:block">
               <div
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-300 ${
-                  searchFocused
-                    ? "border-primary bg-white shadow-[0_0_0_3px_rgba(140,82,255,0.15)] w-64"
-                    : "border-gray-200 bg-gray-50 hover:border-gray-300 w-44"
-                }`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-300 ${searchFocused
+                  ? "border-primary bg-white shadow-[0_0_0_3px_rgba(140,82,255,0.15)] w-64"
+                  : "border-gray-200 bg-gray-50 hover:border-gray-300 w-44"
+                  }`}
                 style={{ transition: "width 0.3s ease, border-color 0.2s, box-shadow 0.2s" }}
               >
                 <FaSearch className={`text-xs flex-shrink-0 transition-colors ${searchFocused ? "text-primary" : "text-gray-400"}`} />
@@ -360,14 +379,26 @@ const AdminPanel = () => {
               >
                 <FaBell className="text-[17px]" />
                 {notifications.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-rose-600 text-white text-[10px] w-4.5 h-4.5 min-w-[18px] min-h-[18px] flex items-center justify-center rounded-full font-bold shadow-md">
+                  <span className="absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-rose-600 text-white text-[10px] w-[18px] h-[18px] min-w-[18px] min-h-[18px] flex items-center justify-center rounded-full font-bold shadow-md">
                     {notifications.length}
                   </span>
                 )}
               </button>
 
               {activePanel === "notifications" && (
-                <div className="absolute right-0 top-12 w-[90vw] max-w-sm bg-white rounded-2xl border border-gray-100 shadow-2xl z-50 overflow-hidden">
+                <div
+                  className="
+    absolute top-12
+    left-1 -translate-x-1/2
+    md:right-0 md:left-auto md:translate-x-0
+    w-[92vw] max-w-sm
+    bg-white rounded-2xl
+    border border-gray-100
+    shadow-2xl
+    z-[9999]
+    overflow-hidden
+  "
+                >
                   <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-primary/5 to-secondary/5">
                     <h3 className="font-bold text-gray-800 text-sm">🔔 Notifications</h3>
                   </div>
@@ -455,46 +486,58 @@ const AdminPanel = () => {
               >
                 <AiOutlineStock className="text-[19px]" />
                 {lowStockProducts.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gradient-to-br from-orange-400 to-orange-600 text-white text-[10px] min-w-[18px] min-h-[18px] flex items-center justify-center rounded-full font-bold shadow-md">
+                  <span className="absolute -top-1 -right-1 bg-gradient-to-br from-orange-400 to-orange-600 text-white text-[10px] w-[18px] h-[18px] min-w-[18px] min-h-[18px] flex items-center justify-center rounded-full font-bold shadow-md">
                     {lowStockProducts.length}
                   </span>
                 )}
               </button>
 
               {activePanel === "stock" && (
-                <div className="absolute right-0 top-12 w-[90vw] max-w-xs sm:max-w-sm bg-white rounded-2xl border border-gray-100 shadow-2xl z-50 overflow-hidden">
+                <div
+                  className="
+      absolute top-12
+      left-1/2 -translate-x-1/2
+      md:left-auto md:right-0 md:translate-x-0
+      w-[92vw] max-w-[360px]
+      bg-white rounded-2xl
+      border border-gray-100
+      shadow-2xl
+      z-[9999]
+      overflow-hidden
+    "
+                >
                   <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-yellow-50">
                     <h2 className="text-sm font-bold text-orange-600 flex items-center gap-2">⚠️ Low Stock</h2>
                   </div>
                   <div className="p-3">
-                      {lowStockProducts && lowStockProducts.length > 0 ? (
-                        <div className="max-h-60 overflow-y-auto rounded-xl">
-                          <table className="min-w-full text-left text-sm">
-                            <thead className="bg-primary text-white sticky top-0">
-                              <tr>
-                                <th className="px-3 py-2 font-medium rounded-tl-lg">PID</th>
-                                <th className="px-3 py-2 font-medium">Name</th>
-                                <th className="px-3 py-2 font-medium">Category</th>
-                                <th className="px-3 py-2 font-medium rounded-tr-lg">Stock</th>
+                    {lowStockProducts && lowStockProducts.length > 0 ? (
+                      <div className="max-h-60 overflow-y-auto rounded-xl">
+                        <table className="min-w-full text-left text-sm">
+                          <thead className="bg-primary text-white sticky top-0">
+                            <tr>
+                              <th className="px-3 py-2 font-medium rounded-tl-lg">PID</th>
+                              <th className="px-3 py-2 font-medium">Name</th>
+                              <th className="px-3 py-2 font-medium">Category</th>
+                              <th className="px-3 py-2 font-medium rounded-tr-lg">Stock</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {lowStockProducts.map((item, idx) => (
+                              <tr key={idx} className="text-center hover:bg-orange-50 transition-colors">
+                                <td className="px-3 py-2 text-gray-600">{item.productId}</td>
+                                <td className="px-3 py-2 font-medium text-gray-800">{item.name}</td>
+                                <td className="px-3 py-2 text-gray-500">{item.category || "-"}</td>
+                                <td className="px-3 py-2">
+                                  <span className="bg-red-100 text-red-600 font-bold text-xs px-2 py-0.5 rounded-full">{item.stock}</span>
+                                </td>
                               </tr>
-                            </thead>
-                            <tbody>
-                              {lowStockProducts.map((item, idx) => (
-                                <tr key={idx} className="text-center hover:bg-orange-50 transition-colors">
-                                  <td className="px-3 py-2 text-gray-600">{item.productId}</td>
-                                  <td className="px-3 py-2 font-medium text-gray-800">{item.name}</td>
-                                  <td className="px-3 py-2 text-gray-500">{item.category || "-"}</td>
-                                  <td className="px-3 py-2">
-                                    <span className="bg-red-100 text-red-600 font-bold text-xs px-2 py-0.5 rounded-full">{item.stock}</span>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <p className="text-gray-500 text-sm text-center py-4">✅ All items are in stock.</p>
-                      )}
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 text-sm text-center py-4">✅ All items are in stock.</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -559,26 +602,26 @@ const AdminPanel = () => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 bg-gray-50 mt-15 px-2 md:px-2 py-6 overflow-y-auto">
+        <main className="flex-1 bg-gray-50 mt-[72px] px-2 md:px-2 py-6 overflow-y-auto">
           <Outlet />
         </main>
 
         <footer className="bg-gray-50 text-gray-600 text-sm py-6 shadow">
-  <div className="max-w-screen-xl mx-auto px-4 flex justify-center items-center text-center">
-    <div>
-      © {new Date().getFullYear()} <strong>Sri Saravana Shoppings</strong>.
-      All rights reserved. | Built by{" "}
-      <a
-        href="https://qtechx.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="underline hover:text-primary font-medium"
-      >
-        Q-Techx Solutions
-      </a>
-    </div>
-  </div>
-</footer>
+          <div className="max-w-screen-xl mx-auto px-4 flex justify-center items-center text-center">
+            <div>
+              © {new Date().getFullYear()} <strong>Sri Saravana Shoppings</strong>.
+              All rights reserved. | Built by{" "}
+              <a
+                href="https://qtechx.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-primary font-medium"
+              >
+                Q-Techx Solutions
+              </a>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );

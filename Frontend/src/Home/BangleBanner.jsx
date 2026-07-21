@@ -1,9 +1,19 @@
 import React from "react";
 import { IoArrowForward } from "react-icons/io5";
-import { Link } from "react-router-dom";
 import PageContainer from "../Components/PageContainer";
+import { Link, useNavigate } from "react-router-dom";
 
 const BangleBanner = () => {
+  const navigate = useNavigate();
+
+  const handleBabyShowerClick = () => {
+    navigate("/category", {
+      state: {
+        selectedCategory: "Baby Shower Combo 🎁",
+      },
+    });
+  };
+
   const categories = [
     { name: " Baby shower Combo 1", image: "/Image/Bangles2.png" },
     { name: " Baby shower Combo 2", image: "/Image/Bangles7.png" },
@@ -16,7 +26,10 @@ const BangleBanner = () => {
     <PageContainer className="py-4 md:py-10">
       <div className="flex flex-col md:flex-row w-full gap-6">
         {/* Left Section - Offer Banner */}
-        <div className="relative md:w-1/2 w-full flex justify-center items-center">
+        <div
+          onClick={handleBabyShowerClick}
+          className="relative md:w-1/2 w-full flex justify-center items-center cursor-pointer"
+        >
           <img
             src="/Image/Bangles9.png"
             alt="Jewellery Offer"
@@ -33,18 +46,24 @@ const BangleBanner = () => {
             50% OFF
           </span> */}
 
-            <Link to="/allproducts" className="text-white font-semibold px-6 py-2 rounded-full text-sm sm:text-base transition-all duration-300 underline decoration-white decoration-2 underline-offset-2 flex items-center gap-2 cursor-pointer">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBabyShowerClick();
+              }}
+              className="text-white font-semibold px-6 py-2 rounded-full text-sm sm:text-base underline decoration-white decoration-2 underline-offset-2 flex items-center gap-2 cursor-pointer"
+            >
               Shop Now <IoArrowForward className="mt-0.5" />
-            </Link>
+            </button>
           </div>
         </div>
 
         {/* Right Section - 4 Image Grid */}
         <div className="md:w-1/2 w-full grid grid-cols-2 gap-4">
           {categories.map((item, index) => (
-            <Link
-              to="/allproducts"
+            <div
               key={index}
+              onClick={handleBabyShowerClick}
               className="relative rounded-xl overflow-hidden group shadow-md cursor-pointer"
             >
 
@@ -58,12 +77,12 @@ const BangleBanner = () => {
               <h3 className="absolute bottom-3 w-full text-center  left-1/2 transform -translate-x-1/2 text-white text-sm md:text-lg font-semibold tracking-wide">
                 {item.name}
               </h3>
-            </Link>
+            </div>
           ))}
         </div>
       </div>
-      </PageContainer>
-      );
+    </PageContainer>
+  );
 };
 
-      export default BangleBanner;
+export default BangleBanner;

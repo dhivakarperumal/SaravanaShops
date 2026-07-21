@@ -148,7 +148,7 @@ const Contact = () => {
             <div className="flex md:border-l border-gray-200 flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
               <LuPhoneCall size={40} className="text-primary ml-2" />
               <p className="text-gray-800 text-sm md:text-base">
-                7010575375, 9791316576
+                6379208198, 7010575375
               </p>
             </div>
           </div>
