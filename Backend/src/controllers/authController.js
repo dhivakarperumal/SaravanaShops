@@ -264,13 +264,18 @@ const sendWhatsAppOtp = async (req, res) => {
       [formattedPhone, otp, expires_at]
     );
 
+<<<<<<< HEAD
     const sendResult = await sendOtpMessage(formattedPhone, otp);
 
-    if (!sendResult) {
-      throw new Error('WhatsApp OTP send returned no success response');
-    }
+    // Send via WhatsApp
+    await sendOtpMessage(phone, otp);
 
-    res.json({ message: 'OTP sent successfully to WhatsApp' });
+    res.json({
+      message: sendResult.mocked
+        ? 'OTP generated locally for development because WhatsApp authentication failed'
+        : 'OTP sent successfully to WhatsApp',
+      otp: sendResult.mocked ? otp : undefined
+    });
   } catch (error) {
     console.error('Send WhatsApp OTP error:', error);
     if (connection && req.body?.phone) {
