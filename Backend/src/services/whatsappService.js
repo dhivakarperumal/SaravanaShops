@@ -179,6 +179,21 @@ async function sendMetaWhatsAppMessage(url, accessToken, payload) {
       }
     });
   } catch (error) {
+    const fbError = error.response?.data?.error;
+    if (fbError) {
+      const message = fbError.message || 'Meta WhatsApp API request failed';
+      const code = fbError.code;
+      const type = fbError.type;
+      const trace = fbError.fbtrace_id;
+      const hint = code === 190 ? 'Access token is invalid or expired. Refresh or set WHATSAPP_ACCESS_TOKEN to a valid token.' : '';
+      const err = new Error(`${message}${hint ? ' Hint: ' + hint : ''}`);
+      err.code = code;
+      err.type = type;
+      err.fbtrace_id = trace;
+      err.response = error.response;
+      throw err;
+    }
+
     error.message = error.message || 'Meta WhatsApp API request failed';
     throw error;
   }
