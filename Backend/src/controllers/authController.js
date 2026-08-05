@@ -230,4 +230,135 @@ const googleLogin = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getProfile, googleLogin };
+const { sendOtpMessage } = require('../services/whatsappService');
+
+// Send WhatsApp OTP
+const sendWhatsAppOtp = async (req, res) => {
+  let connection;
+  try {
+    const { phone } = req.body;
+    if (!phone) {
+      return res.status(400).json({ message: 'Phone number is required' });
+    }
+
+    const formattedPhone = normalizeOtpPhone(phone);
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires_at = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    connection = await pool.getConnection();
+    await connection.query('DELETE FROM otps WHERE phone = ?', [formattedPhone]);
+
+    await connection.query(
+      'INSERT INTO otps (phone, otp, expires_at) VALUES (?, ?, ?)',
+      [formattedPhone, otp, expires_at]
+    );
+
+
+    const sendResult = await sendOtpMessage(formattedPhone, otp);
+
+    // Send via WhatsApp
+    await sendOtpMessage(phone, otp);
+
+    res.json({
+      message: sendResult.mocked
+        ? 'OTP generated locally for development because WhatsApp authentication failed'
+        : 'OTP sent successfully to WhatsApp',
+      otp: sendResult.mocked ? otp : undefined
+    });
+  } catch (error) {
+    console.error('Send WhatsApp OTP error:', error);
+    if (connection && req.body?.phone) {
+      try {
+        const cleanupPhone = formatPhoneForApi(req.body.phone);
+        if (cleanupPhone) {
+          await connection.query('DELETE FROM otps WHERE phone = ?', [cleanupPhone]);
+        }
+      } catch (cleanupError) {
+        console.error('Cleanup OTP on failure error:', cleanupError);
+      }
+    }
+    if (error.message && error.message.toLowerCase().includes('invalid phone')) {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ message: 'Failed to send OTP', error: error.message });
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+// Verify WhatsApp OTP
+const verifyWhatsAppOtp = async (req, res) => {
+  let connection;
+  try {
+    const { phone, otp } = req.body;
+    if (!phone || !otp) {
+      return res.status(400).json({ message: 'Phone and OTP are required' });
+    }
+
+    const formattedPhone = normalizeOtpPhone(phone);
+    connection = await pool.getConnection();
+
+    const [otps] = await connection.query(
+      'SELECT * FROM otps WHERE phone = ? AND otp = ? AND expires_at > NOW()',
+      [formattedPhone, otp]
+    );
+
+    if (otps.length === 0) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    await connection.query('DELETE FROM otps WHERE phone = ?', [formattedPhone]);
+
+    const [users] = await connection.query(
+      'SELECT * FROM users WHERE phone = ?',
+      [formattedPhone]
+    );
+
+    let user;
+
+    if (users.length === 0) {
+      const user_id = uuidv4();
+      const defaultEmail = `${formattedPhone}@whatsapp-user.com`;
+      const randomPassword = uuidv4() + Math.random().toString(36).slice(-8);
+      const hashedPassword = await bcryptjs.hash(randomPassword, 10);
+
+      await connection.query(
+        'INSERT INTO users (user_id, username, email, phone, password, status) VALUES (?, ?, ?, ?, ?, ?)',
+        [user_id, 'WhatsApp User', defaultEmail, formattedPhone, hashedPassword, 'active']
+      );
+
+      user = { user_id, username: 'WhatsApp User', email: defaultEmail, phone: formattedPhone, role: 'user' };
+    } else {
+      user = users[0];
+      if (user.status !== 'active') {
+        return res.status(403).json({ message: 'User account is inactive' });
+      }
+    }
+
+    const token = jwt.sign(
+      { user_id: user.user_id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '9d' }
+    );
+
+    res.json({
+      message: 'WhatsApp login successful',
+      user: {
+        user_id: user.user_id,
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+        role: user.role || 'user'
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Verify WhatsApp OTP error:', error);
+    res.status(500).json({ message: 'Failed to verify OTP', error: error.message });
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+module.exports = { register, login, getProfile, googleLogin, sendWhatsAppOtp, verifyWhatsAppOtp };
