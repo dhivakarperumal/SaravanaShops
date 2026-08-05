@@ -2,6 +2,15 @@ const { v4: uuidv4 } = require('uuid');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
+const { formatPhoneForApi } = require('../services/whatsappService');
+
+function normalizeOtpPhone(phone) {
+  const formattedPhone = formatPhoneForApi(phone);
+  if (!formattedPhone || formattedPhone.length < 10) {
+    throw new Error('Invalid phone number format. Use 10-digit or international format.');
+  }
+  return formattedPhone;
+}
 
 // Register new user
 const register = async (req, res) => {
@@ -26,17 +35,18 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Invalid email format' });
     }
 
+    const normalizedPhone = phone ? formatPhoneForApi(phone) : '';
     const connection = await pool.getConnection();
 
-    // Check if user exists
+    // Check if user exists by email or phone
     const [existingUser] = await connection.query(
-      'SELECT email FROM users WHERE email = ?',
-      [email]
+      'SELECT email FROM users WHERE email = ? OR phone = ?',
+      [email, normalizedPhone]
     );
 
     if (existingUser.length > 0) {
       connection.release();
-      return res.status(400).json({ message: 'Email already registered' });
+      return res.status(400).json({ message: 'Email or phone number is already registered' });
     }
 
     // Hash password
@@ -46,7 +56,7 @@ const register = async (req, res) => {
     // Insert user
     await connection.query(
       'INSERT INTO users (user_id, username, email, phone, password, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [user_id, username, email, phone, hashedPassword, 'active']
+      [user_id, username, email, normalizedPhone, hashedPassword, 'active']
     );
 
     connection.release();
@@ -253,7 +263,6 @@ const sendWhatsAppOtp = async (req, res) => {
       'INSERT INTO otps (phone, otp, expires_at) VALUES (?, ?, ?)',
       [formattedPhone, otp, expires_at]
     );
-
 
     const sendResult = await sendOtpMessage(formattedPhone, otp);
 
