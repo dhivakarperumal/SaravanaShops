@@ -4,18 +4,17 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(),tailwindcss()],
+  plugins: [react(), tailwindcss()],
   server: {
-    port: 5173, // ensure consistent port for proxying
+    port: 5173,
     proxy: {
       "/api": {
-        // target: "http://localhost:5000",
-        target: "https://saravanashoppings.qtechx.com",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
       },
       '/proxy-uploads': {
-        target: 'https://saravanashoppings.qtechx.com/uploads',
+        target: 'http://localhost:5000/uploads',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/proxy-uploads/, '')
       }

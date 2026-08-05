@@ -258,12 +258,21 @@ const sendWhatsAppOtp = async (req, res) => {
     connection.release();
 
     // Send via WhatsApp
-    await sendOtpMessage(phone, otp);
+    const sendResult = await sendOtpMessage(phone, otp);
 
-    res.json({ message: 'OTP sent successfully to WhatsApp' });
+    res.json({
+      message: sendResult.mocked
+        ? 'OTP generated locally for development because WhatsApp authentication failed'
+        : 'OTP sent successfully to WhatsApp',
+      otp: sendResult.mocked ? otp : undefined
+    });
   } catch (error) {
     console.error('Send WhatsApp OTP error:', error);
-    res.status(500).json({ message: 'Failed to send OTP', error: error.message });
+    const statusCode = error.message.includes('Authentication') || error.message.includes('Failed to send WhatsApp message') ? 502 : 500;
+    res.status(statusCode).json({
+      message: 'Failed to send OTP via WhatsApp',
+      error: error.message
+    });
   }
 };
 
