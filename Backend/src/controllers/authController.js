@@ -2,6 +2,15 @@ const { v4: uuidv4 } = require('uuid');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
+const { formatPhoneForApi } = require('../services/whatsappService');
+
+function normalizeOtpPhone(phone) {
+  const formattedPhone = formatPhoneForApi(phone);
+  if (!formattedPhone || formattedPhone.length < 10) {
+    throw new Error('Invalid phone number format. Use 10-digit or international format.');
+  }
+  return formattedPhone;
+}
 
 // Register new user
 const register = async (req, res) => {
@@ -26,17 +35,18 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Invalid email format' });
     }
 
+    const normalizedPhone = phone ? formatPhoneForApi(phone) : '';
     const connection = await pool.getConnection();
 
-    // Check if user exists
+    // Check if user exists by email or phone
     const [existingUser] = await connection.query(
-      'SELECT email FROM users WHERE email = ?',
-      [email]
+      'SELECT email FROM users WHERE email = ? OR phone = ?',
+      [email, normalizedPhone]
     );
 
     if (existingUser.length > 0) {
       connection.release();
-      return res.status(400).json({ message: 'Email already registered' });
+      return res.status(400).json({ message: 'Email or phone number is already registered' });
     }
 
     // Hash password
@@ -46,7 +56,7 @@ const register = async (req, res) => {
     // Insert user
     await connection.query(
       'INSERT INTO users (user_id, username, email, phone, password, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [user_id, username, email, phone, hashedPassword, 'active']
+      [user_id, username, email, normalizedPhone, hashedPassword, 'active']
     );
 
     connection.release();
@@ -234,95 +244,103 @@ const { sendOtpMessage } = require('../services/whatsappService');
 
 // Send WhatsApp OTP
 const sendWhatsAppOtp = async (req, res) => {
+  let connection;
   try {
     const { phone } = req.body;
     if (!phone) {
       return res.status(400).json({ message: 'Phone number is required' });
     }
 
-    // Generate a 6 digit OTP
+    const formattedPhone = normalizeOtpPhone(phone);
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expires_at = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
+    await connection.query('DELETE FROM otps WHERE phone = ?', [formattedPhone]);
 
-    // Invalidate existing OTPs for this phone
-    await connection.query('DELETE FROM otps WHERE phone = ?', [phone]);
-
-    // Insert new OTP
     await connection.query(
       'INSERT INTO otps (phone, otp, expires_at) VALUES (?, ?, ?)',
-      [phone, otp, expires_at]
+      [formattedPhone, otp, expires_at]
     );
-    
-    connection.release();
 
-    // Send via WhatsApp
-    await sendOtpMessage(phone, otp);
+    const sendResult = await sendOtpMessage(formattedPhone, otp);
+
+    if (!sendResult) {
+      throw new Error('WhatsApp OTP send returned no success response');
+    }
 
     res.json({ message: 'OTP sent successfully to WhatsApp' });
   } catch (error) {
     console.error('Send WhatsApp OTP error:', error);
+    if (connection && req.body?.phone) {
+      try {
+        const cleanupPhone = formatPhoneForApi(req.body.phone);
+        if (cleanupPhone) {
+          await connection.query('DELETE FROM otps WHERE phone = ?', [cleanupPhone]);
+        }
+      } catch (cleanupError) {
+        console.error('Cleanup OTP on failure error:', cleanupError);
+      }
+    }
+    if (error.message && error.message.toLowerCase().includes('invalid phone')) {
+      return res.status(400).json({ message: error.message });
+    }
     res.status(500).json({ message: 'Failed to send OTP', error: error.message });
+  } finally {
+    if (connection) connection.release();
   }
 };
 
 // Verify WhatsApp OTP
 const verifyWhatsAppOtp = async (req, res) => {
+  let connection;
   try {
     const { phone, otp } = req.body;
     if (!phone || !otp) {
       return res.status(400).json({ message: 'Phone and OTP are required' });
     }
 
-    const connection = await pool.getConnection();
+    const formattedPhone = normalizeOtpPhone(phone);
+    connection = await pool.getConnection();
 
-    // Find OTP
     const [otps] = await connection.query(
       'SELECT * FROM otps WHERE phone = ? AND otp = ? AND expires_at > NOW()',
-      [phone, otp]
+      [formattedPhone, otp]
     );
 
     if (otps.length === 0) {
-      connection.release();
       return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
 
-    // OTP is valid, delete it
-    await connection.query('DELETE FROM otps WHERE phone = ?', [phone]);
+    await connection.query('DELETE FROM otps WHERE phone = ?', [formattedPhone]);
 
-    // Check if user exists with this phone
     const [users] = await connection.query(
       'SELECT * FROM users WHERE phone = ?',
-      [phone]
+      [formattedPhone]
     );
 
     let user;
 
     if (users.length === 0) {
-      // Create new user
       const user_id = uuidv4();
-      const defaultEmail = `${phone}@whatsapp-user.com`; // Placeholder email
+      const defaultEmail = `${formattedPhone}@whatsapp-user.com`;
       const randomPassword = uuidv4() + Math.random().toString(36).slice(-8);
       const hashedPassword = await bcryptjs.hash(randomPassword, 10);
 
       await connection.query(
         'INSERT INTO users (user_id, username, email, phone, password, status) VALUES (?, ?, ?, ?, ?, ?)',
-        [user_id, 'WhatsApp User', defaultEmail, phone, hashedPassword, 'active']
+        [user_id, 'WhatsApp User', defaultEmail, formattedPhone, hashedPassword, 'active']
       );
 
-      user = { user_id, username: 'WhatsApp User', email: defaultEmail, phone, role: 'user' };
+      user = { user_id, username: 'WhatsApp User', email: defaultEmail, phone: formattedPhone, role: 'user' };
     } else {
       user = users[0];
       if (user.status !== 'active') {
-        connection.release();
         return res.status(403).json({ message: 'User account is inactive' });
       }
     }
 
-    connection.release();
-
-    // Generate JWT token
     const token = jwt.sign(
       { user_id: user.user_id, email: user.email },
       process.env.JWT_SECRET,
@@ -343,6 +361,8 @@ const verifyWhatsAppOtp = async (req, res) => {
   } catch (error) {
     console.error('Verify WhatsApp OTP error:', error);
     res.status(500).json({ message: 'Failed to verify OTP', error: error.message });
+  } finally {
+    if (connection) connection.release();
   }
 };
 

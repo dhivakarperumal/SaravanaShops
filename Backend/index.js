@@ -1,17 +1,74 @@
 const express = require("express");
 const cors = require("cors");
+const net = require("net");
 require("dotenv").config();
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const { initializeDatabase } = require("./src/config/database");
 
-// Middleware
-app.use(cors());
+const app = express();
+const PORT = Number(process.env.PORT || 5000);
+const HOST = process.env.HOST || "127.0.0.1";
+
+const startServer = async (requestedPort, host) => {
+  const maxAttempts = 30;
+  let candidatePort = Number(requestedPort || 5000);
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    try {
+      return await new Promise((resolve, reject) => {
+        const server = app.listen(candidatePort, host, () => {
+          resolve(server);
+        });
+
+        server.once("error", (error) => {
+          if (error.code === "EADDRINUSE") {
+            reject(Object.assign(error, { attemptedPort: candidatePort }));
+          } else {
+            reject(error);
+          }
+        });
+      });
+    } catch (error) {
+      if (error.code !== "EADDRINUSE") {
+        throw error;
+      }
+
+      console.warn(`Port ${candidatePort} is busy; trying ${candidatePort + 1}...`);
+      candidatePort += 1;
+    }
+  }
+
+  throw new Error(`Unable to start the server after ${maxAttempts} attempts.`);
+};
+
+const requiredEnv = [
+  'JWT_SECRET',
+  'DB_USER',
+  'DB_NAME',
+];
+
+const missingEnv = requiredEnv.filter((name) => !process.env[name]);
+if (missingEnv.length > 0) {
+  console.error('Missing required environment variables:', missingEnv.join(', '));
+  process.exit(1);
+}
+
+console.log('WhatsApp provider:', process.env.WHATSAPP_PROVIDER || 'meta');
+console.log('WhatsApp provider config loaded:', {
+  WHATSAPP_PHONE_NUMBER_ID: !!process.env.WHATSAPP_PHONE_NUMBER_ID,
+  WHATSAPP_API_TOKEN: !!process.env.WHATSAPP_API_TOKEN,
+  WHATSAPP_MESSAGE_TEMPLATE_ID: !!process.env.WHATSAPP_MESSAGE_TEMPLATE_ID,
+  WHATSAPP_ACCESS_TOKEN: !!process.env.WHATSAPP_ACCESS_TOKEN,
+  WHATSAPP_ALLOWED_RECIPIENTS: process.env.WHATSAPP_ALLOWED_RECIPIENTS || '(blank)'
+});
+
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : true;
+
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
-
-// Database
-require("./src/config/database").initializeDatabase();
 
 // Routes
 app.use("/api/auth", require("./src/routers/authRouter"));
@@ -44,7 +101,7 @@ app.get("/", (req, res) => {
 
 // Error Handler
 app.use((err, req, res, next) => {
-  console.error(err);
+  console.error('Unhandled error:', err?.stack || err);
   res.status(500).json({
     success: false,
     message: err.message || "Internal Server Error"
@@ -59,8 +116,25 @@ app.use((req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+(async () => {
+  try {
+    await initializeDatabase();
+    const server = await startServer(PORT, HOST);
+    const actualPort = server.address().port;
+    process.env.PORT = String(actualPort);
 
-module.exports = app;
+    console.log(`Server running on ${HOST}:${actualPort}`);
+
+    server.on("error", (error) => {
+      console.error("Server error during startup:", error);
+      if (error.code === "EADDRINUSE") {
+        console.error(`Port ${actualPort} is already in use. Use a different PORT or stop the process using that port.`);
+      }
+      process.exit(1);
+    });
+  } catch (error) {
+    console.error("Startup failed:", error);
+    process.exit(1);
+  }
+})();
+

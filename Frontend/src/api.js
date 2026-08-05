@@ -1,8 +1,12 @@
 import axios from "axios";
 
 const api = axios.create({
-  // baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api"
-  baseURL: import.meta.env.VITE_API_URL || "https://saravanashoppings.qtechx.com/api"
+  baseURL: import.meta.env.VITE_API_URL?.replace(/\/$/, '') || "/api",
+  timeout: 15000,
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  },
 });
 
 // Automatically inject JWT token into requests

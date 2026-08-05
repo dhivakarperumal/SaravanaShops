@@ -1,9 +1,11 @@
 import React from "react";
-import Banner1 from "/public/Image/JewelleryBanner1.jpg";
-import Banner3 from "/public/Image/JewelleryBanner3.jpg";
-import Banner4 from "/public/Image/JewelleryBanner4.jpeg";
 import { useNavigate } from "react-router-dom";
 import PageContainer from "../Components/PageContainer";
+
+const baseUrl = import.meta.env.BASE_URL || "/";
+const Banner1 = `${baseUrl}Image/JewelleryBanner1.jpg`;
+const Banner3 = `${baseUrl}Image/JewelleryBanner3.jpg`;
+const Banner4 = `${baseUrl}Image/JewelleryBanner4.jpeg`;
 
 const JewelleryBanner = () => {
   const navigate = useNavigate();
