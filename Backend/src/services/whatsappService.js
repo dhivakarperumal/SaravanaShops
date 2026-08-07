@@ -222,6 +222,10 @@ async function sendOtpMessage(phone, otp) {
   }
 
   const mockMode = String(process.env.WHATSAPP_MOCK_MODE).toLowerCase() === 'true';
+  const fallbackToMock = String(process.env.WHATSAPP_FALLBACK_TO_MOCK).toLowerCase() === 'true';
+  const useMockFallback = mockMode || fallbackToMock;
+  const configuredApiKey = process.env.WHATSAPP_API_KEY;
+  const configuredAccessToken = process.env.WHATSAPP_ACCESS_TOKEN;
   const hasChatSturnConfig = Boolean(process.env.WHATSAPP_API_TOKEN || process.env.WHATSAPP_API_KEY) && Boolean(process.env.WHATSAPP_PHONE_NUMBER_ID) && Boolean(process.env.WHATSAPP_MESSAGE_TEMPLATE_ID);
   const hasMetaConfig = Boolean(process.env.WHATSAPP_ACCESS_TOKEN) && Boolean(process.env.WHATSAPP_PHONE_NUMBER_ID);
   const configuredProvider = process.env.WHATSAPP_PROVIDER?.toLowerCase();
@@ -293,6 +297,17 @@ async function sendOtpMessage(phone, otp) {
           return true;
         } catch (error) {
           console.error('ChatSturn WhatsApp text send failed:', error.response?.data || error.message);
+
+          if (templateId) {
+            console.warn('[WhatsApp] ChatSturn text send failed, falling back to template send.');
+            try {
+              await sendTemplate();
+              return true;
+            } catch (templateError) {
+              console.error('ChatSturn template fallback failed after text failure:', templateError.response?.data || templateError.message);
+            }
+          }
+
           if (hasMetaConfig) {
             console.warn('[WhatsApp] ChatSturn text send failed, falling back to Meta provider.');
           } else if (mockMode || fallbackToMock) {
@@ -348,9 +363,9 @@ async function sendOtpMessage(phone, otp) {
   const url = `${WHATSAPP_API_BASE_URL}/${WHATSAPP_API_VERSION}/${phoneNumberId}/messages`;
   const templatePayload = buildMetaTemplatePayload(formattedPhone, templateName, otp);
   const textPayload = buildMetaTextPayload(formattedPhone, otp);
+  const payload = useTemplate ? templatePayload : textPayload;
 
   try {
-    const payload = useTemplate ? templatePayload : textPayload;
     const response = await sendMetaWhatsAppMessage(url, accessToken, payload);
 
     if (response.data?.messages?.length) {
@@ -369,15 +384,15 @@ async function sendOtpMessage(phone, otp) {
     if (authError && fallbackAccessToken) {
       console.warn('Primary WhatsApp token rejected, retrying with configured API key.');
       try {
-        const retriedResponse = await axios.post(url, payload, {
+        const retriedResponse = await axiosInstance.post(url, payload, {
           headers: {
-            'Authorization': `Bearer ${fallbackAccessToken}`,
+            Authorization: `Bearer ${fallbackAccessToken}`,
             'Content-Type': 'application/json',
             ...(configuredApiKey ? { 'X-API-Key': configuredApiKey } : {})
           }
         });
 
-        console.log(`WhatsApp message sent to ${formattedPhone}, message_id: ${retriedResponse.data.messages[0].id}`);
+        console.log(`WhatsApp message sent to ${formattedPhone}, message_id: ${retriedResponse.data.messages?.[0]?.id}`);
         return { success: true, mocked: false, otp };
       } catch (retryError) {
         console.warn(`WhatsApp retry also failed for ${phone}; using mock OTP ${otp}`);

@@ -178,6 +178,9 @@ const Checkout = () => {
     fetchAddresses();
   }, [selectedAddressId]);
 
+  const isWhatsAppUser = (user) =>
+    user?.email?.toLowerCase()?.endsWith("@whatsapp-user.com");
+
   /* ------------------------- Pre-fill user email ------------------------ */
   useEffect(() => {
     const fetchProfile = async () => {
@@ -185,10 +188,11 @@ const Checkout = () => {
         const { data } = await api.get("/auth/profile");
 
         if (data?.user) {
+          const whatsapp = isWhatsAppUser(data.user);
           setShipping((prev) => ({
             ...prev,
-            name: data.user.username || "",
-            email: data.user.email || "",
+            name: whatsapp ? "" : data.user.username || "",
+            email: whatsapp ? "" : data.user.email || "",
             phone: data.user.phone || "",
           }));
         }

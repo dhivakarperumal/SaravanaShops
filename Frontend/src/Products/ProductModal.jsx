@@ -215,7 +215,7 @@ const ProductModal = ({ product, onClose }) => {
   }, [product]);
 
   useEffect(() => {
-    if (!selectedColor) return;
+    if (selectedColor == null) return;
     const colorObj = product.colors?.find(
       (c) =>
         String(c.color).toLowerCase() === String(selectedColor).toLowerCase()
@@ -262,8 +262,14 @@ const ProductModal = ({ product, onClose }) => {
 
   // Calculate max stock for current selection
   const maxStock = (() => {
-    if (selectedColor && selectedSize) {
+    if (selectedColor != null && selectedSize != null) {
       return getStockFor(selectedColor, selectedSize);
+    }
+    if (selectedColor != null) {
+      return getStockFor(selectedColor);
+    }
+    if (product?.colors?.length) {
+      return product.colors.reduce((sum, c) => sum + getStockFor(c.color), 0);
     }
     const rawStock = product?.stock;
     if (rawStock != null && rawStock !== "") {
@@ -285,7 +291,7 @@ const ProductModal = ({ product, onClose }) => {
       if (!selectedSize && allSizes.length > 0) {
         setSelectedSize(allSizes[0]);
       }
-      if (!selectedColor) {
+      if (selectedColor == null) {
         setSelectedColor(product.colors[0].color);
       }
     }
@@ -320,7 +326,7 @@ const ProductModal = ({ product, onClose }) => {
         setIsProcessing(false);
         return;
       }
-      if (!selectedColor) {
+      if (selectedColor == null) {
         toast.error("Please select a color.");
         setIsProcessing(false);
         return;
@@ -347,8 +353,8 @@ const ProductModal = ({ product, onClose }) => {
       mrp: product.mrp ?? null,
       sellingprice: product.sellingprice ?? 0,
       quantity,
-      size: selectedSize || null,
-      color: selectedColor || null,
+      size: selectedSize ?? null,
+      color: selectedColor ?? null,
       image: selectedImage || getProductImage(product),
     };
 
@@ -396,7 +402,7 @@ const ProductModal = ({ product, onClose }) => {
         setLoading(false);
         return;
       }
-      if (!selectedColor) {
+      if (selectedColor == null) {
         toast.error("Please select a color.");
         setLoading(false);
         return;
@@ -426,8 +432,8 @@ const ProductModal = ({ product, onClose }) => {
         mrp: product.mrp ?? null,
         sellingprice: product.sellingprice ?? null,
         quantity,
-        size: selectedSize || null,
-        color: selectedColor || null,
+        size: selectedSize ?? null,
+        color: selectedColor ?? null,
       };
       await api.post("/cart", payload);
       window.dispatchEvent(new Event("cartUpdated"));

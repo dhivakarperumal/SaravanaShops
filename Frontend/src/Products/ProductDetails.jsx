@@ -193,7 +193,7 @@ const ProductDetails = () => {
     const defaultVariant = getDefaultVariant();
     if (defaultVariant) {
       if (!selectedSize) setSelectedSize(defaultVariant.size);
-      if (!selectedColor) setSelectedColor(defaultVariant.color);
+      if (selectedColor == null) setSelectedColor(defaultVariant.color);
       setStockForSelection(getStockFor(defaultVariant.color, defaultVariant.size));
     }
   }, [product, allSizes, selectedSize, selectedColor]);
@@ -239,10 +239,10 @@ const ProductDetails = () => {
 
   // Calculate max stock for current selection
   const maxStock = (() => {
-    if (selectedColor && selectedSize) {
+    if (selectedColor != null && selectedSize != null) {
       return getStockFor(selectedColor, selectedSize);
     }
-    if (selectedColor) {
+    if (selectedColor != null) {
       return getStockFor(selectedColor);
     }
     if (product?.colors?.length) {
@@ -288,7 +288,7 @@ const ProductDetails = () => {
         toast.error("Please select a size.");
         return false;
       }
-      if (!selectedColor) {
+      if (selectedColor == null) {
         toast.error("Please select a color.");
         return false;
       }
@@ -705,8 +705,8 @@ const ProductDetails = () => {
                           mrp: product.mrp ?? null,
                           sellingprice: product.sellingprice ?? null,
                           quantity,
-                          size: selectedSize || null,
-                          color: selectedColor || null,
+                          size: selectedSize ?? null,
+                          color: selectedColor ?? null,
                         };
 
                         await api.post("/cart", payload);
@@ -742,8 +742,8 @@ const ProductDetails = () => {
                         mrp: product.mrp ?? null,
                         sellingprice: product.sellingprice ?? 0,
                         quantity,
-                        size: selectedSize || null,
-                        color: selectedColor || null,
+                        size: selectedSize ?? null,
+                        color: selectedColor ?? null,
                         image: selectedImage || getProductImage(product),
                         userId,
                         status: "pending",

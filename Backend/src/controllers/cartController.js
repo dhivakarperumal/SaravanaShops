@@ -104,8 +104,8 @@ exports.addToCart = async (req, res) => {
         mrp,
         sellingprice,
         quantity || 1,
-        size || null,
-        color || null,
+        size ?? null,
+        color ?? null,
       ]
     );
 

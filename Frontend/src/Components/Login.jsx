@@ -20,7 +20,7 @@ const Login = ({ onClose, onOpenRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   // New states for WhatsApp login
-  const [loginMethod, setLoginMethod] = useState("email"); // "email" or "whatsapp"
+  const [loginMethod, setLoginMethod] = useState("whatsapp"); // "email" or "whatsapp"
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [showOtpInput, setShowOtpInput] = useState(false);
@@ -174,21 +174,19 @@ const Login = ({ onClose, onOpenRegister }) => {
         <div className="flex w-full mb-6 bg-gray-100 rounded-lg p-1">
           <button
             type="button"
-            className={`flex-1 py-2 rounded-md font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${
-              loginMethod === "email" ? "bg-white shadow text-purple-600" : "text-gray-500 hover:text-gray-700"
-            }`}
-            onClick={() => { setLoginMethod("email"); setShowOtpInput(false); }}
-          >
-            <FaEnvelope /> Email
-          </button>
-          <button
-            type="button"
-            className={`flex-1 py-2 rounded-md font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${
-              loginMethod === "whatsapp" ? "bg-[#25D366] text-white shadow" : "text-gray-500 hover:text-gray-700"
-            }`}
+            className={`flex-1 py-2 rounded-md font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${loginMethod === "whatsapp" ? "bg-[#25D366] text-white shadow" : "text-gray-500 hover:text-gray-700"
+              }`}
             onClick={() => setLoginMethod("whatsapp")}
           >
             <FaWhatsapp size={16} /> WhatsApp
+          </button>
+          <button
+            type="button"
+            className={`flex-1 py-2 rounded-md font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${loginMethod === "email" ? "bg-white shadow text-purple-600" : "text-gray-500 hover:text-gray-700"
+              }`}
+            onClick={() => { setLoginMethod("email"); setShowOtpInput(false); }}
+          >
+            <FaEnvelope /> Email
           </button>
         </div>
 

@@ -184,6 +184,10 @@ export default function Account() {
   );
 }
 
+function isWhatsAppUser(user) {
+  return user?.email?.toLowerCase()?.endsWith("@whatsapp-user.com");
+}
+
 function PersonalDetails() {
   const [form, setForm] = useState({ fullName: "", email: "", phone: "" });
 
@@ -192,9 +196,10 @@ function PersonalDetails() {
       try {
         const { data } = await api.get("/auth/profile");
         if (data.user) {
+          const whatsapp = isWhatsAppUser(data.user);
           setForm({
-            fullName: data.user.username || "",
-            email: data.user.email || "",
+            fullName: whatsapp ? "" : data.user.username || "",
+            email: whatsapp ? "" : data.user.email || "",
             phone: data.user.phone || "",
           });
         }
