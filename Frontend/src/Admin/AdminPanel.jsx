@@ -24,7 +24,7 @@ import { AuthContext } from "../PrivateRouter.jsx/AuthContext";
 import api from "../api";
 
 const AdminPanel = () => {
-  const { user, setUser } = useContext(AuthContext);
+  const { user, setUser, logout } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
   const [orders, setOrders] = useState([]);
@@ -157,9 +157,7 @@ const AdminPanel = () => {
 
   const handleLogout = async () => {
     try {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      setUser(null);
+      logout(); // clears localStorage + context in one call
       navigate("/");
     } catch (error) {
       console.error("Logout failed:", error.message);

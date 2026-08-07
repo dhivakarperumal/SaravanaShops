@@ -1,9 +1,11 @@
 import React from "react";
-import Banner1 from "/public/Image/JewelleryBanner1.jpg";
-import Banner3 from "/public/Image/JewelleryBanner3.jpg";
-import Banner4 from "/public/Image/JewelleryBanner4.jpeg";
 import { useNavigate } from "react-router-dom";
 import PageContainer from "../Components/PageContainer";
+
+const baseUrl = import.meta.env.BASE_URL || "/";
+const Banner1 = `${baseUrl}Image/JewelleryBanner1.jpg`;
+const Banner3 = `${baseUrl}Image/JewelleryBanner3.jpg`;
+const Banner4 = `${baseUrl}Image/JewelleryBanner4.jpeg`;
 
 const JewelleryBanner = () => {
   const navigate = useNavigate();
@@ -23,7 +25,7 @@ const JewelleryBanner = () => {
         </h1>
 
         <div className="flex justify-center items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full text-gray-700 mx-auto w-fit mb-3 shadow-sm">
-          <button onClick={navigate(`/allproducts`)} className="cursor-pointer"> 500+ new items </button>
+          <button onClick={() => navigate(`/allproducts`)} className="cursor-pointer"> 500+ new items </button>
         </div>
 
         {/* Images */}

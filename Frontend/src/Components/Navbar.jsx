@@ -21,7 +21,7 @@ import PageContainer from "./PageContainer";
 
 function Navbar() {
   const navigate = useNavigate();
-  const { user, setUser } = useContext(AuthContext);
+  const { user, setUser, logout } = useContext(AuthContext);
   const userDropdownRef = useRef(null);
 
   // UI States
@@ -180,21 +180,7 @@ function Navbar() {
     setWishlistOpen(false);
   }, [user]);
 
-  // Check user from localStorage on mount
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
-
-    if (token && userData) {
-      try {
-        setUser(JSON.parse(userData));
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-      }
-    }
-  }, [setUser]);
+  // Auth state is managed by AuthContext — no need to read localStorage here
 
   // Category click handler
   const handleCategoryClick = (cat) => {
@@ -224,15 +210,8 @@ function Navbar() {
   const handleLogout = (e) => {
     e.stopPropagation();
     try {
-      // Clear all auth data
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-
-      // Update auth context
-      setUser(null);
+      logout(); // clears localStorage + context in one call
       setUserDropdownOpen(false);
-
-      // Show success message and navigate
       toast.success("Logged out successfully!");
       navigate("/");
     } catch (error) {

@@ -1,8 +1,34 @@
 const pool = require('./db');
+const mysql = require('mysql2/promise');
+
+const config = pool.config || {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'saravanshop_db',
+  port: Number(process.env.DB_PORT || 3306),
+};
+
+async function ensureDatabaseExists() {
+  const connection = await mysql.createConnection({
+    host: config.host,
+    user: config.user,
+    password: config.password,
+    port: config.port,
+    multipleStatements: true,
+  });
+
+  const sanitizedDatabase = config.database.replace(/`/g, '');
+  await connection.query(
+    `CREATE DATABASE IF NOT EXISTS \`${sanitizedDatabase}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`
+  );
+  await connection.end();
+}
 
 async function initializeDatabase() {
   let connection;
   try {
+    await ensureDatabaseExists();
     connection = await pool.getConnection();
 
     // ── Users table ──────────────────────────────────────
@@ -108,29 +134,16 @@ async function initializeDatabase() {
 
     // ── Videos table ───────────────────────────────────
     await connection.query(`
-  CREATE TABLE IF NOT EXISTS videos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    video_id VARCHAR(20) NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    url LONGTEXT NOT NULL,
-    file_name VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  )
-`);
-
-    // ── Videos table ───────────────────────────────────
-    await connection.query(`
-  CREATE TABLE IF NOT EXISTS videos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    video_id VARCHAR(20) NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    url LONGTEXT NOT NULL,
-    file_name VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  )
-`);
+      CREATE TABLE IF NOT EXISTS videos (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        video_id VARCHAR(20) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        url LONGTEXT NOT NULL,
+        file_name VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
 
     // ── Orders table ──────────────────────────────────────
     await connection.query(`
@@ -301,6 +314,19 @@ async function initializeDatabase() {
 `);
 
     console.log('✅ Database initialized: users, categories, products, razorpay_keys, orders, invoices & dealers tables created/verified');
+
+    // ── Otps table ─────────────────────────────────────
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS otps (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        phone VARCHAR(20) NOT NULL,
+        otp VARCHAR(6) NOT NULL,
+        expires_at DATETIME NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_phone (phone)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
   } catch (error) {
     console.error('Database initialization error:', error.message);
   } finally {
