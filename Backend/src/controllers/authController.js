@@ -245,13 +245,14 @@ const { sendOtpMessage } = require('../services/whatsappService');
 // Send WhatsApp OTP
 const sendWhatsAppOtp = async (req, res) => {
   let connection;
+  let formattedPhone;
   try {
     const { phone } = req.body;
     if (!phone) {
       return res.status(400).json({ message: 'Phone number is required' });
     }
 
-    const formattedPhone = normalizeOtpPhone(phone);
+    formattedPhone = normalizeOtpPhone(phone);
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expires_at = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
@@ -264,26 +265,19 @@ const sendWhatsAppOtp = async (req, res) => {
       [formattedPhone, otp, expires_at]
     );
 
-<<<<<<< HEAD
     const sendResult = await sendOtpMessage(formattedPhone, otp);
 
-    // Send via WhatsApp
-    await sendOtpMessage(phone, otp);
-
     res.json({
-      message: sendResult.mocked
+      message: sendResult && sendResult.mocked
         ? 'OTP generated locally for development because WhatsApp authentication failed'
         : 'OTP sent successfully to WhatsApp',
-      otp: sendResult.mocked ? otp : undefined
+      otp: sendResult && sendResult.mocked ? otp : undefined
     });
   } catch (error) {
     console.error('Send WhatsApp OTP error:', error);
-    if (connection && req.body?.phone) {
+    if (connection && formattedPhone) {
       try {
-        const cleanupPhone = formatPhoneForApi(req.body.phone);
-        if (cleanupPhone) {
-          await connection.query('DELETE FROM otps WHERE phone = ?', [cleanupPhone]);
-        }
+        await connection.query('DELETE FROM otps WHERE phone = ?', [formattedPhone]);
       } catch (cleanupError) {
         console.error('Cleanup OTP on failure error:', cleanupError);
       }
