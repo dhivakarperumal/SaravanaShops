@@ -85,17 +85,36 @@ exports.createOrder = async (req, res) => {
       }
 
       // Logic for products with color/size stock variants
-      if (colorsArray.length > 0 && item.color != null) {
+      if (colorsArray.length > 0) {
         let found = false;
         let sufficientStock = false;
         
         const updatedColors = colorsArray.map((c) => {
-          if (String(c.color) === String(item.color)) {
-            if (item.size != null && c.stock != null && typeof c.stock === 'object' && c.stock[item.size] !== undefined) {
-              found = true;
-              if (c.stock[item.size] >= quantity) {
-                sufficientStock = true;
-                c.stock[item.size] = Math.max(0, c.stock[item.size] - quantity);
+          const matchColor = String(c.color || '').toLowerCase() === String(item.color || '').toLowerCase();
+          
+          if (matchColor) {
+            const itemSizeStr = String(item.size || '').trim();
+            
+            if (c.stock != null && typeof c.stock === 'object') {
+              // Try to find matching size key
+              let matchedSizeKey = null;
+              for (const key of Object.keys(c.stock)) {
+                if (String(key).trim() === itemSizeStr) {
+                  matchedSizeKey = key;
+                  break;
+                }
+              }
+              
+              if (matchedSizeKey !== null) {
+                found = true;
+                if (c.stock[matchedSizeKey] >= quantity) {
+                  sufficientStock = true;
+                  c.stock[matchedSizeKey] = Math.max(0, c.stock[matchedSizeKey] - quantity);
+                }
+              } else if (!itemSizeStr && Object.keys(c.stock).length > 0) {
+                // Edge case: if no size was sent but stock is an object, 
+                // we might not know which size to reduce, so we can't safely reduce.
+                // Or we can just let found = false.
               }
             } else if (c.stock != null && typeof c.stock !== 'object') {
               found = true;
@@ -109,7 +128,7 @@ exports.createOrder = async (req, res) => {
         });
 
         if (!found || !sufficientStock) {
-          throw new Error(`Not enough stock for ${item.name || item.product_name} (Color: ${item.color}, Size: ${item.size || 'N/A'})`);
+          throw new Error(`Not enough stock for ${item.name || item.product_name} (Color: ${item.color || 'Default'}, Size: ${item.size || 'N/A'})`);
         }
 
         await connection.query('UPDATE products SET colors = ? WHERE id = ?', [JSON.stringify(updatedColors), product.id]);
