@@ -264,7 +264,6 @@ const sendWhatsAppOtp = async (req, res) => {
       [formattedPhone, otp, expires_at]
     );
 
-<<<<<<< HEAD
     const sendResult = await sendOtpMessage(formattedPhone, otp);
 
     // Send via WhatsApp
