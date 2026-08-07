@@ -193,7 +193,7 @@ const ProductDetails = () => {
     const defaultVariant = getDefaultVariant();
     if (defaultVariant) {
       if (!selectedSize) setSelectedSize(defaultVariant.size);
-      if (!selectedColor) setSelectedColor(defaultVariant.color);
+      if (selectedColor == null) setSelectedColor(defaultVariant.color);
       setStockForSelection(getStockFor(defaultVariant.color, defaultVariant.size));
     }
   }, [product, allSizes, selectedSize, selectedColor]);
@@ -288,7 +288,7 @@ const ProductDetails = () => {
         toast.error("Please select a size.");
         return false;
       }
-      if (!selectedColor) {
+      if (selectedColor == null) {
         toast.error("Please select a color.");
         return false;
       }
