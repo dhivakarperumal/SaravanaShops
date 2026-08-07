@@ -30,6 +30,8 @@ export const AuthProvider = ({ children }) => {
 
   // ── Persist user to localStorage whenever it changes ─────────────────────
   useEffect(() => {
+    if (loading) return;
+
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
     } else {
@@ -37,7 +39,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("user");
       localStorage.removeItem("token");
     }
-  }, [user]);
+  }, [user, loading]);
 
   // ── Public helpers ────────────────────────────────────────────────────────
   /** Call after a successful API login/register to store credentials. */
