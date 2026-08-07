@@ -353,8 +353,8 @@ const ProductModal = ({ product, onClose }) => {
       mrp: product.mrp ?? null,
       sellingprice: product.sellingprice ?? 0,
       quantity,
-      size: selectedSize || null,
-      color: selectedColor || null,
+      size: selectedSize ?? null,
+      color: selectedColor ?? null,
       image: selectedImage || getProductImage(product),
     };
 
@@ -432,8 +432,8 @@ const ProductModal = ({ product, onClose }) => {
         mrp: product.mrp ?? null,
         sellingprice: product.sellingprice ?? null,
         quantity,
-        size: selectedSize || null,
-        color: selectedColor || null,
+        size: selectedSize ?? null,
+        color: selectedColor ?? null,
       };
       await api.post("/cart", payload);
       window.dispatchEvent(new Event("cartUpdated"));

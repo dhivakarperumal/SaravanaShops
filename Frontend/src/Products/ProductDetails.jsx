@@ -705,8 +705,8 @@ const ProductDetails = () => {
                           mrp: product.mrp ?? null,
                           sellingprice: product.sellingprice ?? null,
                           quantity,
-                          size: selectedSize || null,
-                          color: selectedColor || null,
+                          size: selectedSize ?? null,
+                          color: selectedColor ?? null,
                         };
 
                         await api.post("/cart", payload);
@@ -742,8 +742,8 @@ const ProductDetails = () => {
                         mrp: product.mrp ?? null,
                         sellingprice: product.sellingprice ?? 0,
                         quantity,
-                        size: selectedSize || null,
-                        color: selectedColor || null,
+                        size: selectedSize ?? null,
+                        color: selectedColor ?? null,
                         image: selectedImage || getProductImage(product),
                         userId,
                         status: "pending",
