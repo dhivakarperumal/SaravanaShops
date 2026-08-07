@@ -239,10 +239,10 @@ const ProductDetails = () => {
 
   // Calculate max stock for current selection
   const maxStock = (() => {
-    if (selectedColor && selectedSize) {
+    if (selectedColor != null && selectedSize != null) {
       return getStockFor(selectedColor, selectedSize);
     }
-    if (selectedColor) {
+    if (selectedColor != null) {
       return getStockFor(selectedColor);
     }
     if (product?.colors?.length) {
