@@ -80,6 +80,15 @@ function buildMetaTextPayload(formattedPhone, otp) {
   };
 }
 
+function getChatSturnTemplateVariableNames() {
+  const rawTemplateVariables = process.env.WHATSAPP_MESSAGE_TEMPLATE_VARIABLES || 'otp-1';
+
+  return rawTemplateVariables
+    .split(/[\r\n,]+/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 function buildChatSturnTemplatePayload(phoneNumberId, templateId, otp, toPhone, apiToken) {
   const payload = {
     apiToken,
@@ -92,9 +101,7 @@ function buildChatSturnTemplatePayload(phoneNumberId, templateId, otp, toPhone, 
     mobile_number: toPhone
   };
 
-  const templateVariables = process.env.WHATSAPP_MESSAGE_TEMPLATE_VARIABLES
-    ? process.env.WHATSAPP_MESSAGE_TEMPLATE_VARIABLES.split(',').map((value) => value.trim()).filter(Boolean)
-    : ['otp-1'];
+  const templateVariables = getChatSturnTemplateVariableNames();
 
   templateVariables.forEach((variableName) => {
     payload[`templateVariable-${variableName}`] = otp;
@@ -182,6 +189,19 @@ async function sendMetaWhatsAppMessage(url, accessToken, payload) {
     error.message = error.message || 'Meta WhatsApp API request failed';
     throw error;
   }
+}
+
+function isChatSturnAuthFailure(error) {
+  const status = Number(error?.response?.status || 0);
+  const body = error?.response?.data || error?.response || {};
+  const message = String(
+    body?.message ||
+    body?.error?.message ||
+    error?.message ||
+    ''
+  ).toLowerCase();
+
+  return status === 401 || status === 403 || message.includes('unauthenticated') || message.includes('unauthorized') || message.includes('invalid api token') || message.includes('api key');
 }
 
 function normalizePhone(phone) {
@@ -298,6 +318,11 @@ async function sendOtpMessage(phone, otp) {
         } catch (error) {
           console.error('ChatSturn WhatsApp text send failed:', error.response?.data || error.message);
 
+          if (isChatSturnAuthFailure(error) && (mockMode || fallbackToMock)) {
+            console.warn('[WhatsApp] ChatSturn text API rejected the auth token; using mock OTP fallback.');
+            return { success: true, mocked: true, otp };
+          }
+
           if (templateId) {
             console.warn('[WhatsApp] ChatSturn text send failed, falling back to template send.');
             try {
@@ -312,7 +337,7 @@ async function sendOtpMessage(phone, otp) {
             console.warn('[WhatsApp] ChatSturn text send failed, falling back to Meta provider.');
           } else if (mockMode || fallbackToMock) {
             console.warn('[WhatsApp] ChatSturn text send failed and fallback to mock is enabled, skipping real send.');
-            return true;
+            return { success: true, mocked: true, otp };
           } else {
             throw new Error(error.response?.data?.message || error.message || 'Failed to send WhatsApp message via ChatSturn text');
           }
@@ -324,6 +349,11 @@ async function sendOtpMessage(phone, otp) {
         return true;
       } catch (error) {
         console.error('ChatSturn WhatsApp template send failed:', error.response?.data || error.message);
+
+        if (isChatSturnAuthFailure(error)) {
+          console.warn('[WhatsApp] ChatSturn template API rejected the auth token; using mock OTP fallback.');
+          return { success: true, mocked: true, otp };
+        }
 
         if (fallbackToChatSturnText) {
           try {
@@ -339,7 +369,7 @@ async function sendOtpMessage(phone, otp) {
           console.warn('[WhatsApp] ChatSturn template send failed, falling back to Meta provider.');
         } else if (mockMode || fallbackToMock) {
           console.warn('[WhatsApp] ChatSturn send failed and fallback to mock is enabled, skipping real send.');
-          return true;
+          return { success: true, mocked: true, otp };
         } else {
           throw new Error(error.response?.data?.message || error.message || 'Failed to send WhatsApp message via ChatSturn');
         }
@@ -435,5 +465,7 @@ async function sendOtpMessage(phone, otp) {
 
 module.exports = {
   sendOtpMessage,
-  formatPhoneForApi
+  formatPhoneForApi,
+  buildChatSturnTemplatePayload,
+  getChatSturnTemplateVariableNames
 };

@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const net = require("net");
 require("dotenv").config();
 
 const { initializeDatabase } = require("./src/config/database");
@@ -10,35 +9,19 @@ const PORT = Number(process.env.PORT || 5000);
 const HOST = process.env.HOST || "127.0.0.1";
 
 const startServer = async (requestedPort, host) => {
-  const maxAttempts = 30;
-  let candidatePort = Number(requestedPort || 5000);
+  return await new Promise((resolve, reject) => {
+    const server = app.listen(requestedPort, host, () => {
+      resolve(server);
+    });
 
-  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    try {
-      return await new Promise((resolve, reject) => {
-        const server = app.listen(candidatePort, host, () => {
-          resolve(server);
-        });
-
-        server.once("error", (error) => {
-          if (error.code === "EADDRINUSE") {
-            reject(Object.assign(error, { attemptedPort: candidatePort }));
-          } else {
-            reject(error);
-          }
-        });
-      });
-    } catch (error) {
-      if (error.code !== "EADDRINUSE") {
-        throw error;
+    server.once("error", (error) => {
+      if (error.code === "EADDRINUSE") {
+        reject(new Error(`Port ${requestedPort} is already in use. Stop the process using it or change PORT in .env.`));
+      } else {
+        reject(error);
       }
-
-      console.warn(`Port ${candidatePort} is busy; trying ${candidatePort + 1}...`);
-      candidatePort += 1;
-    }
-  }
-
-  throw new Error(`Unable to start the server after ${maxAttempts} attempts.`);
+    });
+  });
 };
 
 const requiredEnv = [
