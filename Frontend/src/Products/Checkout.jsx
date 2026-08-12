@@ -322,11 +322,15 @@ const Checkout = () => {
         }
 
         if (region === "north") {
-          if (quantity <= 5) return 190;
-          if (quantity <= 9) return 250;
-          if (quantity <= 15) return 300;
-          if (quantity <= 25) return 350;
-          return 400;
+          if (quantity <= 4) return 200;
+          if (quantity <= 10) return 400;
+          if (quantity <= 15) return 500;
+          if (quantity <= 20) return 600;
+          if (quantity <= 30) return 700;
+          if (quantity <= 40) return 800;
+          if (quantity <= 50) return 900;
+          if (quantity <= 60) return 1000;
+          return 1000;
         }
 
         return 0;
