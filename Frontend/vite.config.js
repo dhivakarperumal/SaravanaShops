@@ -22,7 +22,7 @@ export default ({ mode }) => {
         },
 
         "/proxy-uploads": {
-          target: "https://saravanashoppings.qtechx.com",
+          target: "https://saravanashoppings.com",
           changeOrigin: true,
           secure: true,
           rewrite: (path) =>
