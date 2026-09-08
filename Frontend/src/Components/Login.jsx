@@ -20,7 +20,7 @@ const Login = ({ onClose, onOpenRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   // New states for WhatsApp login
-  const [loginMethod, setLoginMethod] = useState("whatsapp"); // "email" or "whatsapp"
+  const [loginMethod, setLoginMethod] = useState("email"); // "email" or "whatsapp"
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [showOtpInput, setShowOtpInput] = useState(false);
