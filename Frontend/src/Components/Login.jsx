@@ -172,14 +172,14 @@ const Login = ({ onClose, onOpenRegister }) => {
 
         {/* Login Method Toggle */}
         <div className="flex w-full mb-6 bg-gray-100 rounded-lg p-1">
-          <button
+          {/*<button
             type="button"
             className={`flex-1 py-2 rounded-md font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${loginMethod === "whatsapp" ? "bg-[#25D366] text-white shadow" : "text-gray-500 hover:text-gray-700"
               }`}
             onClick={() => setLoginMethod("whatsapp")}
           >
             <FaWhatsapp size={16} /> WhatsApp
-          </button>
+          </button>*/}
           <button
             type="button"
             className={`flex-1 py-2 rounded-md font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${loginMethod === "email" ? "bg-white shadow text-purple-600" : "text-gray-500 hover:text-gray-700"
