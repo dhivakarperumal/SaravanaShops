@@ -1,8 +1,10 @@
 const { v4: uuidv4 } = require('uuid');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const pool = require('../config/db');
 const { formatPhoneForApi } = require('../services/whatsappService');
+const googleOAuthClient = new OAuth2Client();
 
 function normalizeOtpPhone(phone) {
   const formattedPhone = formatPhoneForApi(phone);
@@ -168,28 +170,50 @@ const getProfile = async (req, res) => {
 };
 
 // Google Login
-const axios = require('axios');
-
 const googleLogin = async (req, res) => {
-  try {
-    const { access_token } = req.body;
-    if (!access_token) {
-      return res.status(400).json({ message: 'Access token is required' });
-    }
-
-    // Fetch user info from Google
-    const googleRes = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${access_token}` }
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim();
+  if (!clientId) {
+    return res.status(503).json({
+      message: 'Google sign-in is not configured on the server. Set GOOGLE_CLIENT_ID to the frontend OAuth client ID.'
     });
-    
-    const { email, name } = googleRes.data;
+  }
 
-    const connection = await pool.getConnection();
+  const { credential } = req.body;
+  if (!credential) {
+    return res.status(400).json({ message: 'Google sign-in credential is required' });
+  }
+
+  let googleUser;
+  try {
+    const ticket = await googleOAuthClient.verifyIdToken({
+      idToken: credential,
+      audience: clientId
+    });
+    const payload = ticket.getPayload();
+    if (!payload?.email || payload.email_verified !== true) {
+      return res.status(401).json({
+        message: 'Google sign-in requires a verified email address.'
+      });
+    }
+    googleUser = {
+      email: payload.email,
+      name: payload.name || payload.email.split('@')[0]
+    };
+  } catch (error) {
+    console.error('Google ID token verification failed:', error.message);
+    return res.status(401).json({
+      message: 'Google sign-in could not be verified. Please try again and check the configured OAuth client ID.'
+    });
+  }
+
+  let connection;
+  try {
+    connection = await pool.getConnection();
 
     // Check if user exists
     const [users] = await connection.query(
       'SELECT * FROM users WHERE email = ?',
-      [email]
+      [googleUser.email]
     );
 
     let user;
@@ -202,19 +226,22 @@ const googleLogin = async (req, res) => {
 
       await connection.query(
         'INSERT INTO users (user_id, username, email, phone, password, status) VALUES (?, ?, ?, ?, ?, ?)',
-        [user_id, name, email, 'Not provided', hashedPassword, 'active']
+        [user_id, googleUser.name, googleUser.email, 'Not provided', hashedPassword, 'active']
       );
 
-      user = { user_id, username: name, email, phone: 'Not provided', role: 'user' };
+      user = {
+        user_id,
+        username: googleUser.name,
+        email: googleUser.email,
+        phone: 'Not provided',
+        role: 'user'
+      };
     } else {
       user = users[0];
       if (user.status !== 'active') {
-        connection.release();
         return res.status(403).json({ message: 'User account is inactive' });
       }
     }
-
-    connection.release();
 
     // Generate JWT token
     const token = jwt.sign(
@@ -236,7 +263,11 @@ const googleLogin = async (req, res) => {
     });
   } catch (error) {
     console.error('Google Login error:', error);
-    res.status(500).json({ message: 'Google authentication failed', error: error.message });
+    res.status(500).json({
+      message: 'Google sign-in failed while loading or creating your account.'
+    });
+  } finally {
+    connection?.release();
   }
 };
 

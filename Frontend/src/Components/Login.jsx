@@ -1,8 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { FaTimes, FaEye, FaEyeSlash, FaWhatsapp, FaEnvelope } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-import { useGoogleLogin } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 import api from "../api";
 import { toast } from "react-hot-toast";
 import { AuthContext } from "../PrivateRouter.jsx/AuthContext";
@@ -119,34 +118,35 @@ const Login = ({ onClose, onOpenRegister }) => {
   };
 
   // ── Google login ──────────────────────────────────────────────────────────
-  const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        setLoading(true);
-        const res = await api.post("/auth/google", {
-          access_token: tokenResponse.access_token,
-        });
+  const handleGoogleLogin = async (credentialResponse) => {
+    if (!credentialResponse.credential) {
+      toast.error("Google did not return a sign-in credential. Please try again.");
+      return;
+    }
 
-        if (res.data.token) {
-          login(res.data.user, res.data.token);
-          toast.success(`Welcome back, ${res.data.user.username}!`);
-          handleClose();
-          navigate(redirectTo, { replace: true });
-        }
-      } catch (error) {
-        console.error("Google Login Error:", error);
-        const errorMessage =
-          error.response?.data?.message || "Google login failed";
-        toast.error(errorMessage);
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    try {
+      const res = await api.post("/auth/google", {
+        credential: credentialResponse.credential,
+      });
+
+      if (res.data.token) {
+        login(res.data.user, res.data.token);
+        toast.success(`Welcome back, ${res.data.user.username}!`);
+        handleClose();
+        navigate(redirectTo, { replace: true });
+      } else {
+        toast.error("Google sign-in did not return an authentication token.");
       }
-    },
-    onError: (error) => {
-      console.error("Google Login Failed:", error);
-      toast.error("Google Login Failed");
-    },
-  });
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      toast.error(
+        error.response?.data?.message || "Google sign-in could not be completed."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -313,15 +313,24 @@ const Login = ({ onClose, onOpenRegister }) => {
           <hr className="flex-grow border-gray-300" />
         </div>
 
-        <button
-          type="button"
-          onClick={() => handleGoogleLogin()}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 rounded-lg cursor-pointer transition-colors disabled:opacity-70"
+        <div
+          className={`w-full flex justify-center ${
+            loading ? "pointer-events-none opacity-70" : ""
+          }`}
         >
-          <FcGoogle size={20} />
-          Continue with Google
-        </button>
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={() =>
+              toast.error(
+                "Google sign-in failed. Confirm this site's origin is authorized in Google Cloud Console."
+              )
+            }
+            text="continue_with"
+            theme="outline"
+            shape="rectangular"
+            width="350"
+          />
+        </div>
 
         {/* Register Link */}
         <p className="text-center text-sm text-gray-600 mt-4">

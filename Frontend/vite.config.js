@@ -1,12 +1,19 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { fileURLToPath } from "node:url";
 
 export default ({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
+  const projectRoot = fileURLToPath(new URL(".", import.meta.url));
+  const env = loadEnv(mode, projectRoot, "");
 
-  const backendUrl =
-    env.VITE_BACKEND_URL || "http://localhost:5002";
+  if (!env.VITE_GOOGLE_CLIENT_ID) {
+    throw new Error(
+      "VITE_GOOGLE_CLIENT_ID is required to build or run the frontend."
+    );
+  }
+
+  const backendUrl = env.VITE_BACKEND_URL || "http://localhost:5002";
 
   return defineConfig({
     plugins: [react(), tailwindcss()],
