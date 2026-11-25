@@ -21,7 +21,7 @@ client in Google Cloud Console. This popup/credential flow does not use an OAuth
 redirect URI; the backend endpoint `POST /api/auth/google` verifies the ID
 token and is not a Google OAuth callback URL. The production frontend calls
 `/api` on its own origin; Vite proxies local development API requests to
-`http://localhost:5002`.
+`VITE_BACKEND_URL` (default: `http://localhost:5002`).
 
 Use the provided `.env.example` files as templates. Production environment
 variables must be configured in the hosting platforms; the local `.env` files
