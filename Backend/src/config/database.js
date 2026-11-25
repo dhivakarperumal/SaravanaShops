@@ -313,7 +313,23 @@ async function initializeDatabase() {
   )
 `);
 
-    console.log('✅ Database initialized: users, categories, products, razorpay_keys, orders, invoices & dealers tables created/verified');
+    // ── Wishlist table ──────────────────────────────────
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS wishlist (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        product_id VARCHAR(50) NOT NULL,
+        product_name VARCHAR(255),
+        image LONGTEXT,
+        mrp DECIMAL(10,2) DEFAULT 0,
+        sellingprice DECIMAL(10,2) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_wishlist_user_created (user_id, created_at),
+        INDEX idx_wishlist_user_product (user_id, product_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    console.log('✅ Database initialized: users, categories, products, razorpay_keys, orders, invoices, dealers, cart & wishlist tables created/verified');
 
     // ── Otps table ─────────────────────────────────────
     await connection.query(`
